@@ -1,5 +1,6 @@
 from fastapi import FastAPI
-
+from contextlib import asynccontextmanager
+from app.routes import include_routers
 
 # Configuration CORS - Liste des origines autorisées
 ALLOWED_ORIGINS = [
@@ -21,6 +22,38 @@ ALLOWED_HEADERS = [
     "X-Mode"
 ]
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Gestionnaire de cycle de vie de l'application.
+
+    Args:
+        app: Instance de FastAPI
+
+    Yields:
+        None: Pendant l'exécution de l'application
+    """
+    try:
+        # Démarrage de l'application
+        await startup_event()
+        print("✅ Application démarrée - Événements de démarrage exécutés")
+        yield
+
+    except Exception as e:
+        print(f"❌ Erreur lors du démarrage: {e}")
+        raise
+
+    finally:
+        # Arrêt de l'application - Nettoyage des ressources
+        try:
+            await engine.dispose()
+            # ----------------------------
+            # Arrêt propre du scheduler à la fermeture
+            # ----------------------------
+            atexit.register(lambda: scheduler.shutdown())
+            print("✅ Connexion à la base de données fermée avec succès")
+        except Exception as e:
+            print(f"⚠️  Avertissement lors de la fermeture de la base de données: {e}")
 
 
 def create_application() -> FastAPI:
@@ -68,7 +101,7 @@ def configure_routes(app: FastAPI) -> None:
             "status": "healthy",
         }
 
-
+    include_routers(app)
 
 
 # Création de l'application

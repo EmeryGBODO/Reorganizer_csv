@@ -22,3 +22,7 @@ pydantic
 pytest
 httpx
 apscheduler
+
+# --- Authentification et Sécurité ---
+passlib[bcrypt]
+python-jose[cryptography]
