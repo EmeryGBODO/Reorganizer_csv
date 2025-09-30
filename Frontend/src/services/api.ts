@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { Campaign } from '../types';
+import { Campaign, UserCredentials } from '../types'; 
 
 const API_BASE_URL = 'http://localhost:8000/api'; // J'ai mis 8000 qui est le port par défaut pour FastAPI
 
@@ -42,6 +43,23 @@ const api = axios.create({
 
 // Helper function to simulate API delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Auth API calls (NOUVELLE SECTION)
+export const authApi = {
+  login: async (credentials: UserCredentials) => {
+    await delay(1000);
+    if (credentials.email === 'admin@example.com' && credentials.password === 'password123') {
+      return {
+        data: {
+          success: true,
+          token: 'fake-jwt-token', // Simulation d'un token
+          message: 'Login successful'
+        }
+      };
+    }
+    throw new Error('Invalid credentials');
+  }
+};
 
 // Campaign API calls
 export const campaignApi = {
