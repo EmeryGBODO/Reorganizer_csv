@@ -120,6 +120,12 @@ const ColumnEditor: React.FC<ColumnEditorProps> = ({
                           <GripVertical className="h-5 w-5" />
                         </div>
 
+                        {/* --- BLOC DE L'INDICE MODIFIÉ --- */}
+                        <div className="flex-shrink-0 flex items-center justify-center h-6 w-6 text-xs font-bold text-gray-600 bg-gray-200 rounded-full">
+                          {index + 1}
+                        </div>
+                        {/* --- FIN DU BLOC MODIFIÉ --- */}
+
                         <div className="flex-1">
                           {editingId === column.id ? (
                             <div className="flex items-center space-x-2">
