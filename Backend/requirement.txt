@@ -1,0 +1,24 @@
+# Core
+fastapi
+uvicorn[standard]
+sqlalchemy[asyncio]
+asyncpg
+python-dotenv
+psycopg2-binary
+mysql-connector-python
+python-jose
+panda
+alembic
+
+# Environment
+python-dotenv 
+python-dateutil 
+
+# LDAP
+ldap3 
+pydantic 
+
+#test
+pytest
+httpx
+apscheduler

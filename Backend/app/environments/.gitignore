@@ -1,0 +1,4 @@
+# Ignorer tous les fichiers d'environnement sauf .example
+*
+!.env.example
+!.gitignore
