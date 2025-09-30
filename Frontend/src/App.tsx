@@ -8,7 +8,9 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen bg-gray-50">
-        <Navigation />
+        <header className="sticky top-0 z-50">
+          <Navigation />
+        </header>
         <main>
           <Routes>
             <Route path="/" element={<EndUserPage />} />

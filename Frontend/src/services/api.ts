@@ -1,18 +1,18 @@
 import axios from 'axios';
-import { Campaign, ApiResponse } from '../types';
+import { Campaign } from '../types';
 
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = 'http://localhost:8000/api'; // J'ai mis 8000 qui est le port par défaut pour FastAPI
 
-// Mock data for demo purposes
+// Données mock corrigées pour correspondre au type ColumnConfig
 const mockCampaigns: Campaign[] = [
   {
     id: '1',
     name: 'Campagne Marketing Q1',
     description: 'Réorganisation des données marketing Q1',
     columns: [
-      { id: '1', name: 'Nom', originalName: 'name', order: 0 },
-      { id: '2', name: 'Email', originalName: 'email', order: 1 },
-      { id: '3', name: 'Téléphone', originalName: 'phone', order: 2 },
+      { id: 'col-1', name: 'name', displayName: 'Nom', order: 0, required: true },
+      { id: 'col-2', name: 'email', displayName: 'Email', order: 1, required: true },
+      { id: 'col-3', name: 'phone', displayName: 'Téléphone', order: 2, required: false },
     ],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -22,10 +22,10 @@ const mockCampaigns: Campaign[] = [
     name: 'Export Clients',
     description: 'Format standard pour export clients',
     columns: [
-      { id: '1', name: 'Prénom', originalName: 'firstname', order: 0 },
-      { id: '2', name: 'Nom de famille', originalName: 'lastname', order: 1 },
-      { id: '3', name: 'Adresse email', originalName: 'email', order: 2 },
-      { id: '4', name: 'Age', originalName: 'age', order: 3 },
+      { id: 'col-4', name: 'firstname', displayName: 'Prénom', order: 0, required: true },
+      { id: 'col-5', name: 'lastname', displayName: 'Nom de famille', order: 1, required: true },
+      { id: 'col-6', name: 'email', displayName: 'Adresse email', order: 2, required: true },
+      { id: 'col-7', name: 'age', displayName: 'Age', order: 3, required: false },
     ],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),

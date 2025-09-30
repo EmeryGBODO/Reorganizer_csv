@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download } from 'lucide-react';
+import { Download, Trash } from 'lucide-react';
 import DragDropZone from '../components/DragDropZone';
 import LoadingSpinner from '../components/LoadingSpinner';
 import StatusMessage from '../components/StatusMessage';
@@ -21,6 +21,16 @@ const EndUserPage: React.FC = () => {
   useEffect(() => {
     loadCampaigns();
   }, []);
+
+  const handleDelete = async () => {
+    setSelectedFile(null);
+    setUploadState({
+      isUploading: false,
+      success: false,
+      error: null,
+      progress: 0,
+    });
+  }
 
   const loadCampaigns = async () => {
     try {
@@ -104,7 +114,7 @@ const EndUserPage: React.FC = () => {
       setUploadState({
         isUploading: false,
         success: false,
-        error: 'Erreur lors du traitement du fichier',
+        error: 'Erreur lors du traitement du fichier' + error,
         progress: 0,
       });
     }
@@ -183,14 +193,21 @@ const EndUserPage: React.FC = () => {
                   </p>
                 </div>
                 {!uploadState.isUploading && !uploadState.success && (
-                  <button
-                    onClick={handleProcessFile}
-                    disabled={!selectedCampaignId}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Traiter le fichier
-                  </button>
+                  <div className='flex gap-2'>
+                    <button onClick={handleDelete}>
+                      <Trash className="h-5 w-5 opacity-60 hover:text-red-600 hover:opacity-100 "/>
+                    </button>
+                    <button
+                      onClick={handleProcessFile}
+                      disabled={!selectedCampaignId}
+                      title='Traiter le fichier'
+                      className="inline-flex items-center p-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    >
+                      <Download className="h-5 w-5  "/>
+                    </button>
+                    
+                    
+                  </div>
                 )}
               </div>
             </div>
