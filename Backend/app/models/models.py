@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String
 from app.database.database import Base
-from sqlalchemy.dialects.postgresql import UUID, ARRAY
+from sqlalchemy.dialects.postgresql import UUID, JSON
 from sqlalchemy import (
     Column,
     Integer,
@@ -15,6 +15,7 @@ from sqlalchemy import (
 import uuid
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+from datetime import datetime, timezone
 
 class LdapConfig(Base):
     __tablename__ = "ldap_configs"
@@ -68,6 +69,6 @@ class Campaign(Base):
     uuid = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String(50), nullable=True)
     description = Column(Text)
-    fields = Column(ARRAY(String), nullable=False)
-    created_at = Column(DateTime, nullable=False)
-    updated_at = Column(DateTime, nullable=False)
+    fields = Column(JSON, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc), nullable=False)

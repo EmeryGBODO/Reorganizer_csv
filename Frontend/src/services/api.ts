@@ -1,19 +1,17 @@
 import axios from 'axios';
-import { Campaign } from '../types';
 import { Campaign, UserCredentials } from '../types'; 
 
-const API_BASE_URL = 'http://localhost:8000/api'; // J'ai mis 8000 qui est le port par défaut pour FastAPI
+const API_BASE_URL = 'http://localhost:8000/api';
 
-// Données mock corrigées pour correspondre au type ColumnConfig
 const mockCampaigns: Campaign[] = [
   {
     id: '1',
     name: 'Campagne Marketing Q1',
     description: 'Réorganisation des données marketing Q1',
     columns: [
-      { id: 'col-1', name: 'name', displayName: 'Nom', order: 0, required: true },
-      { id: 'col-2', name: 'email', displayName: 'Email', order: 1, required: true },
-      { id: 'col-3', name: 'phone', displayName: 'Téléphone', order: 2, required: false },
+      { id: 'col-1', name: 'name', displayName: 'Nom', order: 0, required: true, rules: [] },
+      { id: 'col-2', name: 'email', displayName: 'Email', order: 1, required: true, rules: [] },
+      { id: 'col-3', name: 'phone', displayName: 'Téléphone', order: 2, required: false, rules: [] },
     ],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -23,10 +21,10 @@ const mockCampaigns: Campaign[] = [
     name: 'Export Clients',
     description: 'Format standard pour export clients',
     columns: [
-      { id: 'col-4', name: 'firstname', displayName: 'Prénom', order: 0, required: true },
-      { id: 'col-5', name: 'lastname', displayName: 'Nom de famille', order: 1, required: true },
-      { id: 'col-6', name: 'email', displayName: 'Adresse email', order: 2, required: true },
-      { id: 'col-7', name: 'age', displayName: 'Age', order: 3, required: false },
+      { id: 'col-4', name: 'firstname', displayName: 'Prénom', order: 0, required: true, rules: [] },
+      { id: 'col-5', name: 'lastname', displayName: 'Nom de famille', order: 1, required: true, rules: [] },
+      { id: 'col-6', name: 'email', displayName: 'Adresse email', order: 2, required: true, rules: [] },
+      { id: 'col-7', name: 'age', displayName: 'Age', order: 3, required: false, rules: [] },
     ],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -41,10 +39,8 @@ const api = axios.create({
   },
 });
 
-// Helper function to simulate API delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Auth API calls (NOUVELLE SECTION)
 export const authApi = {
   login: async (credentials: UserCredentials) => {
     await delay(1000);
@@ -52,7 +48,7 @@ export const authApi = {
       return {
         data: {
           success: true,
-          token: 'fake-jwt-token', // Simulation d'un token
+          token: 'fake-jwt-token',
           message: 'Login successful'
         }
       };
@@ -61,10 +57,9 @@ export const authApi = {
   }
 };
 
-// Campaign API calls
 export const campaignApi = {
   getAll: async () => {
-    await delay(500); // Simulate network delay
+    await delay(500);
     return {
       data: {
         success: true,
@@ -73,6 +68,7 @@ export const campaignApi = {
       }
     };
   },
+  // ... (le reste de votre fichier api.ts reste inchangé)
   getById: async (id: string) => {
     await delay(300);
     const campaign = mockCampaigns.find(c => c.id === id);
@@ -141,7 +137,6 @@ export const campaignApi = {
   },
 };
 
-// File processing API calls
 export const fileApi = {
   processCSV: (file: File, campaignId: string) => {
     const formData = new FormData();

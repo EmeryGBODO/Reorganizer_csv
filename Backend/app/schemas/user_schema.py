@@ -10,6 +10,3 @@ class UserCreate(UserBase):
 
 class UserPublic(UserBase):
     uuid: uuid.UUID
-
-    class Config:
-        orm_mode = True

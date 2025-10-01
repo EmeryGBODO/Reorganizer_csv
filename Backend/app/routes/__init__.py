@@ -1,6 +1,8 @@
 from fastapi import FastAPI
-from app.api.endpoints.auth import login_for_access_token
+from app.api.endpoints import auth
+from app.routes import campaign_routes
 
 def include_routers(app: FastAPI):
-    app.include_router(login_for_access_token, prefix="/api")
+    app.include_router(auth.router, prefix="/api")
+    app.include_router(campaign_routes.router, prefix="/api")
     
