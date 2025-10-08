@@ -14,13 +14,12 @@ export interface ColumnConfig {
 }
 
 export interface Campaign {
-  uuid: string;
+  id: string;
   name: string;
   description: string;
-  fields: ColumnConfig[];
+  columns: ColumnConfig[];
   createdAt: string;
   updatedAt: string;
-  outputFilenameTemplate: string; // Ajout de cette ligne
 }
 
 export interface UploadState {
@@ -40,3 +39,11 @@ export interface ApiResponse<T> {
   message: string;
   success: boolean;
 }
+
+// NOUVEAUX TYPES AJOUTÉS
+export interface Agent {
+    id: string;
+    name: string;
+}
+
+export type DataRow = Record<string, any>;

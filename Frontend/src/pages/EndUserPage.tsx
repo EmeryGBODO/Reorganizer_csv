@@ -1,268 +1,222 @@
-import React, { useState, useEffect } from 'react';
-import { Download, Trash } from 'lucide-react';
-import * as XLSX from 'xlsx';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Download, UploadCloud, Server, Filter, X } from 'lucide-react';
 import DragDropZone from '../components/DragDropZone';
 import LoadingSpinner from '../components/LoadingSpinner';
 import StatusMessage from '../components/StatusMessage';
-import { Campaign, UploadState } from '../types';
-import { campaignApi, fileApi } from '../services/api';
+import DataTable from '../components/DataTable';
+import Filters from '../components/Filters';
+import { Campaign, Agent, DataRow } from '../types';
+import { campaignApi, dataApi } from '../services/api';
+import Papa from 'papaparse'; // Pour lire les fichiers CSV
 
 const EndUserPage: React.FC = () => {
+  // State de base
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  const [selectedCampaignId, setSelectedCampaignId] = useState<string>('');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [outputFilename, setOutputFilename] = useState<string>('');
-  const [isConverting, setIsConverting] = useState(false);
-  const [uploadState, setUploadState] = useState<UploadState>({
-    isUploading: false,
-    success: false,
-    error: null,
-    progress: 0,
-  });
-  const [loadingCampaigns, setLoadingCampaigns] = useState(true);
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [data, setData] = useState<DataRow[]>([]);
+  const [headers, setHeaders] = useState<string[]>([]);
+  
+  // State de chargement et d'erreurs
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  // State des filtres
+  const [filters, setFilters] = useState({
+    campaignId: '',
+    agentId: '',
+    dateRange: { start: '', end: '' },
+  });
+
+  // Logique d'initialisation
   useEffect(() => {
-    loadCampaigns();
+    const loadInitialData = async () => {
+      try {
+        setIsLoading(true);
+        const [campaignsRes, agentsRes] = await Promise.all([
+          campaignApi.getAll(),
+          dataApi.getAgents(),
+        ]);
+        setCampaigns(campaignsRes.data.data);
+        setAgents(agentsRes.data.data);
+      } catch (err) {
+        setError('Erreur lors du chargement des données initiales.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadInitialData();
   }, []);
   
-  const parseFilename = (template: string, originalName: string) => {
-    const date = new Date();
-    const dateString = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
-    return template
-      .replace(/__{nom_original}__/g, originalName.replace(/\.(csv|xlsx|xls)$/i, ''))
-      .replace(/__{date}__/g, dateString);
-  };
-
-  useEffect(() => {
-    if (selectedCampaignId && selectedFile) {
-      const campaign = campaigns.find(c => c.uuid === selectedCampaignId);
-      if (campaign && campaign.outputFilenameTemplate) {
-        setOutputFilename(parseFilename(campaign.outputFilenameTemplate, selectedFile.name));
-      }
-    } else {
-      setOutputFilename('');
-    }
-  }, [selectedCampaignId, selectedFile, campaigns]);
-
-  const handleDelete = () => {
-    setSelectedFile(null);
-    setUploadState({ isUploading: false, success: false, error: null, progress: 0 });
-  };
-
-  const loadCampaigns = async () => {
-    try {
-      setLoadingCampaigns(true);
-      // Remplacé par le vrai appel API
-      const response = await campaignApi.getAll();
-      setCampaigns(response.data);
-    } catch (error) {
-      console.error('Erreur lors du chargement des campagnes:', error);
-      setUploadState(prev => ({ ...prev, error: "Impossible de charger les campagnes depuis le serveur."}));
-      setCampaigns([]);
-    } finally {
-      setLoadingCampaigns(false);
-    }
-  };
-
+  // Gestion du fichier importé
   const handleFileDrop = (file: File) => {
-    setUploadState({ isUploading: false, success: false, error: null, progress: 0 });
-    const extension = file.name.split('.').pop()?.toLowerCase();
-
-    if (extension === 'csv') {
-      setSelectedFile(file);
-      return;
-    }
-
-    if (extension === 'xlsx' || extension === 'xls') {
-      setIsConverting(true);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const data = e.target?.result;
-          const workbook = XLSX.read(data, { type: 'array' });
-          const firstSheetName = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[firstSheetName];
-          const csvData = XLSX.utils.sheet_to_csv(worksheet);
-          
-          const newFileName = file.name.replace(/\.(xlsx|xls)$/i, '.csv');
-          const csvFile = new File([csvData], newFileName, { type: 'text/csv' });
-          
-          setSelectedFile(csvFile);
-        } catch (err) {
-            setUploadState(prev => ({ ...prev, error: "Erreur lors de la conversion du fichier Excel."}));
-        } finally {
-            setIsConverting(false);
+    setIsLoading(true);
+    setError(null);
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (results) => {
+        setData(results.data as DataRow[]);
+        if (results.data.length > 0) {
+            setHeaders(Object.keys(results.data[0]));
         }
-      };
-      reader.onerror = () => {
-        setUploadState(prev => ({ ...prev, error: "Impossible de lire le fichier."}));
-        setIsConverting(false);
+        setIsLoading(false);
+      },
+      error: (err) => {
+        setError(`Erreur lors de la lecture du fichier CSV: ${err.message}`);
+        setIsLoading(false);
       }
-      reader.readAsArrayBuffer(file);
-      return;
-    }
-
-    setUploadState(prev => ({ ...prev, error: "Type de fichier non supporté."}));
+    });
   };
 
-  const handleProcessFile = async () => {
-    if (!selectedFile || !selectedCampaignId) {
-      setUploadState(prev => ({ ...prev, error: 'Veuillez sélectionner une campagne et un fichier CSV' }));
-      return;
-    }
-    if (!outputFilename.trim()) {
-      setUploadState(prev => ({ ...prev, error: 'Le nom du fichier de sortie ne peut pas être vide.' }));
-      return;
-    }
-
-    setUploadState({ isUploading: true, success: false, error: null, progress: 0 });
-
+  // Gestion de la génération de données serveur
+  const handleGenerateFromServer = async () => {
+    setIsLoading(true);
+    setError(null);
     try {
-      // --- APPEL BACKEND RÉEL ---
-      const response = await fileApi.processCSV(selectedFile, selectedCampaignId);
-      
-      const blob = new Blob([response.data], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = outputFilename.endsWith('.csv') ? outputFilename : `${outputFilename}.csv`;
-      
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      setUploadState({ isUploading: false, success: true, error: null, progress: 100 });
-
-      setTimeout(() => {
-        setSelectedFile(null);
-        setUploadState({ isUploading: false, success: false, error: null, progress: 0 });
-      }, 3000);
-
-    } catch (error: any) {
-      let errorMessage = 'Erreur lors du traitement du fichier.';
-      if (error.response && error.response.data) {
-        // Essayer de lire le message d'erreur du backend s'il est au format JSON
-        try {
-            const errorJson = JSON.parse(await error.response.data.text());
-            if(errorJson.detail) errorMessage = errorJson.detail;
-        } catch {}
-      }
-      setUploadState({ isUploading: false, success: false, error: errorMessage, progress: 0 });
+        const response = await dataApi.generateDataFromServer({ startDate: '2023-01-01', endDate: '2023-12-31' }); // Dates en dur pour l'exemple
+        setData(response.data.data);
+        if (response.data.data.length > 0) {
+            setHeaders(Object.keys(response.data.data[0]));
+        }
+    } catch (err) {
+        setError('Erreur lors de la récupération des données du serveur.');
+    } finally {
+        setIsLoading(false);
     }
   };
 
-  const selectedCampaign = campaigns.find(c => c.uuid === selectedCampaignId);
+  // Logique de filtrage des données
+  const filteredData = useMemo(() => {
+    return data.filter(row => {
+        // Logique de filtre (simplifiée pour l'exemple)
+        const agentMatch = !filters.agentId || row.agentId === filters.agentId;
+        const campaignMatch = !filters.campaignId; // La logique de campagne est plus complexe, à implémenter
+        return agentMatch && campaignMatch;
+    });
+  }, [data, filters]);
+
+  const handleProcessAndDownload = () => {
+    if (!filters.campaignId) {
+        setError("Veuillez sélectionner une campagne pour traiter les données.");
+        return;
+    }
+    setError(null);
+    
+    const selectedCampaign = campaigns.find(c => c.id === filters.campaignId);
+    if (!selectedCampaign) {
+        setError("Campagne sélectionnée non valide.");
+        return;
+    }
+
+    // 1. Appliquer les règles de la campagne (logique à développer)
+    const processedData = filteredData.map(row => {
+        const newRow: DataRow = {};
+        // Exemple simple : on ne garde que les colonnes de la campagne
+        selectedCampaign.columns.forEach(col => {
+            newRow[col.displayName] = row[col.name] || ''; // Logique de mapping à affiner
+        });
+        return newRow;
+    });
+
+    // 2. Convertir en CSV et télécharger
+    const csv = Papa.unparse(processedData);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'donnees_traitees.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  const clearData = () => {
+      setData([]);
+      setHeaders([]);
+  }
 
   return (
-    <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">Traitement de fichier</h1>
-        <p className="text-lg text-gray-600">Sélectionnez une campagne, uploadez votre fichier (CSV ou Excel) et lancez le traitement.</p>
+    <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8">
+      {/* En-tête */}
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">Tableau de Bord de Traitement</h1>
+        <p className="mt-2 text-lg text-gray-600">
+          Importez ou générez des données, filtrez-les et appliquez les règles de vos campagnes.
+        </p>
       </div>
 
-      <div className="space-y-6">
-       {/* Sélection de campagne */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            1. Sélectionnez une campagne
-          </h2>
-          
-          {loadingCampaigns ? (
-            <div className="flex items-center justify-center py-8">
-              <LoadingSpinner size="lg" />
-              <span className="ml-3 text-gray-600">Chargement des campagnes...</span>
-            </div>
-          ) : (
-            <div>
-              <select
-                value={selectedCampaignId}
-                onChange={(e) => setSelectedCampaignId(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
-                disabled={uploadState.isUploading}
-              >
-                <option value="">Choisir une campagne...</option>
-                {campaigns.map((campaign) => (
-                  <option key={campaign.uuid} value={campaign.uuid}>
-                    {campaign.name}
-                  </option>
-                ))}
-              </select>
+      {error && <StatusMessage type="error" message={error} />}
 
-              {selectedCampaign && (
-                <div className="mt-3 p-3 bg-blue-50 rounded-md">
-                  <p className="text-sm text-blue-800">
-                    <strong>Description:</strong> {selectedCampaign.description}
-                  </p>
+      {/* Section principale : affichage des données ou des options d'import */}
+      <div className="bg-white shadow-xl rounded-lg">
+        {data.length === 0 && !isLoading ? (
+            <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="p-6 border border-dashed rounded-lg flex flex-col items-center justify-center text-center">
+                    <h3 className="text-xl font-semibold text-gray-800 mb-4">Importer un Fichier</h3>
+                    <DragDropZone onFileDrop={handleFileDrop} accept=".csv,.xlsx,.xls" />
                 </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">2. Uploadez votre fichier</h2>
-          <DragDropZone onFileDrop={handleFileDrop} disabled={!selectedCampaignId || uploadState.isUploading || isConverting} />
-          
-          {isConverting && (
-            <div className="mt-4 flex items-center justify-center text-gray-600">
-              <LoadingSpinner />
-              <span className="ml-2">Conversion du fichier Excel en cours...</span>
-            </div>
-          )}
-
-          {selectedFile && !isConverting && (
-            <div className="mt-4 p-4 bg-gray-50 rounded-md">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-gray-900">{selectedFile.name}</p>
-                  <p className="text-sm text-gray-500">{(selectedFile.size / 1024).toFixed(2)} KB</p>
+                <div className="p-6 border border-dashed rounded-lg flex flex-col items-center justify-center text-center">
+                    <h3 className="text-xl font-semibold text-gray-800 mb-4">Générer depuis le Serveur</h3>
+                    <button
+                        onClick={handleGenerateFromServer}
+                        className="w-full h-full flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 rounded-lg transition"
+                    >
+                        <Server className="h-12 w-12 text-gray-400 mb-4" />
+                        <span className="text-lg font-medium text-gray-700">Charger les données du serveur</span>
+                        <span className="text-sm text-gray-500 mt-1">Récupérer les derniers rapports</span>
+                    </button>
                 </div>
-                {!uploadState.isUploading && !uploadState.success && (
-                  <div className='flex gap-2'>
-                    <button onClick={handleDelete} title="Supprimer le fichier"><Trash className="h-5 w-5 opacity-60 hover:text-red-600 hover:opacity-100 "/></button>
-                  </div>
-                )}
-              </div>
             </div>
-          )}
-        </div>
-        
-        {selectedFile && (
-          <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">3. Nom du fichier de sortie</h2>
-            <div className="flex items-center gap-4">
-              <input
-                type="text"
-                value={outputFilename}
-                onChange={(e) => setOutputFilename(e.target.value)}
-                disabled={uploadState.isUploading}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
-              />
-              <button
-                onClick={handleProcessFile}
-                disabled={!selectedCampaignId || uploadState.isUploading}
-                title='Traiter et télécharger'
-                className="inline-flex items-center p-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-              >
-                <Download className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
-        )}
+        ) : (
+            <div className="p-6 space-y-6">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                        <Filter className="h-6 w-6 text-gray-500" />
+                        <h2 className="text-xl font-semibold text-gray-900">Filtrer les données</h2>
+                    </div>
+                    <button
+                        onClick={clearData}
+                        className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                    >
+                        <X className="h-4 w-4 mr-2" />
+                        Changer de source
+                    </button>
+                </div>
 
-        {(uploadState.isUploading || uploadState.success || uploadState.error) && (
-          <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">État du traitement</h2>
-            {uploadState.isUploading && (
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3"><LoadingSpinner /><span className="text-gray-700">Traitement en cours... {uploadState.progress}%</span></div>
-                <div className="w-full bg-gray-200 rounded-full h-2"><div className="bg-blue-600 h-2 rounded-full transition-all duration-300" style={{ width: `${uploadState.progress}%` }} /></div>
-              </div>
-            )}
-            {uploadState.success && <StatusMessage type="success" message="Fichier traité ! Le téléchargement a commencé." />}
-            {uploadState.error && <StatusMessage type="error" message={uploadState.error} />}
-          </div>
+                <Filters
+                    campaigns={campaigns}
+                    agents={agents}
+                    selectedCampaignId={filters.campaignId}
+                    onCampaignChange={(id) => setFilters(f => ({...f, campaignId: id}))}
+                    onAgentChange={(id) => setFilters(f => ({...f, agentId: id}))}
+                    onDateChange={(dates) => setFilters(f => ({...f, dateRange: dates}))}
+                    disabled={isLoading}
+                />
+                
+                <div className="border-t pt-6">
+                    {isLoading ? (
+                         <div className="flex items-center justify-center py-12">
+                            <LoadingSpinner size="lg" />
+                            <span className="ml-3 text-gray-600">Chargement des données...</span>
+                        </div>
+                    ) : (
+                        <>
+                            <DataTable headers={headers} data={filteredData} />
+                            <div className="mt-6 flex justify-end">
+                                <button
+                                    onClick={handleProcessAndDownload}
+                                    disabled={!filters.campaignId || filteredData.length === 0}
+                                    className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                >
+                                    <Download className="h-5 w-5 mr-2" />
+                                    Traiter et Télécharger
+                                </button>
+                            </div>
+                        </>
+                    )}
+                </div>
+            </div>
         )}
       </div>
     </div>

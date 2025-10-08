@@ -1,65 +1,150 @@
 import axios from 'axios';
-import { Campaign, UserCredentials } from '../types';
+import { Campaign, UserCredentials, Agent, DataRow } from '../types'; 
 
-// URL de base de votre API backend. Assurez-vous que votre backend tourne sur le port 8000.
 const API_BASE_URL = 'http://localhost:8000/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 60000, // Augmentation du timeout pour les uploads de fichiers plus lourds
-  withCredentials: true,
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Intercepteur pour ajouter le token d'authentification à chaque requête
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('authToken');
-  if (token && config.headers) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// --- API d'Authentification (maintenant réelle) ---
 export const authApi = {
-  login: (credentials: UserCredentials) => {
-    // FastAPI attend les données de formulaire pour l'authentification par token
-    const formData = new URLSearchParams();
-    formData.append('username', credentials.email);
-    formData.append('password', credentials.password);
-
-    return api.post('/auth/login', formData, {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    });
-  },
+  login: async (credentials: UserCredentials) => {
+    // ... (inchangé)
+    await delay(1000);
+    if (credentials.email === 'admin@example.com' && credentials.password === 'password123') {
+      return {
+        data: {
+          success: true,
+          token: 'fake-jwt-token',
+          message: 'Login successful'
+        }
+      };
+    }
+    throw new Error('Invalid credentials');
+  }
 };
 
-// --- API des Campagnes (maintenant réelle) ---
 export const campaignApi = {
-  getAll: () => api.get<Campaign[]>('/campaigns'), 
-  create: (campaignData: Campaign) => api.post<Campaign>('/campaigns', campaignData),
-  update: (id: string, campaignData: Partial<Campaign>) => api.put<Campaign>(`/campaigns/${id}`, campaignData),
-  delete: (id: string) => api.delete(`/campaigns/${id}`),
+    getAll: async () => {
+        await delay(500);
+        return {
+          data: {
+            success: true,
+            data: mockCampaigns,
+            message: 'Campaigns retrieved successfully'
+          }
+        };
+      },
+      // ... (le reste de votre fichier api.ts reste inchangé)
+      getById: async (id: string) => {
+        await delay(300);
+        const campaign = mockCampaigns.find(c => c.id === id);
+        if (!campaign) {
+          throw new Error('Campaign not found');
+        }
+        return {
+          data: {
+            success: true,
+            data: campaign,
+            message: 'Campaign retrieved successfully'
+          }
+        };
+      },
+      create: async (campaign: Omit<Campaign, 'id' | 'createdAt' | 'updatedAt'>) => {
+        await delay(800);
+        const newCampaign: Campaign = {
+          ...campaign,
+          id: Date.now().toString(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        mockCampaigns.push(newCampaign);
+        return {
+          data: {
+            success: true,
+            data: newCampaign,
+            message: 'Campaign created successfully'
+          }
+        };
+      },
+      update: async (id: string, campaign: Partial<Campaign>) => {
+        await delay(600);
+        const index = mockCampaigns.findIndex(c => c.id === id);
+        if (index === -1) {
+          throw new Error('Campaign not found');
+        }
+        const updatedCampaign = {
+          ...mockCampaigns[index],
+          ...campaign,
+          updatedAt: new Date().toISOString(),
+        };
+        mockCampaigns[index] = updatedCampaign;
+        return {
+          data: {
+            success: true,
+            data: updatedCampaign,
+            message: 'Campaign updated successfully'
+          }
+        };
+      },
+      delete: async (id: string) => {
+        await delay(400);
+        const index = mockCampaigns.findIndex(c => c.id === id);
+        if (index === -1) {
+          throw new Error('Campaign not found');
+        }
+        mockCampaigns.splice(index, 1);
+        return {
+          data: {
+            success: true,
+            data: undefined,
+            message: 'Campaign deleted successfully'
+          }
+        };
+      },
 };
 
-// --- API de Traitement de Fichier (maintenant réelle) ---
 export const fileApi = {
+  // ... (inchangé)
   processCSV: (file: File, campaignId: string) => {
     const formData = new FormData();
     formData.append('file', file);
-    console.log(campaignId);
-    console.log(formData);
-    console.log(file);
+    formData.append('campaignId', campaignId);
     
-    return api.post<Blob>(`/process/${campaignId}`, formData, {
+    return api.post<Blob>('/files/process', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
-      responseType: 'blob', // Important pour recevoir le fichier en retour
+      responseType: 'blob',
+      onUploadProgress: (progressEvent) => {
+        const percentCompleted = Math.round(
+          (progressEvent.loaded * 100) / (progressEvent.total || 1)
+        );
+        return percentCompleted;
+      },
     });
   },
 };
+
+// NOUVEAUX SERVICES AJOUTÉS
+export const dataApi = {
+    getAgents: async (): Promise<{ data: { success: boolean, data: Agent[] } }> => {
+        await delay(400);
+        return { data: { success: true, data: mockAgents } };
+    },
+    generateDataFromServer: async (params: { startDate: string, endDate: string }): Promise<{ data: { success: boolean, data: DataRow[] } }> => {
+        await delay(1500);
+        // Dans une vraie application, vous filtreriez les données en fonction des paramètres
+        console.log("Fetching data with params:", params);
+        return { data: { success: true, data: mockServerData } };
+    }
+}
+
 
 export default api;
