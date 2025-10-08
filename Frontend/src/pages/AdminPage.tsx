@@ -35,10 +35,10 @@ const AdminPage: React.FC = () => {
 
   const handleCreateCampaign = () => {
     const newCampaign: Campaign = {
-      uuid: `temp_${Date.now()}`,
+      id: generateUniqueRandomNumbers(2,8),
       name: '',
       description: '',
-      fields: [],
+      columns: [],
       outputFilenameTemplate: 'export_{nom_original}', // Ajout de l'initialisation
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -48,6 +48,13 @@ const AdminPage: React.FC = () => {
     setError(null);
     setSuccess(null);
   };
+
+
+  function generateUniqueRandomNumbers( min:number, max:number) {
+  const randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
+  return randomNumber ; 
+}
+
 
   const handleEditCampaign = (campaign: Campaign) => {
     setEditingCampaign(campaign);
@@ -63,7 +70,7 @@ const AdminPage: React.FC = () => {
     }
 
     try {
-      if (campaignToSave.uuid.startsWith('temp_')) {
+      if (campaignToSave.id) {
         // --- APPEL RÉEL POUR LA CRÉATION ---
         const {...creationData } = campaignToSave;
         const response = await campaignApi.create(creationData);
@@ -71,9 +78,9 @@ const AdminPage: React.FC = () => {
         setSuccess('Campagne créée avec succès');
       } else {
         // --- APPEL RÉEL POUR LA MISE À JOUR ---
-        const response = await campaignApi.update(campaignToSave.uuid, campaignToSave);
+        const response = await campaignApi.update(campaignToSave.id, campaignToSave);
         setCampaigns(prev =>
-          prev.map(c => (c.uuid === campaignToSave.uuid ? response.data : c))
+          prev.map(c => (c.id === campaignToSave.id ? response.data : c))
         );
         setSuccess('Campagne mise à jour avec succès');
       }
@@ -90,12 +97,12 @@ const AdminPage: React.FC = () => {
     setError(null); // Clear error on close
   };
 
-  const handleDeleteCampaign = async (uuid: string) => {
+  const handleDeleteCampaign = async (id: string) => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer cette campagne ?')) {
       return;
     }
     try {
-      setCampaigns(prev => prev.filter(c => c.uuid !== uuid));
+      setCampaigns(prev => prev.filter(c => c.id !== id));
       setSuccess('Campagne supprimée avec succès');
     } catch (error) {
       setError('Erreur lors de la suppression');
@@ -148,7 +155,7 @@ const AdminPage: React.FC = () => {
         ) : (
           campaigns.map((campaign) => (
             <div
-              key={campaign?.uuid}
+              key={campaign?.id}
               className="bg-white border rounded-lg p-4 shadow-sm"
             >
               <div className="flex items-start justify-between">
@@ -156,14 +163,14 @@ const AdminPage: React.FC = () => {
                   <h3 className="font-medium text-gray-900">{campaign.name}</h3>
                   <p className="text-sm text-gray-500 mt-1">{campaign.description}</p>
                   <p className="text-xs text-gray-400 mt-2">
-                    {campaign.fields?.length} colonnes configurées
+                    {campaign.columns?.length} colonnes configurées
                   </p>
                 </div>
                 <div className="flex items-center space-x-2 ml-4">
                   <button onClick={() => handleEditCampaign(campaign)} className="p-2 text-gray-600 hover:text-gray-700">
                     <Edit2 className="h-4 w-4" />
                   </button>
-                  <button onClick={() => handleDeleteCampaign(campaign.uuid)} className="p-2 text-red-600 hover:text-red-700">
+                  <button onClick={() => handleDeleteCampaign(campaign.id)} className="p-2 text-red-600 hover:text-red-700">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>

@@ -30,104 +30,28 @@ export const authApi = {
   }
 };
 
+// --- API des Campagnes (maintenant réelle) ---
 export const campaignApi = {
-    getAll: async () => {
-        await delay(500);
-        return {
-          data: {
-            success: true,
-            data: mockCampaigns,
-            message: 'Campaigns retrieved successfully'
-          }
-        };
-      },
-      // ... (le reste de votre fichier api.ts reste inchangé)
-      getById: async (id: string) => {
-        await delay(300);
-        const campaign = mockCampaigns.find(c => c.id === id);
-        if (!campaign) {
-          throw new Error('Campaign not found');
-        }
-        return {
-          data: {
-            success: true,
-            data: campaign,
-            message: 'Campaign retrieved successfully'
-          }
-        };
-      },
-      create: async (campaign: Omit<Campaign, 'id' | 'createdAt' | 'updatedAt'>) => {
-        await delay(800);
-        const newCampaign: Campaign = {
-          ...campaign,
-          id: Date.now().toString(),
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        mockCampaigns.push(newCampaign);
-        return {
-          data: {
-            success: true,
-            data: newCampaign,
-            message: 'Campaign created successfully'
-          }
-        };
-      },
-      update: async (id: string, campaign: Partial<Campaign>) => {
-        await delay(600);
-        const index = mockCampaigns.findIndex(c => c.id === id);
-        if (index === -1) {
-          throw new Error('Campaign not found');
-        }
-        const updatedCampaign = {
-          ...mockCampaigns[index],
-          ...campaign,
-          updatedAt: new Date().toISOString(),
-        };
-        mockCampaigns[index] = updatedCampaign;
-        return {
-          data: {
-            success: true,
-            data: updatedCampaign,
-            message: 'Campaign updated successfully'
-          }
-        };
-      },
-      delete: async (id: string) => {
-        await delay(400);
-        const index = mockCampaigns.findIndex(c => c.id === id);
-        if (index === -1) {
-          throw new Error('Campaign not found');
-        }
-        mockCampaigns.splice(index, 1);
-        return {
-          data: {
-            success: true,
-            data: undefined,
-            message: 'Campaign deleted successfully'
-          }
-        };
-      },
+  getAll: () => api.get<Campaign[]>('/campaigns'), 
+  create: (campaignData: Campaign) => api.post<Campaign>('/campaigns/', campaignData),
+  update: (id: string, campaignData: Partial<Campaign>) => api.put<Campaign>(`/campaigns/${id}`, campaignData),
+  delete: (id: string) => api.delete(`/campaigns/${id}`),
 };
 
+// --- API de Traitement de Fichier (maintenant réelle) ---
 export const fileApi = {
-  // ... (inchangé)
   processCSV: (file: File, campaignId: string) => {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('campaignId', campaignId);
+    console.log(campaignId);
+    console.log(formData);
+    console.log(file);
     
-    return api.post<Blob>('/files/process', formData, {
+    return api.post<Blob>(`/process/${campaignId}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
-      responseType: 'blob',
-      onUploadProgress: (progressEvent) => {
-        const percentCompleted = Math.round(
-          (progressEvent.loaded * 100) / (progressEvent.total || 1)
-        );
-        return percentCompleted;
-      },
+      responseType: 'blob', // Important pour recevoir le fichier en retour
     });
   },
 };

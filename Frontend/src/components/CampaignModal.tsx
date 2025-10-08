@@ -25,11 +25,11 @@ const CampaignModal: React.FC<CampaignModalProps> = ({ isOpen, onClose, onSave, 
     return null;
   }
 
-  const handleColumnsChange = (fields: ColumnConfig[]) => {
+  const handleColumnsChange = (columns: ColumnConfig[]) => {
     if (!editedCampaign) return;
     setEditedCampaign({
       ...editedCampaign,
-      fields,
+      columns,
     });
   };
 
@@ -41,7 +41,7 @@ const CampaignModal: React.FC<CampaignModalProps> = ({ isOpen, onClose, onSave, 
     onSave(editedCampaign);
   };
   
-  const isCreating = editedCampaign.uuid.startsWith('temp_');
+  const isCreating = editedCampaign.id;
 
   return (
     // Fond semi-transparent
@@ -115,7 +115,7 @@ const CampaignModal: React.FC<CampaignModalProps> = ({ isOpen, onClose, onSave, 
 
           <div className="mt-4">
             <ColumnEditor
-              columns={editedCampaign.fields}
+              columns={editedCampaign.columns}
               onColumnsChange={handleColumnsChange}
             />
           </div>

@@ -14,7 +14,7 @@ export interface ColumnConfig {
 }
 
 export interface Campaign {
-  id: string;
+  id: number | string;
   name: string;
   description: string;
   columns: ColumnConfig[];
