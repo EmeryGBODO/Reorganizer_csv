@@ -10,12 +10,12 @@ from app.services.campaign_service import CampaignService
 
 router = APIRouter(prefix="/campaigns", tags=["campaigns"])
 
-@router.get("/", response_model=List[CampaignResponse])
+@router.get("", response_model=List[CampaignResponse])
 async def get_campaigns(db: AsyncSession = Depends(get_db), skip: int = 0):
     campaigns = await CampaignService.get_campaigns(db, skip=skip)
     return campaigns
 
-@router.post("/", response_model=CampaignResponse)
+@router.post("", response_model=CampaignResponse)
 async def create_campaign(campaign: CampaignCreate, db: AsyncSession = Depends(get_db)):
     db_campaign = await CampaignService.create_campaign(db, campaign)
     return db_campaign

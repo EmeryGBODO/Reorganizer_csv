@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Upload, FileText, AlertCircle } from 'lucide-react';
+import { Upload, AlertCircle } from 'lucide-react';
 
 interface DragDropZoneProps {
   onFileDrop: (file: File) => void;
@@ -10,13 +10,15 @@ interface DragDropZoneProps {
 
 const DragDropZone: React.FC<DragDropZoneProps> = ({
   onFileDrop,
-  accept = '.csv',
+  accept = '.csv,.xlsx,.xls', // Mise à jour pour accepter les fichiers Excel
   disabled = false,
   className = '',
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const allowedExtensions = accept.split(',').map(ext => ext.trim());
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -30,30 +32,31 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
     setIsDragging(false);
   };
 
+  const validateFile = (file: File) => {
+    const extension = '.' + file.name.split('.').pop()?.toLowerCase();
+    if (!allowedExtensions.includes(extension)) {
+      setError(`Type de fichier non supporté. Attendu : ${allowedExtensions.join(', ')}`);
+      return false;
+    }
+    setError(null);
+    return true;
+  }
+
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    setError(null);
-
+    
     if (disabled) return;
 
-    const files = Array.from(e.dataTransfer.files);
-    const file = files[0];
-
-    if (!file) return;
-
-    if (!file.name.toLowerCase().endsWith('.csv')) {
-      setError('Veuillez sélectionner un fichier CSV');
-      return;
+    const file = e.dataTransfer.files?.[0];
+    if (file && validateFile(file)) {
+      onFileDrop(file);
     }
-
-    onFileDrop(file);
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setError(null);
     const file = e.target.files?.[0];
-    if (file) {
+    if (file && validateFile(file)) {
       onFileDrop(file);
     }
   };
@@ -96,7 +99,7 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
 
           <div>
             <p className={`text-lg font-medium ${error ? 'text-red-700' : 'text-gray-700'}`}>
-              {error || 'Glissez votre fichier CSV ici'}
+              {error || 'Glissez votre fichier CSV ou Excel ici'}
             </p>
             <p className="text-sm text-gray-500 mt-1">
               ou cliquez pour sélectionner un fichier

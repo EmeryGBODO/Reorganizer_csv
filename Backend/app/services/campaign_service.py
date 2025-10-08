@@ -45,12 +45,13 @@ class CampaignService:
     @staticmethod
     async def delete_campaign(db: AsyncSession, campaign_uuid: str):
         """ Suppression de campagne """
-        db_campaign = await db.execute(select(Campaign).where(Campaign.uuid == campaign_uuid))
-        result = db_campaign.scalar_one_or_none()
-        if not result:
+        result = await db.execute(select(Campaign).where(Campaign.uuid == campaign_uuid))
+        db_campaign = result.scalar_one_or_none()
+        print(f"resultat de la recherche de la campagne à supprimer {db_campaign}")
+        if not db_campaign:
             raise ValueError("Campagne non trouvée")
 
-        db.delete(db_campaign)
+        await db.delete(db_campaign)
         await db.commit()
         return {"message": "Campagne supprimée avec succès"}
 

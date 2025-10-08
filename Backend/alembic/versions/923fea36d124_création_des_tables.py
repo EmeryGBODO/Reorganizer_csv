@@ -1,8 +1,8 @@
-"""Creation initiale des tables
+"""Création des tables
 
-Revision ID: 472548efa39d
+Revision ID: 923fea36d124
 Revises: 
-Create Date: 2025-09-30 17:35:59.971955
+Create Date: 2025-10-02 16:27:09.463315
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = '472548efa39d'
+revision: str = '923fea36d124'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -25,9 +25,9 @@ def upgrade() -> None:
     sa.Column('uuid', sa.UUID(), nullable=False),
     sa.Column('name', sa.String(length=50), nullable=True),
     sa.Column('description', sa.Text(), nullable=True),
-    sa.Column('fields', postgresql.ARRAY(sa.String()), nullable=False),
-    sa.Column('created_at', sa.DateTime(), nullable=False),
-    sa.Column('updated_at', sa.DateTime(), nullable=False),
+    sa.Column('fields', postgresql.JSON(astext_type=sa.Text()), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
     sa.PrimaryKeyConstraint('uuid')
     )
     op.create_table('ldap_configs',

@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from app.routes import include_routers
+from fastapi.middleware.cors import CORSMiddleware
 
 # Configuration CORS - Liste des origines autorisées
 ALLOWED_ORIGINS = [
@@ -8,7 +9,7 @@ ALLOWED_ORIGINS = [
 ]
 
 # Configuration des méthodes HTTP autorisées
-ALLOWED_METHODS = ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
+ALLOWED_METHODS = ["GET", "POST", "PUT", "DELETE", "PATCH"]
 
 # Configuration des en-têtes autorisés
 ALLOWED_HEADERS = [
@@ -18,7 +19,6 @@ ALLOWED_HEADERS = [
     "Content-Type",
     "Authorization",
     "X-Requested-With",
-    "X-Mode"
 ]
 
 
@@ -38,11 +38,32 @@ def create_application() -> FastAPI:
         redoc_url="/api/redoc",  # Documentation Redoc
     )
 
+    # Configuration des middlewares dans l'ordre d'exécution
+    configure_middlewares(app)
+    
     # Configuration des routes
     configure_routes(app)
 
     return app
 
+def configure_middlewares(app: FastAPI) -> None:
+    """
+    Configure les middlewares de l'application.
+
+    L'ordre d'ajout est important : premier ajouté, dernier exécuté (pour les requêtes entrantes)
+
+    Args:
+        app: Instance FastAPI à configurer
+    """    
+    # 1. Middleware CORS (doit être ajouté en premier pour être exécuté en premier)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=ALLOWED_ORIGINS,
+        allow_credentials=True,
+        allow_methods=ALLOWED_METHODS,
+        allow_headers=ALLOWED_HEADERS,
+        expose_headers=["*"],  # Expose tous les en-têtes de réponse
+    )
 
 def configure_routes(app: FastAPI) -> None:
     """

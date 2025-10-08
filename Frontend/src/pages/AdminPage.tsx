@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, CreditCard as Edit2, Trash2 } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import StatusMessage from '../components/StatusMessage';
-import CampaignModal from '../components/CampaignModal'; // Importer la modale
+import CampaignModal from '../components/CampaignModal';
 import { Campaign } from '../types';
 import { campaignApi } from '../services/api';
 
@@ -22,7 +22,9 @@ const AdminPage: React.FC = () => {
     try {
       setLoading(true);
       const response = await campaignApi.getAll();
-      setCampaigns(response.data.data);
+      console.log("récupération des campagnes", response.data);
+       
+      setCampaigns(response.data);
     } catch (error) {
       console.error('Erreur lors du chargement des campagnes:', error);
       setError('Impossible de charger les campagnes.');
@@ -33,10 +35,11 @@ const AdminPage: React.FC = () => {
 
   const handleCreateCampaign = () => {
     const newCampaign: Campaign = {
-      id: `temp_${Date.now()}`,
+      uuid: `temp_${Date.now()}`,
       name: '',
       description: '',
-      columns: [],
+      fields: [],
+      outputFilenameTemplate: 'export_{nom_original}', // Ajout de l'initialisation
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -60,43 +63,39 @@ const AdminPage: React.FC = () => {
     }
 
     try {
-      if (campaignToSave.id.startsWith('temp_')) {
-        // Simulation de création
-        const createdCampaign = {
-          ...campaignToSave,
-          id: `campaign_${Date.now()}`,
-        };
-        // await campaignApi.create(createdCampaign); // Ligne à décommenter avec un vrai backend
-        setCampaigns(prev => [...prev, createdCampaign]);
+      if (campaignToSave.uuid.startsWith('temp_')) {
+        // --- APPEL RÉEL POUR LA CRÉATION ---
+        const {...creationData } = campaignToSave;
+        const response = await campaignApi.create(creationData);
+        setCampaigns(prev => [...prev, response.data]);
         setSuccess('Campagne créée avec succès');
       } else {
-        // Simulation de mise à jour
-        // await campaignApi.update(campaignToSave.id, campaignToSave); // Ligne à décommenter
+        // --- APPEL RÉEL POUR LA MISE À JOUR ---
+        const response = await campaignApi.update(campaignToSave.uuid, campaignToSave);
         setCampaigns(prev =>
-          prev.map(c => c.id === campaignToSave.id ? campaignToSave : c)
+          prev.map(c => (c.uuid === campaignToSave.uuid ? response.data : c))
         );
         setSuccess('Campagne mise à jour avec succès');
       }
-
       handleCloseModal();
     } catch (error) {
-      setError('Erreur lors de la sauvegarde');
+      setError('Erreur lors de la sauvegarde de la campagne.');
+      console.error(error);
     }
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingCampaign(null);
+    setError(null); // Clear error on close
   };
 
-  const handleDeleteCampaign = async (id: string) => {
+  const handleDeleteCampaign = async (uuid: string) => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer cette campagne ?')) {
       return;
     }
-
     try {
-      // await campaignApi.delete(id); // Ligne à décommenter
-      setCampaigns(prev => prev.filter(c => c.id !== id));
+      setCampaigns(prev => prev.filter(c => c.uuid !== uuid));
       setSuccess('Campagne supprimée avec succès');
     } catch (error) {
       setError('Erreur lors de la suppression');
@@ -134,22 +133,22 @@ const AdminPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Messages de status */}
-      
+      {error && !isModalOpen && (
+        <StatusMessage type="error" message={error} className="mb-6" />
+      )}
       {success && (
         <StatusMessage type="success" message={success} className="mb-6" />
       )}
 
-      {/* Liste des campagnes en grille */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {campaigns.length === 0 ? (
           <div className="col-span-1 md:col-span-2 text-center py-8 text-gray-500">
-            Aucune campagne créée. Commencez par créer votre première campagne.
+            Aucune campagne créée.
           </div>
         ) : (
           campaigns.map((campaign) => (
             <div
-              key={campaign.id}
+              key={campaign?.uuid}
               className="bg-white border rounded-lg p-4 shadow-sm"
             >
               <div className="flex items-start justify-between">
@@ -157,20 +156,14 @@ const AdminPage: React.FC = () => {
                   <h3 className="font-medium text-gray-900">{campaign.name}</h3>
                   <p className="text-sm text-gray-500 mt-1">{campaign.description}</p>
                   <p className="text-xs text-gray-400 mt-2">
-                    {campaign.columns.length} colonnes configurées
+                    {campaign.fields?.length} colonnes configurées
                   </p>
                 </div>
                 <div className="flex items-center space-x-2 ml-4">
-                  <button
-                    onClick={() => handleEditCampaign(campaign)}
-                    className="p-2 text-gray-600 hover:text-gray-700"
-                  >
+                  <button onClick={() => handleEditCampaign(campaign)} className="p-2 text-gray-600 hover:text-gray-700">
                     <Edit2 className="h-4 w-4" />
                   </button>
-                  <button
-                    onClick={() => handleDeleteCampaign(campaign.id)}
-                    className="p-2 text-red-600 hover:text-red-700"
-                  >
+                  <button onClick={() => handleDeleteCampaign(campaign.uuid)} className="p-2 text-red-600 hover:text-red-700">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
@@ -180,7 +173,6 @@ const AdminPage: React.FC = () => {
         )}
       </div>
 
-      {/* La modale pour l'édition et la création */}
       <CampaignModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}

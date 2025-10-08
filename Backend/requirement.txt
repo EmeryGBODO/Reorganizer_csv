@@ -7,7 +7,8 @@ python-dotenv
 psycopg2-binary
 mysql-connector-python
 python-jose
-panda
+pandas
+python-multipart
 alembic
 
 # Environment

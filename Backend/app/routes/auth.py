@@ -4,8 +4,8 @@ from sqlalchemy.orm import Session
 from app.schemas.token_schema import Token
 from app.schemas.user_schema import UserPublic
 from app.services import auth_service
-from app.database.database import get_db # Assurez-vous d'avoir une dépendance get_db
-from app.dependencies.get_current_user import get_current_user # On créera ce fichier après
+from app.database.database import get_db 
+from app.dependencies.get_current_user import get_current_user
 from app.models.models import User
 
 router = APIRouter()

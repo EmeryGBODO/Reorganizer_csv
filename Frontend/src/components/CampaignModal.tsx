@@ -25,23 +25,23 @@ const CampaignModal: React.FC<CampaignModalProps> = ({ isOpen, onClose, onSave, 
     return null;
   }
 
-  const handleColumnsChange = (columns: ColumnConfig[]) => {
+  const handleColumnsChange = (fields: ColumnConfig[]) => {
     if (!editedCampaign) return;
     setEditedCampaign({
       ...editedCampaign,
-      columns,
+      fields,
     });
   };
 
   const handleSaveClick = () => {
-    if(editedCampaign.name.trim() == ''){
+    if(editedCampaign.name.trim() === ''){
         setError('Le nom de la campagne est requis');
         return;
     }
     onSave(editedCampaign);
   };
   
-  const isCreating = editedCampaign.id.startsWith('temp_');
+  const isCreating = editedCampaign.uuid.startsWith('temp_');
 
   return (
     // Fond semi-transparent
@@ -57,10 +57,11 @@ const CampaignModal: React.FC<CampaignModalProps> = ({ isOpen, onClose, onSave, 
             <X className="h-5 w-5" />
           </button>
         </div>
-    {/* Messages de status */}
-          {error && (
-            <StatusMessage type="error" message={error} className="mb-6" />
-          )}
+        {error && (
+            <div className="p-4">
+                <StatusMessage type="error" message={error} />
+            </div>
+        )}
         {/* Corps de la modale (avec scroll) */}
         <div className="p-6 space-y-6 overflow-y-auto">
           <div>
@@ -87,15 +88,34 @@ const CampaignModal: React.FC<CampaignModalProps> = ({ isOpen, onClose, onSave, 
               onChange={(e) =>
                 setEditedCampaign({ ...editedCampaign, description: e.target.value })
               }
-              rows={3}
+              rows={2}
               className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Description de la campagne"
             />
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Nom du fichier de sortie par défaut
+            </label>
+            <input
+              type="text"
+              value={editedCampaign.outputFilenameTemplate}
+              onChange={(e) =>
+                setEditedCampaign({ ...editedCampaign, outputFilenameTemplate: e.target.value })
+              }
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="ex: export__{date}__.csv"
+            />
+            {/* --- LIGNE CORRIGÉE --- */}
+            <p className="text-xs text-gray-500 mt-1">
+              Variables disponibles : `__nom_original__` `__date__`.
+            </p>
+          </div>
+
           <div className="mt-4">
             <ColumnEditor
-              columns={editedCampaign.columns}
+              columns={editedCampaign.fields}
               onColumnsChange={handleColumnsChange}
             />
           </div>

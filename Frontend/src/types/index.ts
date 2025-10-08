@@ -10,16 +10,17 @@ export interface ColumnConfig {
   displayName: string;
   order: number;
   required: boolean;
-  rules: Rule[]; // Ajout du tableau de règles
+  rules: Rule[];
 }
 
 export interface Campaign {
-  id: string;
+  uuid: string;
   name: string;
   description: string;
-  columns: ColumnConfig[];
+  fields: ColumnConfig[];
   createdAt: string;
   updatedAt: string;
+  outputFilenameTemplate: string; // Ajout de cette ligne
 }
 
 export interface UploadState {
