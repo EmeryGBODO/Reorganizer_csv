@@ -8,6 +8,7 @@ interface FiltersProps {
   onCampaignChange: (id: string) => void;
   onAgentChange: (id: string) => void;
   onDateChange: (dates: { start: string; end: string }) => void;
+  dateRange:{ start: string; end:string};
   disabled?: boolean;
 }
 
@@ -18,6 +19,7 @@ const Filters: React.FC<FiltersProps> = ({
   onCampaignChange,
   onAgentChange,
   onDateChange,
+  dateRange,
   disabled = false,
 }) => {
   return (
