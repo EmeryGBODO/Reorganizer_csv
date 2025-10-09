@@ -13,6 +13,7 @@ const AdminPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [editmode, setEditmod] = useState<boolean>(false)
 
   useEffect(() => {
     loadCampaigns();
@@ -56,7 +57,7 @@ const AdminPage: React.FC = () => {
       name: '',
       description: '',
       columns: [],
-      outputFilenameTemplate: 'export_{nom_original}', // Ajout de l'initialisation
+      output_file_name: 'export_{nom_original}', // Ajout de l'initialisation
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -76,6 +77,7 @@ const AdminPage: React.FC = () => {
   const handleEditCampaign = (campaign: Campaign) => {
     setEditingCampaign(campaign);
     setIsModalOpen(true);
+    setEditmod(true);
     setError(null);
     setSuccess(null);
   };
@@ -87,7 +89,7 @@ const AdminPage: React.FC = () => {
     }
 
     try {
-      if (campaignToSave.id) {
+      if (!editmode) {
         // --- APPEL RÉEL POUR LA CRÉATION ---
         const {...creationData } = campaignToSave;
         const response = await campaignApi.create(creationData);
@@ -119,6 +121,7 @@ const AdminPage: React.FC = () => {
       return;
     }
     try {
+      const response = await campaignApi.delete(id)
       setCampaigns(prev => prev.filter(c => c.id !== id));
       setSuccess('Campagne supprimée avec succès');
     } catch (error) {
@@ -202,6 +205,7 @@ const AdminPage: React.FC = () => {
         onClose={handleCloseModal}
         onSave={handleSaveCampaign}
         campaign={editingCampaign}
+        editmode={editmode}
         error={error}
         setError={setError}
       />

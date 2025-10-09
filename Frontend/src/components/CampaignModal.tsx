@@ -9,11 +9,12 @@ interface CampaignModalProps {
   onClose: () => void;
   onSave: (campaign: Campaign) => void;
   campaign: Campaign | null;
+  editmode: boolean;
   error: string | null;
   setError: (error: string | null) => void;
 }
 
-const CampaignModal: React.FC<CampaignModalProps> = ({ isOpen, onClose, onSave, campaign, error, setError }) => {
+const CampaignModal: React.FC<CampaignModalProps> = ({ isOpen, onClose, onSave, campaign, editmode, error, setError }) => {
   const [editedCampaign, setEditedCampaign] = useState<Campaign | null>(campaign);
 
   useEffect(() => {
@@ -34,11 +35,15 @@ const CampaignModal: React.FC<CampaignModalProps> = ({ isOpen, onClose, onSave, 
   };
 
   const handleSaveClick = () => {
+    
+
     if(editedCampaign.name.trim() === ''){
         setError('Le nom de la campagne est requis');
         return;
     }
-    onSave(editedCampaign);
+
+      onSave(editedCampaign);
+    
   };
   
   const isCreating = editedCampaign.id;
@@ -100,9 +105,9 @@ const CampaignModal: React.FC<CampaignModalProps> = ({ isOpen, onClose, onSave, 
             </label>
             <input
               type="text"
-              value={editedCampaign.outputFilenameTemplate}
+              value={editedCampaign.output_file_name}
               onChange={(e) =>
-                setEditedCampaign({ ...editedCampaign, outputFilenameTemplate: e.target.value })
+                setEditedCampaign({ ...editedCampaign, output_file_name: e.target.value })
               }
               className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="ex: export__{date}__.csv"

@@ -18,7 +18,7 @@ export interface Campaign {
   name: string;
   description: string;
   columns: ColumnConfig[];
-  outputFilenameTemplate: string;
+  output_file_name: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -14,7 +14,7 @@ const mockCampaigns: Campaign[] = [
         { id: 'col-2', name: 'email', displayName: 'Email', order: 1, required: true, rules: [] },
         { id: 'col-3', name: 'phone', displayName: 'Téléphone', order: 2, required: false, rules: [] },
       ],
-      outputFilenameTemplate: "output",
+      output_file_name: "output",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     },
@@ -28,7 +28,7 @@ const mockCampaigns: Campaign[] = [
         { id: 'col-6', name: 'email', displayName: 'Adresse email', order: 2, required: true, rules: [] },
         { id: 'col-7', name: 'age', displayName: 'Age', order: 3, required: false, rules: [] },
       ],
-      outputFilenameTemplate: "output",
+      output_file_name: "output",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     },
@@ -78,9 +78,14 @@ export const authApi = {
 // --- API des Campagnes (maintenant réelle) ---
 export const campaignApi = {
   getAll: () => api.get<Campaign[]>('/campaigns'), 
-  create: (campaignData: Campaign) => api.post<Campaign>('/campaigns/', campaignData),
-  update: (id: string, campaignData: Partial<Campaign>) => api.put<Campaign>(`/campaigns/${id}`, campaignData),
-  delete: (id: string) => api.delete(`/campaigns/${id}`),
+  create: (campaignData: Campaign) =>{
+    console.log("campaign created🤞✌", campaignData);
+    return api.post<Campaign>('/campaigns/', campaignData)},
+  update: (id: string | number, campaignData: Partial<Campaign>) => {
+    console.log("Campaign updated", campaignData);
+    
+    return api.put<Campaign>(`/campaigns/${id}/`, campaignData)},
+  delete: (id: string | number) => api.delete(`/campaigns/${id}/`),
 };
 
 // --- API de Traitement de Fichier (maintenant réelle) ---
@@ -88,9 +93,7 @@ export const fileApi = {
   processCSV: (file: File, campaignId: string) => {
     const formData = new FormData();
     formData.append('file', file);
-    console.log(campaignId);
-    console.log(formData);
-    console.log(file);
+    
     
     return api.post<Blob>(`/process/${campaignId}`, formData, {
       headers: {
