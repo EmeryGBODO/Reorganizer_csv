@@ -97,7 +97,7 @@ const AdminPage: React.FC = () => {
     setError(null); // Clear error on close
   };
 
-  const handleDeleteCampaign = async (id: string) => {
+  const handleDeleteCampaign = async (id: string | number) => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer cette campagne ?')) {
       return;
     }

@@ -112,7 +112,7 @@ const ColumnEditor: React.FC<ColumnEditorProps> = ({
               {columns.map((column, index) => (
                 <Draggable
                   key={column.id}
-                  draggableId={column.id}
+                  draggableId={String(column.id)}
                   index={index}
                   isDragDisabled={disabled}
                 >

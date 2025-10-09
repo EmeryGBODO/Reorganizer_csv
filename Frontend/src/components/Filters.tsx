@@ -21,26 +21,8 @@ const Filters: React.FC<FiltersProps> = ({
   disabled = false,
 }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div>
-        <label htmlFor="campaign-filter" className="block text-sm font-medium text-gray-700 mb-1">
-          Campagne
-        </label>
-        <select
-          id="campaign-filter"
-          value={selectedCampaignId}
-          onChange={(e) => onCampaignChange(e.target.value)}
-          disabled={disabled}
-          className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-        >
-          <option value="">Toutes les campagnes</option>
-          {campaigns.map((campaign) => (
-            <option key={campaign.id} value={campaign.id}>
-              {campaign.name}
-            </option>
-          ))}
-        </select>
-      </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-20 ">
+      
 
       <div>
         <label htmlFor="agent-filter" className="block text-sm font-medium text-gray-700 mb-1">
