@@ -28,7 +28,7 @@ const DataTable: React.FC<DataTableProps> = ({ headers, data, totalRowCount, cla
           <Thead className="text-xs text-gray-800 uppercase bg-gray-50">
             <Tr>
               {headers.map((header, index) => (
-                <Th key={index} scope="col" className="px-6 py-3">
+                <Th key={index} className="px-6 py-3">
                   {header.replace(/_/g, ' ')}
                 </Th>
               ))}
