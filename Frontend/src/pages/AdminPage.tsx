@@ -18,6 +18,23 @@ const AdminPage: React.FC = () => {
     loadCampaigns();
   }, []);
 
+  
+  useEffect(() => {
+    // 1. On vérifie s'il y a un message d'erreur actif
+    if (error) {
+      // 2. On démarre un chronomètre (par exemple, 5000 millisecondes = 5 secondes)
+      const timer = setTimeout(() => {
+        // 3. À la fin du temps, on réinitialise l'état 'error' à null
+        setError(null); 
+      }, 5000); 
+  
+      // 4. Fonction de nettoyage : Elle est cruciale !
+      // Si l'utilisateur clique rapidement sur quelque chose d'autre,
+      // on annule le timer précédent pour éviter les bugs.
+      return () => clearTimeout(timer);
+    }
+  }, [error]); // Le tableau de dépendances : ce code s'exécute à chaque fois que 'error' change.
+
   const loadCampaigns = async () => {
     try {
       setLoading(true);

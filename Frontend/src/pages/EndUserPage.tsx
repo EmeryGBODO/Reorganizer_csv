@@ -98,6 +98,24 @@ const EndUserPage: React.FC = () => {
     loadInitialData();
   }, []);
 
+
+    
+  useEffect(() => {
+    // 1. On vérifie s'il y a un message d'erreur actif
+    if (error) {
+      // 2. On démarre un chronomètre (par exemple, 5000 millisecondes = 5 secondes)
+      const timer = setTimeout(() => {
+        // 3. À la fin du temps, on réinitialise l'état 'error' à null
+        setError(null); 
+      }, 5000); 
+  
+      // 4. Fonction de nettoyage : Elle est cruciale !
+      // Si l'utilisateur clique rapidement sur quelque chose d'autre,
+      // on annule le timer précédent pour éviter les bugs.
+      return () => clearTimeout(timer);
+    }
+  }, [error]); // Le tableau de dépendances : ce code s'exécute à chaque fois que 'error' change.
+
   const handleCampaignSelection = (campaignId: number | string) => {
     console.log("Campagne id à vérifier",campaignId);
     
@@ -151,7 +169,7 @@ const EndUserPage: React.FC = () => {
   const dataPreview = useMemo(() => filteredData.slice(0, PREVIEW_ROW_COUNT), [filteredData]);
 
   const handleProcessAndDownload = () => {
-    if (!filters.processingCampaignId) {
+    if (!selectedCampaign.id) {
       setError("Veuillez sélectionner une campagne pour le traitement.");
       return;
     }
@@ -262,7 +280,24 @@ const EndUserPage: React.FC = () => {
               selectedCampaignId={filters.processingCampaignId}
               onCampaignChange={(id) => setFilters(f => ({ ...f, processingCampaignId: id }))}
               onAgentChange={(id) => setFilters(f => ({ ...f, agentId: id }))}
-              onDateChange={(dates) => setFilters(f => ({ ...f, dateRange: dates }))}
+              dateRange={filters.dateRange}
+
+
+              onDateChange={(dates) => {
+                
+                console.log("1. Dates reçues de Filters:", dates); 
+                
+                
+                setFilters(f => {
+                    const newDateRange = {
+                        start: dates.start || f.dateRange.start, 
+                        end: dates.end || f.dateRange.end 
+                    };
+                    console.log("2. Nouvel État de dateRange APRES fusion:", newDateRange);
+                    return { ...f, dateRange: newDateRange };
+                });
+              }}
+              
               disabled={isProcessing}
             />
             <div className="border-t pt-6">
@@ -270,8 +305,12 @@ const EndUserPage: React.FC = () => {
               <div className="mt-6 flex justify-end">
                 <button
                   onClick={handleProcessAndDownload}
-                  disabled={!filters.processingCampaignId || filteredData.length === 0}
-                  className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  disabled={
+                    // !filters.processingCampaignId || 
+                    filteredData.length === 0 ||
+                    !filters.dateRange.start || 
+                    !filters.dateRange.end   
+                  }                  className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                   <Download className="h-5 w-5 mr-2" /> Traiter et Télécharger ({filteredData.length} lignes)
                 </button>

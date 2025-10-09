@@ -29,6 +29,7 @@ const StatusMessage: React.FC<StatusMessageProps> = ({ type, message, className 
     },
   };
 
+
   const { icon: Icon, bgColor, textColor, iconColor } = config[type];
 
   return (
