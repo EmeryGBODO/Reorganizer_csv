@@ -73,6 +73,11 @@ const EndUserPage: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
+  const [serverDateRange, setServerDateRange] = useState({ start: '', end: '' });
+  
+  // --- NOUVEL ÉTAT POUR L'ERREUR DE DATE ---
+  const [dateError, setDateError] = useState<string | null>(null);
+
   const [filters, setFilters] = useState({
     processingCampaignId: '',
     agentId: '',
@@ -98,30 +103,34 @@ const EndUserPage: React.FC = () => {
     loadInitialData();
   }, []);
 
-
-    
   useEffect(() => {
-    // 1. On vérifie s'il y a un message d'erreur actif
     if (error) {
-      // 2. On démarre un chronomètre (par exemple, 5000 millisecondes = 5 secondes)
       const timer = setTimeout(() => {
-        // 3. À la fin du temps, on réinitialise l'état 'error' à null
         setError(null); 
       }, 5000); 
   
-      // 4. Fonction de nettoyage : Elle est cruciale !
-      // Si l'utilisateur clique rapidement sur quelque chose d'autre,
-      // on annule le timer précédent pour éviter les bugs.
       return () => clearTimeout(timer);
     }
-  }, [error]); // Le tableau de dépendances : ce code s'exécute à chaque fois que 'error' change.
+  }, [error]);
+
+  // --- USEEFFECT POUR LA VALIDATION DE LA DATE ---
+  useEffect(() => {
+    if (serverDateRange.start && serverDateRange.end) {
+      const startDate = new Date(serverDateRange.start);
+      const endDate = new Date(serverDateRange.end);
+      if (endDate < startDate) {
+        setDateError("La date de fin doit être supérieure ou égale à la date de début.");
+      } else {
+        setDateError(null);
+      }
+    } else {
+      setDateError(null);
+    }
+  }, [serverDateRange]);
+
 
   const handleCampaignSelection = (campaignId: number | string) => {
-    console.log("Campagne id à vérifier",campaignId);
-    
-    const campaign = campaigns.filter(c => c.id == campaignId)[0];
-    
-    console.log("Campagne à vérifier",campaign);
+    const campaign = campaigns.find(c => c.id == campaignId);
     setSelectedCampaign(campaign || null);
     setError(null);
   };
@@ -146,11 +155,23 @@ const EndUserPage: React.FC = () => {
   };
 
   const handleGenerateFromServer = async () => {
-    if (!selectedCampaign) return;
+    // Vérification finale avant l'envoi
+    if (dateError) {
+        setError(dateError);
+        return;
+    }
+    if (!selectedCampaign || !serverDateRange.start || !serverDateRange.end) {
+        setError("Veuillez sélectionner une campagne et une période complète.");
+        return;
+    }
     setIsProcessing(true);
     setError(null);
     try {
-      const response = await dataApi.generateDataFromServer(selectedCampaign.id);
+      const response = await dataApi.generateDataFromServer(
+        selectedCampaign.id,
+        serverDateRange.start,
+        serverDateRange.end
+      );
       setFullData(response.data.data);
       if (response.data.data.length > 0) {
         setHeaders(Object.keys(response.data.data[0]));
@@ -169,7 +190,7 @@ const EndUserPage: React.FC = () => {
   const dataPreview = useMemo(() => filteredData.slice(0, PREVIEW_ROW_COUNT), [filteredData]);
 
   const handleProcessAndDownload = () => {
-    if (!selectedCampaign.id) {
+    if (!selectedCampaign?.id) {
       setError("Veuillez sélectionner une campagne pour le traitement.");
       return;
     }
@@ -253,9 +274,34 @@ const EndUserPage: React.FC = () => {
               </div>
               <div className="p-6 border border-gray-200 rounded-lg flex flex-col items-center justify-center text-center hover:shadow-lg transition-shadow space-y-4">
                 <h4 className="text-xl font-semibold text-gray-800">Générer depuis le Serveur</h4>
+                
+                <div className="w-full max-w-sm space-y-3">
+                    <label className="block text-sm font-medium text-gray-700 text-left">
+                        Période requise *
+                    </label>
+                    <div className="flex items-center space-x-2">
+                        <input
+                            type="date"
+                            value={serverDateRange.start}
+                            onChange={(e) => setServerDateRange(d => ({ ...d, start: e.target.value }))}
+                            className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        />
+                        <span className="text-gray-500">-</span>
+                        <input
+                            type="date"
+                            value={serverDateRange.end}
+                            onChange={(e) => setServerDateRange(d => ({ ...d, end: e.target.value }))}
+                            className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        />
+                    </div>
+                    {/* --- AFFICHAGE DU MESSAGE D'ERREUR --- */}
+                    {dateError && <p className="text-xs text-red-600 mt-1">{dateError}</p>}
+                </div>
+
                 <button
                   onClick={handleGenerateFromServer}
-                  disabled={isProcessing}
+                  // --- CONDITION DE DÉSACTIVATION MISE À JOUR AVEC LA VALIDATION ---
+                  disabled={isProcessing || !serverDateRange.start || !serverDateRange.end || !!dateError}
                   className="w-fit inline-flex items-center justify-center p-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                   <Server className="h-5 w-5 mr-2" /> Charger les données
@@ -281,23 +327,15 @@ const EndUserPage: React.FC = () => {
               onCampaignChange={(id) => setFilters(f => ({ ...f, processingCampaignId: id }))}
               onAgentChange={(id) => setFilters(f => ({ ...f, agentId: id }))}
               dateRange={filters.dateRange}
-
-
               onDateChange={(dates) => {
-                
-                console.log("1. Dates reçues de Filters:", dates); 
-                
-                
                 setFilters(f => {
                     const newDateRange = {
                         start: dates.start || f.dateRange.start, 
                         end: dates.end || f.dateRange.end 
                     };
-                    console.log("2. Nouvel État de dateRange APRES fusion:", newDateRange);
                     return { ...f, dateRange: newDateRange };
                 });
               }}
-              
               disabled={isProcessing}
             />
             <div className="border-t pt-6">
@@ -306,11 +344,12 @@ const EndUserPage: React.FC = () => {
                 <button
                   onClick={handleProcessAndDownload}
                   disabled={
-                    // !filters.processingCampaignId || 
                     filteredData.length === 0 ||
+                    !filters.processingCampaignId || 
                     !filters.dateRange.start || 
                     !filters.dateRange.end   
-                  }                  className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  }                  
+                  className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                   <Download className="h-5 w-5 mr-2" /> Traiter et Télécharger ({filteredData.length} lignes)
                 </button>

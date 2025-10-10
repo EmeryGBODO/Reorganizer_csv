@@ -41,9 +41,9 @@ const mockAgents: Agent[] = [
 ];
 
 const mockServerData: DataRow[] = [
-    { id: 1, agent: 'Jean Dupont', date: '2023-10-01', product: 'Box Fibre', revenue: 29.99 },
-    { id: 2, agent: 'Marie Curie', date: '2023-10-01', product: 'Mobile 5G', revenue: 19.99 },
-    { id: 3, agent: 'Jean Dupont', date: '2023-10-02', product: 'Mobile 4G', revenue: 9.99 },
+    { id: 1, agent: 'Jean Dupont', date: '2023-10-01', product: 'Box Fibre', revenue: 29.99, campaign_id: '1' },
+    { id: 2, agent: 'Marie Curie', date: '2023-10-01', product: 'Mobile 5G', revenue: 19.99, campaign_id: '1' },
+    { id: 3, agent: 'Jean Dupont', date: '2023-10-02', product: 'Mobile 4G', revenue: 9.99, campaign_id: '1' },
     { id: 4, agent: 'Pierre Martin', date: '2023-10-03', product: 'Box Fibre', revenue: 29.99, campaign_id: '1' },
     { id: 5, agent: 'Marie Curie', date: '2023-10-04', product: 'Mobile 5G', revenue: 24.99, campaign_id: '2' },
 ];
@@ -110,18 +110,32 @@ export const dataApi = {
         return { data: { success: true, data: mockAgents } };
     },
     // --- FONCTION MISE À JOUR ---
-    generateDataFromServer: async (campaignId: string): Promise<{ data: { success: boolean, data: DataRow[] } }> => {
+    generateDataFromServer: async (
+      campaignId: string | number,
+      startDate: string,
+      endDate: string
+    ): Promise<{ data: { success: boolean, data: DataRow[] } }> => {
         await delay(1500);
-        console.log(`Récupération des données pour la campagne ID: ${campaignId}`);
+        
+        // Log pour vérifier que les dates sont bien reçues
+        console.log(`Récupération des données pour la campagne ID: ${campaignId} entre le ${startDate} et le ${endDate}`);
 
         // Dans une vraie application, vous feriez :
-        // const response = await api.get(`/remote-data/${campaignId}/`);
+        // const response = await api.get(`/remote-data/${campaignId}/`, { 
+        //   params: { start_date: startDate, end_date: endDate }
+        // });
         // return response.data;
 
-        // Simulation : on filtre les données mockées
-        const data = mockServerData.filter(row => row.campaign_id === campaignId);
+        // Simulation : on filtre les données mockées par campagne ET par date
+        const data = mockServerData.filter(row => {
+            const rowDate = new Date(row.date);
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            return row.campaign_id === campaignId && rowDate >= start && rowDate <= end;
+        });
         
-        return { data: { success: true, data: data.length > 0 ? data : mockServerData } }; // Retourne toutes les données si le filtre ne trouve rien
+        // Retourne les données filtrées, ou un tableau vide si rien ne correspond
+        return { data: { success: true, data: data } }; 
     }
 }
 
