@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Download, UploadCloud, Server, Filter, X, ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react';
+import { Download, UploadCloud, Server, Filter, X, ChevronLeft, ChevronRight, CheckCircle, RotateCcw } from 'lucide-react';
 import DragDropZone from '../components/DragDropZone';
 import LoadingSpinner from '../components/LoadingSpinner';
 import StatusMessage from '../components/StatusMessage';
@@ -10,8 +10,24 @@ import { campaignApi, dataApi } from '../services/api';
 import Papa from 'papaparse';
 
 const PREVIEW_ROW_COUNT = 20;
+const LOCAL_STORAGE_KEY = 'csvReorganizerSession';
 
 type Step = 'select_campaign' | 'select_source' | 'view_data';
+
+// --- NOUVEAU TYPE POUR L'ÉTAT SAUVEGARDÉ ---
+interface StoredState {
+  currentStep: Step;
+  selectedCampaignId: number | string | null;
+  fullData: DataRow[];
+  headers: string[];
+  serverDateRange: { start: string; end: string };
+  filters: {
+    processingCampaignId: string;
+    agentId: string;
+    dateRange: { start: string; end: string };
+  };
+}
+
 
 const Stepper = ({ currentStep }: { currentStep: Step }) => {
   const steps = [
@@ -64,26 +80,27 @@ const Stepper = ({ currentStep }: { currentStep: Step }) => {
 
 
 const EndUserPage: React.FC = () => {
-  const [currentStep, setCurrentStep] = useState<Step>('select_campaign');
+  // --- ÉTATS GLOBAUX DE LA PAGE ---
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
-  const [fullData, setFullData] = useState<DataRow[]>([]);
-  const [headers, setHeaders] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
-  const [serverDateRange, setServerDateRange] = useState({ start: '', end: '' });
-  
-  // --- NOUVEL ÉTAT POUR L'ERREUR DE DATE ---
   const [dateError, setDateError] = useState<string | null>(null);
 
+  // --- ÉTATS À SAUVEGARDER ---
+  const [currentStep, setCurrentStep] = useState<Step>('select_campaign');
+  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
+  const [fullData, setFullData] = useState<DataRow[]>([]);
+  const [headers, setHeaders] = useState<string[]>([]);
+  const [serverDateRange, setServerDateRange] = useState({ start: '', end: '' });
   const [filters, setFilters] = useState({
     processingCampaignId: '',
     agentId: '',
     dateRange: { start: '', end: '' },
   });
-
+  
+  // --- EFFET DE RESTAURATION DE L'ÉTAT AU CHARGEMENT INITIAL ---
   useEffect(() => {
     const loadInitialData = async () => {
       try {
@@ -92,8 +109,26 @@ const EndUserPage: React.FC = () => {
           campaignApi.getAll(),
           dataApi.getAgents(),
         ]);
-        setCampaigns(campaignsRes.data || []);
+        const loadedCampaigns = campaignsRes.data || [];
+        setCampaigns(loadedCampaigns);
         setAgents(agentsRes.data.data || []);
+
+        // Restauration de la session après le chargement des campagnes
+        const savedStateJSON = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (savedStateJSON) {
+          const savedState: StoredState = JSON.parse(savedStateJSON);
+          setCurrentStep(savedState.currentStep);
+          setFullData(savedState.fullData);
+          setHeaders(savedState.headers);
+          setServerDateRange(savedState.serverDateRange);
+          setFilters(savedState.filters);
+
+          // Retrouver l'objet campagne complet à partir de l'ID sauvegardé
+          if (savedState.selectedCampaignId) {
+            const campaign = loadedCampaigns.find(c => c.id === savedState.selectedCampaignId);
+            setSelectedCampaign(campaign || null);
+          }
+        }
       } catch (err) {
         setError('Erreur lors du chargement des données initiales.');
       } finally {
@@ -102,6 +137,23 @@ const EndUserPage: React.FC = () => {
     };
     loadInitialData();
   }, []);
+
+  // --- EFFET DE SAUVEGARDE DE L'ÉTAT DANS LE LOCALSTORAGE ---
+  useEffect(() => {
+    // Ne sauvegarde pas si les campagnes ne sont pas encore chargées pour éviter un état incomplet
+    if (!isLoading) {
+      const stateToSave: StoredState = {
+        currentStep,
+        selectedCampaignId: selectedCampaign?.id || null,
+        fullData,
+        headers,
+        serverDateRange,
+        filters,
+      };
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave));
+    }
+  }, [currentStep, selectedCampaign, fullData, headers, serverDateRange, filters, isLoading]);
+
 
   useEffect(() => {
     if (error) {
@@ -113,7 +165,6 @@ const EndUserPage: React.FC = () => {
     }
   }, [error]);
 
-  // --- USEEFFECT POUR LA VALIDATION DE LA DATE ---
   useEffect(() => {
     if (serverDateRange.start && serverDateRange.end) {
       const startDate = new Date(serverDateRange.start);
@@ -155,7 +206,6 @@ const EndUserPage: React.FC = () => {
   };
 
   const handleGenerateFromServer = async () => {
-    // Vérification finale avant l'envoi
     if (dateError) {
         setError(dateError);
         return;
@@ -223,6 +273,25 @@ const EndUserPage: React.FC = () => {
     if (step === 'select_campaign') setSelectedCampaign(null);
     setCurrentStep(step);
     setError(null);
+  };
+
+  // --- NOUVELLE FONCTION POUR TOUT RÉINITIALISER ---
+  const handleHardReset = () => {
+    if (window.confirm("Voulez-vous vraiment réinitialiser et effacer toutes les données en cours ?")) {
+        localStorage.removeItem(LOCAL_STORAGE_KEY);
+        setCurrentStep('select_campaign');
+        setSelectedCampaign(null);
+        setFullData([]);
+        setHeaders([]);
+        setServerDateRange({ start: '', end: '' });
+        setFilters({
+            processingCampaignId: '',
+            agentId: '',
+            dateRange: { start: '', end: '' },
+        });
+        setError(null);
+        setDateError(null);
+    }
   };
 
   const renderStepContent = () => {
@@ -294,13 +363,11 @@ const EndUserPage: React.FC = () => {
                             className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                         />
                     </div>
-                    {/* --- AFFICHAGE DU MESSAGE D'ERREUR --- */}
                     {dateError && <p className="text-xs text-red-600 mt-1">{dateError}</p>}
                 </div>
 
                 <button
                   onClick={handleGenerateFromServer}
-                  // --- CONDITION DE DÉSACTIVATION MISE À JOUR AVEC LA VALIDATION ---
                   disabled={isProcessing || !serverDateRange.start || !serverDateRange.end || !!dateError}
                   className="w-fit inline-flex items-center justify-center p-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
@@ -364,9 +431,19 @@ const EndUserPage: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8 ">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Tableau de Bord de Traitement</h1>
-        <p className="mt-2 text-lg text-gray-600">Suivez les étapes pour préparer et exporter vos données.</p>
+      <div className="flex justify-between items-start">
+        <div>
+            <h1 className="text-3xl font-bold text-gray-900">Tableau de Bord de Traitement</h1>
+            <p className="mt-2 text-lg text-gray-600">Suivez les étapes pour préparer et exporter vos données.</p>
+        </div>
+        {/* --- BOUTON DE RÉINITIALISATION --- */}
+        <button 
+            onClick={handleHardReset}
+            className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 hover:text-red-700"
+            title="Réinitialiser la session"
+        >
+            <RotateCcw className="h-4 w-4 mr-2" /> Recommencer
+        </button>
       </div>
 
       {error && <StatusMessage type="error" message={error} />}
@@ -376,10 +453,10 @@ const EndUserPage: React.FC = () => {
           <Stepper currentStep={currentStep} />
         </div>
         <div className="min-h-[400px] flex flex-col justify-center">
-          {isProcessing ? (
+          {isProcessing || isLoading ? (
             <div className="flex items-center justify-center py-12">
               <LoadingSpinner size="lg" />
-              <span className="ml-3 text-gray-600">Traitement en cours...</span>
+              <span className="ml-3 text-gray-600">{isLoading ? 'Chargement des données...' : 'Traitement en cours...'}</span>
             </div>
           ) : renderStepContent()}
         </div>
