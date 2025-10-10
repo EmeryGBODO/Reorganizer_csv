@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Campaign, UserCredentials, Agent, DataRow } from '../types'; 
 
-const API_BASE_URL = 'http://localhost:8000/api';
+export const API_BASE_URL = import.meta.env.VITE_API_URL
 
 // ... (données mock existantes)
 const mockCampaigns: Campaign[] = [
