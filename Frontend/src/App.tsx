@@ -6,6 +6,8 @@ import AdminPage from './pages/AdminPage';
 import LoginPage from './pages/LoginPage'; // Importer la nouvelle page
 import ProtectedRoute from './components/ProtectedRoute'; // Importer le composant de protection
 import { AuthProvider } from './context/AuthContext'; // Importer le provider
+import ImportCsvPage from './pages/importCsvPage';
+
 
 function App() {
   return (
@@ -18,6 +20,8 @@ function App() {
             <Routes>
               <Route path="/" element={<EndUserPage />} />
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/import" element={<ImportCsvPage />} />
+
               
               {/* 2. Protéger la route /admin */}
               <Route 

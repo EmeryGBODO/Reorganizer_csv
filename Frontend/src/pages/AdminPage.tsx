@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, CreditCard as Edit2, Trash2 } from 'lucide-react';
+import { Plus, CreditCard as Edit2, Trash2, ChevronLeft } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import StatusMessage from '../components/StatusMessage';
 import CampaignModal from '../components/CampaignModal';
 import { Campaign } from '../types';
 import { campaignApi } from '../services/api';
+import { useNavigate } from 'react-router-dom';
 
 const AdminPage: React.FC = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -14,6 +15,7 @@ const AdminPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [editmode, setEditmod] = useState<boolean>(false)
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadCampaigns();
@@ -116,6 +118,8 @@ const AdminPage: React.FC = () => {
     setError(null); // Clear error on close
   };
 
+  const handleGoBack = ( ) => { navigate(-1) };
+
   const handleDeleteCampaign = async (id: string | number) => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer cette campagne ?')) {
       return;
@@ -143,6 +147,9 @@ const AdminPage: React.FC = () => {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
+          <button onClick={handleGoBack} className="mb-6 inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900">
+              <ChevronLeft className="h-4 w-4 mr-1" /> Retour
+            </button>
             <h1 className="text-3xl font-bold text-gray-900 mb-4">
               Administration des campagnes
             </h1>
