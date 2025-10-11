@@ -1,20 +1,18 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Download, UploadCloud, Server, Filter, X, ChevronLeft, ChevronRight, CheckCircle, RotateCcw } from 'lucide-react';
-import DragDropZone from '../components/DragDropZone';
+import { Download, Server, Filter, ChevronLeft, ChevronRight, CheckCircle, RotateCcw, Upload } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../components/LoadingSpinner';
 import StatusMessage from '../components/StatusMessage';
 import DataTable from '../components/DataTable';
 import Filters from '../components/Filters';
 import { Campaign, Agent, DataRow } from '../types';
 import { campaignApi, dataApi } from '../services/api';
-import Papa from 'papaparse';
 
 const PREVIEW_ROW_COUNT = 20;
-const LOCAL_STORAGE_KEY = 'csvReorganizerSession';
+const LOCAL_STORAGE_KEY = 'csvReorganizerSession_EndUser'; // Clé de stockage modifiée
 
-type Step = 'select_campaign' | 'select_source' | 'view_data';
+type Step = 'select_campaign' | 'select_period' | 'view_data';
 
-// --- NOUVEAU TYPE POUR L'ÉTAT SAUVEGARDÉ ---
 interface StoredState {
   currentStep: Step;
   selectedCampaignId: number | string | null;
@@ -28,11 +26,10 @@ interface StoredState {
   };
 }
 
-
 const Stepper = ({ currentStep }: { currentStep: Step }) => {
   const steps = [
     { id: 'select_campaign', title: 'Choisir la Campagne' },
-    { id: 'select_source', title: 'Choisir la Source' },
+    { id: 'select_period', title: 'Définir la Période' },
     { id: 'view_data', title: 'Visualiser et Traiter' },
   ];
   const currentStepIndex = steps.findIndex(s => s.id === currentStep);
@@ -47,7 +44,7 @@ const Stepper = ({ currentStep }: { currentStep: Step }) => {
                 <div className="absolute inset-0 flex items-center" aria-hidden="true">
                   <div className="h-0.5 w-full bg-blue-600" />
                 </div>
-                <div className="relative flex h-8 w-8 items-center justify-center bg-blue-600 rounded-full hover:bg-blue-900">
+                <div className="relative flex h-8 w-8 items-center justify-center bg-blue-600 rounded-full">
                   <CheckCircle className="h-5 w-5 text-white" aria-hidden="true" />
                 </div>
               </>
@@ -65,8 +62,8 @@ const Stepper = ({ currentStep }: { currentStep: Step }) => {
                 <div className="absolute inset-0 flex items-center" aria-hidden="true">
                   <div className="h-0.5 w-full bg-gray-200" />
                 </div>
-                <div className="group relative flex h-8 w-8 items-center justify-center bg-white border-2 border-gray-300 rounded-full hover:border-gray-400">
-                  <span className="h-2.5 w-2.5 bg-transparent rounded-full group-hover:bg-gray-300" aria-hidden="true" />
+                <div className="group relative flex h-8 w-8 items-center justify-center bg-white border-2 border-gray-300 rounded-full">
+                  <span className="h-2.5 w-2.5 bg-transparent rounded-full" aria-hidden="true" />
                 </div>
               </>
             )}
@@ -80,15 +77,14 @@ const Stepper = ({ currentStep }: { currentStep: Step }) => {
 
 
 const EndUserPage: React.FC = () => {
-  // --- ÉTATS GLOBAUX DE LA PAGE ---
+  const navigate = useNavigate();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dateError, setDateError] = useState<string | null>(null);
-
-  // --- ÉTATS À SAUVEGARDER ---
+  
   const [currentStep, setCurrentStep] = useState<Step>('select_campaign');
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
   const [fullData, setFullData] = useState<DataRow[]>([]);
@@ -100,7 +96,6 @@ const EndUserPage: React.FC = () => {
     dateRange: { start: '', end: '' },
   });
   
-  // --- EFFET DE RESTAURATION DE L'ÉTAT AU CHARGEMENT INITIAL ---
   useEffect(() => {
     const loadInitialData = async () => {
       try {
@@ -113,7 +108,6 @@ const EndUserPage: React.FC = () => {
         setCampaigns(loadedCampaigns);
         setAgents(agentsRes.data.data || []);
 
-        // Restauration de la session après le chargement des campagnes
         const savedStateJSON = localStorage.getItem(LOCAL_STORAGE_KEY);
         if (savedStateJSON) {
           const savedState: StoredState = JSON.parse(savedStateJSON);
@@ -123,7 +117,6 @@ const EndUserPage: React.FC = () => {
           setServerDateRange(savedState.serverDateRange);
           setFilters(savedState.filters);
 
-          // Retrouver l'objet campagne complet à partir de l'ID sauvegardé
           if (savedState.selectedCampaignId) {
             const campaign = loadedCampaigns.find(c => c.id === savedState.selectedCampaignId);
             setSelectedCampaign(campaign || null);
@@ -138,9 +131,7 @@ const EndUserPage: React.FC = () => {
     loadInitialData();
   }, []);
 
-  // --- EFFET DE SAUVEGARDE DE L'ÉTAT DANS LE LOCALSTORAGE ---
   useEffect(() => {
-    // Ne sauvegarde pas si les campagnes ne sont pas encore chargées pour éviter un état incomplet
     if (!isLoading) {
       const stateToSave: StoredState = {
         currentStep,
@@ -157,10 +148,7 @@ const EndUserPage: React.FC = () => {
 
   useEffect(() => {
     if (error) {
-      const timer = setTimeout(() => {
-        setError(null); 
-      }, 5000); 
-  
+      const timer = setTimeout(() => setError(null), 5000);
       return () => clearTimeout(timer);
     }
   }, [error]);
@@ -179,32 +167,12 @@ const EndUserPage: React.FC = () => {
     }
   }, [serverDateRange]);
 
-
-  const handleCampaignSelection = (campaignId: number | string) => {
+  const handleCampaignSelection = (campaignId: string | number) => {
     const campaign = campaigns.find(c => c.id == campaignId);
     setSelectedCampaign(campaign || null);
     setError(null);
   };
-
-  const handleFileDrop = (file: File) => {
-    setIsProcessing(true);
-    setError(null);
-    Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
-      complete: (results) => {
-        setFullData(results.data as DataRow[]);
-        if (results.data.length > 0) setHeaders(Object.keys(results.data[0]));
-        setIsProcessing(false);
-        setCurrentStep('view_data');
-      },
-      error: (err) => {
-        setError(`Erreur lors de la lecture du fichier CSV: ${err.message}`);
-        setIsProcessing(false);
-      },
-    });
-  };
-
+  
   const handleGenerateFromServer = async () => {
     if (dateError) {
         setError(dateError);
@@ -275,7 +243,6 @@ const EndUserPage: React.FC = () => {
     setError(null);
   };
 
-  // --- NOUVELLE FONCTION POUR TOUT RÉINITIALISER ---
   const handleHardReset = () => {
     if (window.confirm("Voulez-vous vraiment réinitialiser et effacer toutes les données en cours ?")) {
         localStorage.removeItem(LOCAL_STORAGE_KEY);
@@ -300,7 +267,7 @@ const EndUserPage: React.FC = () => {
         return (
           <div className="p-8 flex flex-col items-center justify-center text-center">
             <h3 className="text-2xl font-semibold text-gray-800 mb-2">Choisissez une campagne</h3>
-            <p className="text-gray-600 mb-6">Sélectionnez la campagne à utiliser pour charger et traiter vos données.</p>
+            <p className="text-gray-600 mb-6">Sélectionnez la campagne pour générer des données depuis le serveur.</p>
             <div className="w-full max-w-md space-y-4">
               <select
                 id="campaign-selection"
@@ -317,63 +284,53 @@ const EndUserPage: React.FC = () => {
                 ))}
               </select>
               <button
-                onClick={() => setCurrentStep('select_source')}
+                onClick={() => setCurrentStep('select_period')}
                 disabled={!selectedCampaign}
                 className="w-full inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 Continuer <ChevronRight className="h-5 w-5 ml-2" />
               </button>
             </div>
-            {isLoading && <p className="mt-4 text-sm text-gray-500">Chargement des campagnes...</p>}
           </div>
         );
 
-      case 'select_source':
+      case 'select_period':
         return (
           <div className="p-8">
             <button onClick={() => resetFlow('select_campaign')} className="mb-6 inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900">
               <ChevronLeft className="h-4 w-4 mr-1" /> Retour
             </button>
-            <h3 className="text-2xl font-semibold text-gray-800 mb-2 text-center">Choisissez une source de données</h3>
+            <h3 className="text-2xl font-semibold text-gray-800 mb-2 text-center">Générer depuis le Serveur</h3>
             <p className="text-gray-600 mb-6 text-center">Pour la campagne : <strong className="text-blue-600">{selectedCampaign?.name}</strong></p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="p-6 border border-gray-200 rounded-lg flex flex-col items-center justify-center text-center hover:shadow-lg transition-shadow">
-                <h4 className="text-xl font-semibold text-gray-800 mb-4">Importer un Fichier</h4>
-                <DragDropZone onFileDrop={handleFileDrop} accept=".csv,.xlsx,.xls" />
+            <div className="p-6 border border-gray-200 rounded-lg flex flex-col items-center justify-center text-center hover:shadow-lg transition-shadow space-y-4 max-w-lg mx-auto">
+              <div className="w-full space-y-3">
+                  <label className="block text-sm font-medium text-gray-700 text-left">
+                      Période requise *
+                  </label>
+                  <div className="flex items-center space-x-2">
+                      <input
+                          type="date"
+                          value={serverDateRange.start}
+                          onChange={(e) => setServerDateRange(d => ({ ...d, start: e.target.value }))}
+                          className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      />
+                      <span className="text-gray-500">-</span>
+                      <input
+                          type="date"
+                          value={serverDateRange.end}
+                          onChange={(e) => setServerDateRange(d => ({ ...d, end: e.target.value }))}
+                          className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      />
+                  </div>
+                  {dateError && <p className="text-xs text-red-600 mt-1">{dateError}</p>}
               </div>
-              <div className="p-6 border border-gray-200 rounded-lg flex flex-col items-center justify-center text-center hover:shadow-lg transition-shadow space-y-4">
-                <h4 className="text-xl font-semibold text-gray-800">Générer depuis le Serveur</h4>
-                
-                <div className="w-full max-w-sm space-y-3">
-                    <label className="block text-sm font-medium text-gray-700 text-left">
-                        Période requise *
-                    </label>
-                    <div className="flex items-center space-x-2">
-                        <input
-                            type="date"
-                            value={serverDateRange.start}
-                            onChange={(e) => setServerDateRange(d => ({ ...d, start: e.target.value }))}
-                            className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                        />
-                        <span className="text-gray-500">-</span>
-                        <input
-                            type="date"
-                            value={serverDateRange.end}
-                            onChange={(e) => setServerDateRange(d => ({ ...d, end: e.target.value }))}
-                            className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                        />
-                    </div>
-                    {dateError && <p className="text-xs text-red-600 mt-1">{dateError}</p>}
-                </div>
-
-                <button
-                  onClick={handleGenerateFromServer}
-                  disabled={isProcessing || !serverDateRange.start || !serverDateRange.end || !!dateError}
-                  className="w-fit inline-flex items-center justify-center p-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                >
-                  <Server className="h-5 w-5 mr-2" /> Charger les données
-                </button>
-              </div>
+              <button
+                onClick={handleGenerateFromServer}
+                disabled={isProcessing || !serverDateRange.start || !serverDateRange.end || !!dateError}
+                className="w-fit inline-flex items-center justify-center p-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                <Server className="h-5 w-5 mr-2" /> Charger les données
+              </button>
             </div>
           </div>
         );
@@ -383,8 +340,8 @@ const EndUserPage: React.FC = () => {
           <div className="p-6 space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold text-gray-900">Affinez et traitez les données</h2>
-              <button onClick={() => resetFlow('select_source')} className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                <ChevronLeft className="h-4 w-4 mr-2" /> Changer de source
+              <button onClick={() => resetFlow('select_period')} className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                <ChevronLeft className="h-4 w-4 mr-2" /> Changer de période
               </button>
             </div>
             <Filters
@@ -410,12 +367,7 @@ const EndUserPage: React.FC = () => {
               <div className="mt-6 flex justify-end">
                 <button
                   onClick={handleProcessAndDownload}
-                  disabled={
-                    filteredData.length === 0 ||
-                    !filters.processingCampaignId || 
-                    !filters.dateRange.start || 
-                    !filters.dateRange.end   
-                  }                  
+                  disabled={filteredData.length === 0 || !filters.processingCampaignId}
                   className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                   <Download className="h-5 w-5 mr-2" /> Traiter et Télécharger ({filteredData.length} lignes)
@@ -434,16 +386,24 @@ const EndUserPage: React.FC = () => {
       <div className="flex justify-between items-start">
         <div>
             <h1 className="text-3xl font-bold text-gray-900">Tableau de Bord de Traitement</h1>
-            <p className="mt-2 text-lg text-gray-600">Suivez les étapes pour préparer et exporter vos données.</p>
+            <p className="mt-2 text-lg text-gray-600">Générez des rapports depuis le serveur en suivant les étapes ci-dessous.</p>
         </div>
-        {/* --- BOUTON DE RÉINITIALISATION --- */}
-        <button 
-            onClick={handleHardReset}
-            className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 hover:text-red-700"
-            title="Réinitialiser la session"
-        >
-            <RotateCcw className="h-4 w-4 mr-2" /> Recommencer
-        </button>
+        <div className="flex items-center space-x-2">
+            <button 
+                onClick={() => navigate('/import')}
+                className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                title="Importer un fichier"
+            >
+                <Upload className="h-4 w-4 mr-2" /> Importer un Fichier
+            </button>
+            <button 
+                onClick={handleHardReset}
+                className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 hover:text-red-700"
+                title="Réinitialiser la session"
+            >
+                <RotateCcw className="h-4 w-4" />
+            </button>
+        </div>
       </div>
 
       {error && <StatusMessage type="error" message={error} />}
