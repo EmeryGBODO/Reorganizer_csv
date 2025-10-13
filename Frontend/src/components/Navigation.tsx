@@ -14,7 +14,7 @@ const Navigation: React.FC = () => {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <div className="flex-shrink-0 cursor-pointer" onClick={()=>navigate("/")}>
-              <h1 className="text-xl font-bold text-gray-900">CSV Reorganizer</h1>
+            <h1 className="text-xl font-bold bg-gradient-to-r from-orange-500 via-red-500 to-purple-600 bg-clip-text text-transparent animate-pulse">FLO WOP</h1>
             </div>
           </div>
 
@@ -32,7 +32,7 @@ const Navigation: React.FC = () => {
                     }`
                   }
                 >
-                  <Settings className="h-4 w-4" />
+                  <Settings className="h-4 w-4 hover:text-red-700" />
                 </NavLink>)}
                             
                           </div>

@@ -33,27 +33,27 @@ export default function LoginPage() {
     const { addToast } = useToast();
     const navigate = useNavigate();
 
-  // Génération d'éléments flottants animés
-  useEffect(() => {
-    const elements = [];
-    for (let i = 0; i < 6; i++) {
-      elements.push({
-        id: i,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        delay: Math.random() * 2,
-        duration: 3 + Math.random() * 2,
-      });
-    }
-    setFloatingElements(elements);
-  }, []);
+    // Génération d'éléments flottants animés
+    useEffect(() => {
+        const elements = [];
+        for (let i = 0; i < 6; i++) {
+            elements.push({
+                id: i,
+                x: Math.random() * 100,
+                y: Math.random() * 100,
+                delay: Math.random() * 2,
+                duration: 3 + Math.random() * 2,
+            });
+        }
+        setFloatingElements(elements);
+    }, []);
 
 
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        
+
         if (!username || !password) {
             setError('Veuillez remplir tous les champs');
             return;
@@ -69,11 +69,11 @@ export default function LoginPage() {
             } else {
                 result = await login(username, password, true)
             }
-            
+
             // Debug: afficher la réponse complète du serveur
-            
+
             // Vérifier d'abord si c'est un mot de passe temporaire
-            if (result.needs_password_change || 
+            if (result.needs_password_change ||
                 (result.message && result.message.includes('temporaire')) ||
                 (result.error && result.error.includes('temporaire'))) {
                 setUserEmail(result.user_email || username);
@@ -82,14 +82,14 @@ export default function LoginPage() {
                 setNeedsPasswordChange(true);
                 return;
             }
-            
+
             if (!result.success) {
                 // Gestion des erreurs spécifiques
                 let specificError = 'Identifiants incorrects. Veuillez réessayer.';
-                
+
                 if (result.error) {
                     const errorMsg = result.error.toLowerCase();
-                    
+
                     if (errorMsg.includes('mot de passe incorrect')) {
                         specificError = 'Identifiant ou mot de passe incorrect.';
                     } else if (errorMsg.includes('utilisateur inexistant') || (result.message && result.message.includes('n\'existe pas'))) {
@@ -111,7 +111,7 @@ export default function LoginPage() {
                         }
                     }
                 }
-                
+
                 setError(specificError);
             } else {
                 addToast({ message: 'Connexion réussie', type: 'success' });
@@ -200,12 +200,12 @@ export default function LoginPage() {
         setLoadingState(false); // Réinitialiser le loading
     };
 
-    const statsCards = [
-        { icon: TrendingUp, value: '24.5%', label: 'Performance', color: 'from-orange-400 to-red-500' },
-        { icon: BarChart3, value: '892', label: 'Ventes', color: 'from-blue-400 to-purple-500' },
-        { icon: PieChart, value: '98%', label: 'Qualité', color: 'from-green-400 to-emerald-500' },
-        { icon: Users, value: '156', label: 'Agents', color: 'from-pink-400 to-red-500' },
-    ];
+    // const statsCards = [
+    //     { icon: TrendingUp, value: '24.5%', label: 'Performance', color: 'from-orange-400 to-red-500' },
+    //     { icon: BarChart3, value: '892', label: 'Ventes', color: 'from-blue-400 to-purple-500' },
+    //     { icon: PieChart, value: '98%', label: 'Qualité', color: 'from-green-400 to-emerald-500' },
+    //     { icon: Users, value: '156', label: 'Agents', color: 'from-pink-400 to-red-500' },
+    // ];
 
     // Debug useEffect pour surveiller les changements de state
     useEffect(() => {
@@ -216,43 +216,43 @@ export default function LoginPage() {
 
 
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 flex items-center justify-center p-4 overflow-hidden relative">
-      {/* Éléments flottants animés */}
-      {floatingElements.map((el) => (
-        <div
-          key={el.id}
-          className={`absolute opacity-10 `}
-          style={{
-            '--x': `${el.x}%`,
-            '--y': `${el.y}%`,
-            '--delay': `${el.delay}s`,
-            '--duration': `${el.duration}s`,
-          } as React.CSSProperties}
-        >
-          <div className="animate-pulse">
-            {el.id % 4 === 0 && (
-              <TrendingUp size={24} className="text-orange-500" />
-            )}
-            {el.id % 4 === 1 && (
-              <BarChart3 size={24} className="text-blue-500" />
-            )}
-            {el.id % 4 === 2 && (
-              <PieChart size={24} className="text-green-500" />
-            )}
-            {el.id % 4 === 3 && <Users size={24} className="text-purple-500" />}
-          </div>
-        </div>
-      ))}
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 flex items-center justify-center p-4 overflow-hidden relative">
+            {/* Éléments flottants animés */}
+            {floatingElements.map((el) => (
+                <div
+                    key={el.id}
+                    className={`absolute opacity-10 `}
+                    style={{
+                        '--x': `${el.x}%`,
+                        '--y': `${el.y}%`,
+                        '--delay': `${el.delay}s`,
+                        '--duration': `${el.duration}s`,
+                    } as React.CSSProperties}
+                >
+                    <div className="animate-pulse">
+                        {el.id % 4 === 0 && (
+                            <TrendingUp size={24} className="text-orange-500" />
+                        )}
+                        {el.id % 4 === 1 && (
+                            <BarChart3 size={24} className="text-blue-500" />
+                        )}
+                        {el.id % 4 === 2 && (
+                            <PieChart size={24} className="text-green-500" />
+                        )}
+                        {el.id % 4 === 3 && <Users size={24} className="text-purple-500" />}
+                    </div>
+                </div>
+            ))}
 
-      {/* Grille de fond animée */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="grid grid-cols-12 gap-4 h-full animate-pulse">
-          {Array.from({ length: 48 }).map((_, i) => (
-            <div key={i} className="bg-slate-300 rounded"></div>
-          ))}
-        </div>
-      </div>
+            {/* Grille de fond animée */}
+            <div className="absolute inset-0 opacity-5">
+                <div className="grid grid-cols-12 gap-4 h-full animate-pulse">
+                    {Array.from({ length: 48 }).map((_, i) => (
+                        <div key={i} className="bg-slate-300 rounded"></div>
+                    ))}
+                </div>
+            </div>
 
             <div className="w-full max-w-7xl flex flex-col lg:flex-row items-center gap-8 lg:gap-32 relative z-10">
 
@@ -261,21 +261,21 @@ export default function LoginPage() {
                     <div className="mb-8">
                         <h1 className="text-5xl lg:text-6xl font-bold mb-4">
                             <span className="bg-gradient-to-r from-orange-500 via-red-500 to-purple-600 bg-clip-text text-transparent animate-pulse">
-                                CODE QUANTUM
+                                FLO WOP
                             </span>
                             {/* <span className="text-slate-700">LIGHT</span> */}
                         </h1>
                         <p className="text-xl text-slate-600 mb-2 pl-2">
-                            Plateforme d'analyse commerciale intelligente
+                            La plateforme essentielle pour maîtriser vos données CSV.
                         </p>
                         <p className="text-slate-500 pl-2">
-                            Suivez vos performances, analysez vos données et optimisez votre qualité de service
+                            Importez, réorganisez et structurez vos fichiers pour une analyse fluide et persistante.
                         </p>
-                      
+
                     </div>
 
-          {/* Mini statistiques animées */}
-          <div className="grid grid-cols-2 gap-4 mb-8 pl-2">
+                    {/* Mini statistiques animées */}
+                    {/* <div className="grid grid-cols-2 gap-4 mb-8 pl-2">
             {statsCards.map((stat, index) => (
               <div
                 key={index}
@@ -295,14 +295,14 @@ export default function LoginPage() {
                 <div className="text-sm text-slate-500">{stat.label}</div>
               </div>
             ))}
-          </div>
-        </div>
+          </div> */}
+                </div>
 
-        {/* Section droite - Formulaire de connexion */}
-        <div className="flex-1 max-w-md w-full">
-          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 p-8 relative overflow-hidden">
-            {/* Effet de lumière */}
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500  via-purple-500 to-blue-500 animate-pulse"></div>
+                {/* Section droite - Formulaire de connexion */}
+                <div className="flex-1 max-w-md w-full">
+                    <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 p-8 relative overflow-hidden">
+                        {/* Effet de lumière */}
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500  via-purple-500 to-blue-500 animate-pulse"></div>
 
                         <div className="text-center mb-8">
                             <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl flex items-center justify-center mx-auto mb-4 transform hover:rotate-12 transition-transform duration-300">
@@ -377,36 +377,28 @@ export default function LoginPage() {
                                 <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                                     <p className="text-sm font-medium text-gray-700 mb-3">Le mot de passe doit contenir :</p>
                                     <div className="grid grid-cols-1 gap-2">
-                                        <div className={`flex items-center space-x-2 text-sm ${
-                                            newPassword.length >= 8 ? 'text-green-600' : 'text-gray-500'
-                                        }`}>
-                                            <div className={`w-2 h-2 rounded-full ${
-                                                newPassword.length >= 8 ? 'bg-green-500' : 'bg-gray-300'
-                                            }`}></div>
+                                        <div className={`flex items-center space-x-2 text-sm ${newPassword.length >= 8 ? 'text-green-600' : 'text-gray-500'
+                                            }`}>
+                                            <div className={`w-2 h-2 rounded-full ${newPassword.length >= 8 ? 'bg-green-500' : 'bg-gray-300'
+                                                }`}></div>
                                             <span>Au moins 8 caractères</span>
                                         </div>
-                                        <div className={`flex items-center space-x-2 text-sm ${
-                                            /(?=.*[a-z])/.test(newPassword) ? 'text-green-600' : 'text-gray-500'
-                                        }`}>
-                                            <div className={`w-2 h-2 rounded-full ${
-                                                /(?=.*[a-z])/.test(newPassword) ? 'bg-green-500' : 'bg-gray-300'
-                                            }`}></div>
+                                        <div className={`flex items-center space-x-2 text-sm ${/(?=.*[a-z])/.test(newPassword) ? 'text-green-600' : 'text-gray-500'
+                                            }`}>
+                                            <div className={`w-2 h-2 rounded-full ${/(?=.*[a-z])/.test(newPassword) ? 'bg-green-500' : 'bg-gray-300'
+                                                }`}></div>
                                             <span>Une lettre minuscule</span>
                                         </div>
-                                        <div className={`flex items-center space-x-2 text-sm ${
-                                            /(?=.*[A-Z])/.test(newPassword) ? 'text-green-600' : 'text-gray-500'
-                                        }`}>
-                                            <div className={`w-2 h-2 rounded-full ${
-                                                /(?=.*[A-Z])/.test(newPassword) ? 'bg-green-500' : 'bg-gray-300'
-                                            }`}></div>
+                                        <div className={`flex items-center space-x-2 text-sm ${/(?=.*[A-Z])/.test(newPassword) ? 'text-green-600' : 'text-gray-500'
+                                            }`}>
+                                            <div className={`w-2 h-2 rounded-full ${/(?=.*[A-Z])/.test(newPassword) ? 'bg-green-500' : 'bg-gray-300'
+                                                }`}></div>
                                             <span>Une lettre majuscule</span>
                                         </div>
-                                        <div className={`flex items-center space-x-2 text-sm ${
-                                            /(?=.*\d)/.test(newPassword) ? 'text-green-600' : 'text-gray-500'
-                                        }`}>
-                                            <div className={`w-2 h-2 rounded-full ${
-                                                /(?=.*\d)/.test(newPassword) ? 'bg-green-500' : 'bg-gray-300'
-                                            }`}></div>
+                                        <div className={`flex items-center space-x-2 text-sm ${/(?=.*\d)/.test(newPassword) ? 'text-green-600' : 'text-gray-500'
+                                            }`}>
+                                            <div className={`w-2 h-2 rounded-full ${/(?=.*\d)/.test(newPassword) ? 'bg-green-500' : 'bg-gray-300'
+                                                }`}></div>
                                             <span>Un chiffre</span>
                                         </div>
                                     </div>
@@ -438,7 +430,7 @@ export default function LoginPage() {
                                         {error}
                                     </div>
                                 )}
-                                
+
                                 {/* Champ Username */}
                                 <div className="group">
                                     <label className="block text-sm font-medium text-slate-700 mb-2 text-left">
