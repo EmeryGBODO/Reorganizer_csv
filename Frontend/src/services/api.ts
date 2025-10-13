@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Campaign, UserCredentials, Agent, DataRow } from '../types'; 
 
-const API_BASE_URL = 'http://localhost:8000/api';
+export const API_BASE_URL = import.meta.env.VITE_API_URL
 
 // ... (données mock existantes)
 const mockCampaigns: Campaign[] = [
@@ -77,14 +77,14 @@ export const authApi = {
 
 // --- API des Campagnes (maintenant réelle) ---
 export const campaignApi = {
-  getAll: () => api.get<Campaign[]>('/campaigns'), 
+  getAll: () => api.get<Campaign[]>('/api/campaigns'), 
   create: (campaignData: Campaign) =>{
     console.log("campaign created🤞✌", campaignData);
-    return api.post<Campaign>('/campaigns/', campaignData)},
+    return api.post<Campaign>('/api/campaigns/', campaignData)},
   update: (id: string | number, campaignData: Partial<Campaign>) => {
     console.log("Campaign updated", campaignData);
     
-    return api.put<Campaign>(`/campaigns/${id}/`, campaignData)},
+    return api.put<Campaign>(`/api/campaigns/${id}/`, campaignData)},
   delete: (id: string | number) => api.delete(`/campaigns/${id}/`),
 };
 
@@ -93,16 +93,18 @@ export const fileApi = {
   processCSV: (file: File, campaignId: string) => {
     const formData = new FormData();
     formData.append('file', file);
+    console.log(campaignId);
+    console.log(formData);
+    console.log(file);
     
-    
-    return api.post<Blob>(`/process/${campaignId}`, formData, {
+    return api.post<Blob>(`/api/process-file/${campaignId}/`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
       responseType: 'blob', // Important pour recevoir le fichier en retour
     });
-  },
-};
+  }
+}
 
 export const dataApi = {
     getAgents: async (): Promise<{ data: { success: boolean, data: Agent[] } }> => {
@@ -121,7 +123,7 @@ export const dataApi = {
         console.log(`Récupération des données pour la campagne ID: ${campaignId} entre le ${startDate} et le ${endDate}`);
 
         // Dans une vraie application, vous feriez :
-        // const response = await api.get(`/remote-data/${campaignId}/`, { 
+        // const response = await api.get(`/api/remote-data/${campaignId}/`, { 
         //   params: { start_date: startDate, end_date: endDate }
         // });
         // return response.data;

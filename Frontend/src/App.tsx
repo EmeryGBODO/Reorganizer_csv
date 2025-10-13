@@ -3,40 +3,42 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navigation from './components/Navigation';
 import EndUserPage from './pages/EndUserPage';
 import AdminPage from './pages/AdminPage';
-import LoginPage from './pages/LoginPage'; // Importer la nouvelle page
+import LoginPage from './pages/LoginPage'; 
+import ImportPage from './pages/ImportPage';
 import ProtectedRoute from './components/ProtectedRoute'; // Importer le composant de protection
 import { AuthProvider } from './context/AuthContext'; // Importer le provider
-import ImportCsvPage from './pages/importCsvPage';
-
+import { ToastProvider } from './components/Toast/ToastContext';
 
 function App() {
   return (
     // 1. Envelopper toute l'application dans AuthProvider
     <AuthProvider>
-      <Router>
-        <div className="min-h-screen bg-gray-50">
-          <Navigation />
-          <main>
-            <Routes>
-              <Route path="/" element={<EndUserPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/import" element={<ImportCsvPage />} />
-
-              
-              {/* 2. Protéger la route /admin */}
-              <Route 
-                path="/admin"
-                element={
-                  
-                    <AdminPage />
-                  
-                }
-              />
-
-            </Routes>
-          </main>
-        </div>
-      </Router>
+      <ToastProvider>
+        <Router>
+          <div className="min-h-screen bg-gray-50">
+            <Navigation />
+            <main>
+              <Routes>
+                 <Route path="/import" element={<ImportPage />} />
+                <Route path="/" element={<EndUserPage />} />
+                <Route path="/login" element={<LoginPage />} />
+        
+                {/* 2. Protéger la route /admin */}
+                <Route
+                  path="/admin"
+                  element={
+                    <ProtectedRoute>
+                      
+                      <AdminPage />
+        
+                    </ProtectedRoute>
+                  }
+                />
+              </Routes>
+            </main>
+          </div>
+        </Router>
+      </ToastProvider>
     </AuthProvider>
   );
 }

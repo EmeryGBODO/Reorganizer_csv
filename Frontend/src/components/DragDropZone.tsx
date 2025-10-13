@@ -83,6 +83,7 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
       >
         <input
           ref={fileInputRef}
+          name='file'
           type="file"
           accept={accept}
           onChange={handleFileSelect}
