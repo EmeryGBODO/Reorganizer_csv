@@ -191,24 +191,28 @@ const ImportPage: React.FC = () => {
 
             case 'view_data':
                 return (
-                    <div className="p-6 space-y-6">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-xl font-semibold text-gray-900">Aperçu des données et traitement</h2>
-                            <button onClick={() => resetFlow('upload_file')} className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                                <ChevronLeft className="h-4 w-4 mr-2" /> Changer de fichier
-                            </button>
+                    <div className="flex flex-col h-full">
+                        <div className="p-6 pb-0">
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-xl font-semibold text-gray-900">Aperçu des données et traitement</h2>
+                                <button onClick={() => resetFlow('upload_file')} className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                    <ChevronLeft className="h-4 w-4 mr-2" /> Changer de fichier
+                                </button>
+                            </div>
                         </div>
-                        <div className="border-t pt-6">
-                            <DataTable headers={headers} data={fullData.slice(0, PREVIEW_ROW_COUNT)} totalRowCount={fullData.length} />
-                            <div className="mt-6 flex justify-end">
+                        <div className="sticky top-16 bg-transparent z-50 px-6 py-4">
+                            <div className="flex justify-end">
                                 <button
                                     onClick={handleProcessAndDownload}
                                     disabled={fullData.length === 0}
-                                    className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                    className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-md"
                                 >
                                     <Download className="h-5 w-5 mr-2" /> Traiter et Télécharger ({fullData.length} lignes)
                                 </button>
                             </div>
+                        </div>
+                        <div className="flex-1 overflow-auto p-6 pt-0">
+                            <DataTable headers={headers} data={fullData.slice(0, PREVIEW_ROW_COUNT)} totalRowCount={fullData.length} />
                         </div>
                     </div>
                 );
