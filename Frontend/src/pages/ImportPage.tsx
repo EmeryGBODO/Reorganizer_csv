@@ -39,8 +39,8 @@ const ImportPage: React.FC = () => {
     const [fullData, setFullData] = useState<DataRow[]>([]);
     const [headers, setHeaders] = useState<string[]>([]);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [isConverting,setIsConverting] = useState<Boolean>(false);
-    const [uploadState, setUploadState] = useState<UploadState>({isUploading:false, success:false, error:"", progress:0})
+    const [isConverting,setIsConverting] = useState<boolean>(false);
+    const [uploadState, setUploadState] = useState<UploadState>({isUploading:false, success:false, error:null, progress:0})
     const navigate = useNavigate();
 
     useEffect(() => {

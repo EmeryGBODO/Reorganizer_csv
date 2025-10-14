@@ -15,41 +15,48 @@ const Stepper: React.FC<StepperProps> = ({ steps, currentStep }) => {
   const currentStepIndex = steps.findIndex(s => s.id === currentStep);
 
   return (
-    <nav aria-label="Progress">
-      <ol role="list" className="flex items-center">
-        {steps.map((step, stepIdx) => (
-          <li key={step.title} className={`relative ${stepIdx !== steps.length - 1 ? 'pr-8 sm:pr-20' : ''}`}>
-            {stepIdx < currentStepIndex ? (
-              <>
+    <nav aria-label="Progress" className="px-4">
+      <ol className="flex items-center justify-center">
+        {steps.map((step, stepIdx) => {
+          const isCompleted = stepIdx < currentStepIndex;
+          const isCurrent = stepIdx === currentStepIndex;
+          const isLast = stepIdx === steps.length - 1;
+
+          return (
+            <li key={step.id} className={`relative ${!isLast ? 'pr-8 sm:pr-20' : ''}`}>
+              {!isLast && (
                 <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                  <div className="h-0.5 w-full bg-blue-400" />
+                  <div className={`h-0.5 w-full transition-all duration-500 ${
+                    isCompleted ? 'bg-gradient-to-r from-blue-500 to-blue-600' : 'bg-gray-200'
+                  }`} />
                 </div>
-                <div className="relative flex h-8 w-8 items-center justify-center bg-blue-600 rounded-full">
-                  <CheckCircle className="h-5 w-5 text-white" aria-hidden="true" />
+              )}
+              
+              <div className="relative flex flex-col items-center">
+                <div className={`flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 ${
+                  isCompleted 
+                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 shadow-lg' 
+                    : isCurrent 
+                    ? 'bg-white border-2 border-blue-500 shadow-md' 
+                    : 'bg-white border-2 border-gray-300'
+                }`}>
+                  {isCompleted ? (
+                    <CheckCircle className="h-6 w-6 text-white" />
+                  ) : (
+                    <span className={`h-3 w-3 rounded-full transition-all duration-300 ${
+                      isCurrent ? 'bg-blue-500' : 'bg-gray-400'
+                    }`} />
+                  )}
                 </div>
-              </>
-            ) : stepIdx === currentStepIndex ? (
-              <>
-                <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                  <div className="h-0.5 w-full bg-blue-200" />
-                </div>
-                <div className="relative flex h-8 w-8 items-center justify-center bg-white border-2 border-blue-600 rounded-full" aria-current="step">
-                  <span className="h-2.5 w-2.5 bg-blue-600 rounded-full" aria-hidden="true" />
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                  <div className="h-0.5 w-full bg-blue-200" />
-                </div>
-                <div className="group relative flex h-8 w-8 items-center justify-center bg-white border-2 border-blue-300 rounded-full">
-                  <span className="h-2.5 w-2.5 bg-transparent rounded-full" aria-hidden="true" />
-                </div>
-              </>
-            )}
-            <span className="absolute top-10 w-max text-center text-xs text-gray-600">{step.title}</span>
-          </li>
-        ))}
+                <span className={`absolute top-12 w-max text-center text-sm transition-colors duration-300 ${
+                  isCompleted || isCurrent ? 'text-gray-800 font-medium' : 'text-gray-500'
+                }`}>
+                  {step.title}
+                </span>
+              </div>
+            </li>
+          );
+        })}
       </ol>
     </nav>
   );
