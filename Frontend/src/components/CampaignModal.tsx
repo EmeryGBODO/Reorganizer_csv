@@ -85,7 +85,7 @@ const CampaignModal: React.FC<CampaignModalProps> = ({ isOpen, onClose, onSave, 
           </div>
         )}
         <div className="p-6 space-y-6 border overflow-y-auto">
-          <div className="border">
+          <div className="">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Nom de la campagne *
@@ -132,12 +132,12 @@ const CampaignModal: React.FC<CampaignModalProps> = ({ isOpen, onClose, onSave, 
               </p>
             </div>
           </div>
-          <div className="mt-4">
+          {/* <div className="mt-4">
             <ColumnEditor
               columns={editedCampaign.columns}
               onColumnsChange={handleColumnsChange}
             />
-          </div>
+          </div> */}
         </div>
         <div className="flex items-center justify-end p-6 border-t space-x-3">
           <button
