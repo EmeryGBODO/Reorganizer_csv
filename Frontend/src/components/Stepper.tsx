@@ -23,7 +23,7 @@ const Stepper: React.FC<StepperProps> = ({ steps, currentStep }) => {
           const isLast = stepIdx === steps.length - 1;
 
           return (
-            <li key={step.id} className={`relative ${!isLast ? 'pr-8 sm:pr-20' : ''}`}>
+            <li key={step.id} className={`relative ${!isLast ? 'pr-8 sm:pr-28' : ''}`}>
               {!isLast && (
                 <div className="absolute inset-0 flex items-center" aria-hidden="true">
                   <div className={`h-0.5 w-full transition-all duration-500 ${
