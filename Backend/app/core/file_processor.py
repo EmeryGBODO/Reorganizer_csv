@@ -14,7 +14,7 @@ class CampaignColumn:
         self.name = name
         self.rules = rules
 
-def apply_rule(series: pd.Series, rule: ColumnRule) -> pd.Series:
+def apply_rule(series: pd.Series, rule: ColumnRule) -> pd.Series:       
     """Applique une seule règle à une colonne (Series) de Pandas."""
     if rule.type == 'TO_UPPERCASE':
         return series.fillna("").astype(str).str.upper()

@@ -36,7 +36,8 @@ const CampaignModal: React.FC<CampaignModalProps> = ({ isOpen, onClose, onSave, 
 
   const handleSaveClick = () => {
     
-
+    console.log("donnée à mettre à jour", editedCampaign);
+    
     if(editedCampaign.name.trim() === ''){
         setError('Le nom de la campagne est requis');
         return;

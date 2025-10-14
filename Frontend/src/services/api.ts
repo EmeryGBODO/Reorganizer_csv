@@ -85,7 +85,7 @@ export const campaignApi = {
     console.log("Campaign updated", campaignData);
     
     return api.put<Campaign>(`/api/campaigns/${id}/`, campaignData)},
-  delete: (id: string | number) => api.delete(`/campaigns/${id}/`),
+  delete: (id: string | number) => api.delete(`/api/campaigns/${id}/`),
 };
 
 // --- API de Traitement de Fichier (maintenant réelle) ---

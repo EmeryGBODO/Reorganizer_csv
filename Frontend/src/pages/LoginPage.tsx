@@ -50,6 +50,14 @@ export default function LoginPage() {
 
 
 
+  useEffect(() => {
+    const quantum_user = localStorage.getItem("quantum_user");
+    if (quantum_user) {
+      navigate("/", { replace: true });
+    }
+  }, [navigate]);
+
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
