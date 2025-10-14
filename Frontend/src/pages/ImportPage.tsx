@@ -76,65 +76,23 @@ const ImportPage: React.FC = () => {
 
 
 
-    //     const handleFileDrop = (file: File) => {
-    //     setUploadState({ isUploading: false, success: false, error: null, progress: 0 });
-    //     const extension = file.name.split('.').pop()?.toLowerCase();
-
-    //     if (extension === 'csv') {
-    //       setSelectedFile(file);
-    //       return;
-    //     }
-
-    //     if (extension === 'xlsx' || extension === 'xls') {
-    //       setIsConverting(true);
-    //       const reader = new FileReader();
-    //       reader.onload = (e) => {
-    //         try {
-    //           const data = e.target?.result;
-    //           const workbook = XLSX.read(data, { type: 'array' });
-    //           const firstSheetName = workbook.SheetNames[0];
-    //           const worksheet = workbook.Sheets[firstSheetName];
-    //           const csvData = XLSX.utils.sheet_to_csv(worksheet);
-
-    //           const newFileName = file.name.replace(/\.(xlsx|xls)$/i, '.csv');
-    //           const csvFile = new File([csvData], newFileName, { type: 'text/csv' });
-
-    //           setSelectedFile(csvFile);
-    //         } catch (err) {
-    //             setUploadState(prev => ({ ...prev, error: "Erreur lors de la conversion du fichier Excel."}));
-    //         } finally {
-    //             setIsConverting(false);
-    //         }
-    //       };
-    //       reader.onerror = () => {
-    //         setUploadState(prev => ({ ...prev, error: "Impossible de lire le fichier."}));
-    //         setIsConverting(false);
-    //       }
-    //       reader.readAsArrayBuffer(file);
-    //       return;
-    //     }
-
-    //     setUploadState(prev => ({ ...prev, error: "Type de fichier non supporté."}));
-    //   };
-
-
 
     const handleFileDrop = (file: File) => {
         setIsProcessing(true);
         setError(null);
-        // const extension = file.name.split('.').pop()?.toLowerCase();
+        const extension = file.name.split('.').pop()?.toLowerCase();
 
-        // if (extension === 'csv') {
-        //     setSelectedFile(file);
-        //     return;
-        // }
+        if (extension === 'csv') {
+            setSelectedFile(file);
+            return;
+        }
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
                 const data = new Uint8Array(e.target?.result as ArrayBuffer);
                 const workbook = XLSX.read(data, { type: 'array' });
                 const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                const jsonData  = XLSX.utils.sheet_to_json(firstSheet);
 
                 setFullData(jsonData as DataRow[]);
                 if (jsonData.length > 0) setHeaders(Object.keys(jsonData[0]));
@@ -148,36 +106,36 @@ const ImportPage: React.FC = () => {
         reader.readAsArrayBuffer(file);
 
 
-        // if (extension === 'xlsx' || extension === 'xls') {
-        //     setIsConverting(true);
-        //     const reader = new FileReader();
-        //     reader.onload = (e) => {
-        //         try {
-        //             const data = e.target?.result;
-        //             const workbook = XLSX.read(data, { type: 'array' });
-        //             const firstSheetName = workbook.SheetNames[0];
-        //             const worksheet = workbook.Sheets[firstSheetName];
-        //             const csvData = XLSX.utils.sheet_to_csv(worksheet);
+        if (extension === 'xlsx' || extension === 'xls') {
+            setIsConverting(true);
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = e.target?.result;
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const csvData = XLSX.utils.sheet_to_csv(worksheet);
 
-        //             const newFileName = file.name.replace(/\.(xlsx|xls)$/i, '.csv');
-        //             const csvFile = new File([csvData], newFileName, { type: 'text/csv' });
+                    const newFileName = file.name.replace(/\.(xlsx|xls)$/i, '.csv');
+                    const csvFile = new File([csvData], newFileName, { type: 'text/csv' });
 
-        //             setSelectedFile(csvFile);
-        //         } catch (err) {
-        //             setUploadState(prev => ({ ...prev, error: "Erreur lors de la conversion du fichier Excel." }));
-        //         } finally {
-        //             setIsConverting(false);
-        //         }
-        //     };
-        //     reader.onerror = () => {
-        //         setUploadState(prev => ({ ...prev, error: "Impossible de lire le fichier." }));
-        //         setIsConverting(false);
-        //     }
-        //     reader.readAsArrayBuffer(file);
-        //     return;
-        // }
+                    setSelectedFile(csvFile);
+                } catch (err) {
+                    setUploadState(prev => ({ ...prev, error: "Erreur lors de la conversion du fichier Excel." }));
+                } finally {
+                    setIsConverting(false);
+                }
+            };
+            reader.onerror = () => {
+                setUploadState(prev => ({ ...prev, error: "Impossible de lire le fichier." }));
+                setIsConverting(false);
+            }
+            reader.readAsArrayBuffer(file);
+            return;
+        }
 
-        // setUploadState(prev => ({ ...prev, error: "Type de fichier non supporté." }));
+        setUploadState(prev => ({ ...prev, error: "Type de fichier non supporté." }));
     };
 
 
@@ -268,7 +226,8 @@ const ImportPage: React.FC = () => {
         try {
             // --- APPEL BACKEND RÉEL ---
             const response = await fileApi.processCSV(selectedFile, selectedCampaign.id);
-
+            console.log(response);
+            
             const blob = new Blob([response.data], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
