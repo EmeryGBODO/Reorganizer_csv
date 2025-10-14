@@ -26,7 +26,7 @@ const Filters: React.FC<FiltersProps> = ({
     <div className="grid grid-cols-1 md:grid-cols-2 gap-20 ">
       
 
-      <div>
+      {/* <div>
         <label htmlFor="agent-filter" className="block text-sm font-medium text-gray-700 mb-1">
           Agent
         </label>
@@ -62,7 +62,7 @@ const Filters: React.FC<FiltersProps> = ({
             className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

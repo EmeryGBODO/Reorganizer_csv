@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, CreditCard as Edit2, Trash2 } from 'lucide-react';
+import { Plus, CreditCard as Edit2, Trash2, ChevronLeft } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import StatusMessage from '../components/StatusMessage';
 import CampaignModal from '../components/CampaignModal';
+import ConfirmModal from '../components/ConfirmModal';
 import { Campaign } from '../types';
 import { campaignApi } from '../services/api';
+import { useNavigate } from 'react-router-dom';
 
 const AdminPage: React.FC = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -14,6 +16,8 @@ const AdminPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [editmode, setEditmod] = useState<boolean>(false)
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; campaignId: string | number | null }>({ isOpen: false, campaignId: null });
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadCampaigns();
@@ -21,20 +25,18 @@ const AdminPage: React.FC = () => {
 
   
   useEffect(() => {
-    // 1. On vérifie s'il y a un message d'erreur actif
     if (error) {
-      // 2. On démarre un chronomètre (par exemple, 5000 millisecondes = 5 secondes)
-      const timer = setTimeout(() => {
-        // 3. À la fin du temps, on réinitialise l'état 'error' à null
-        setError(null); 
-      }, 5000); 
-  
-      // 4. Fonction de nettoyage : Elle est cruciale !
-      // Si l'utilisateur clique rapidement sur quelque chose d'autre,
-      // on annule le timer précédent pour éviter les bugs.
+      const timer = setTimeout(() => setError(null), 3000);
       return () => clearTimeout(timer);
     }
-  }, [error]); // Le tableau de dépendances : ce code s'exécute à chaque fois que 'error' change.
+  }, [error]);
+
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => setSuccess(null), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [success]);
 
   const loadCampaigns = async () => {
     try {
@@ -116,17 +118,22 @@ const AdminPage: React.FC = () => {
     setError(null); // Clear error on close
   };
 
-  const handleDeleteCampaign = async (id: string | number) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cette campagne ?')) {
-      return;
-    }
+  const handleGoBack = ( ) => { navigate(-1) };
+
+  const handleDeleteCampaign = (id: string | number) => {
+    setDeleteModal({ isOpen: true, campaignId: id });
+  };
+
+  const confirmDeleteCampaign = async () => {
+    if (!deleteModal.campaignId) return;
     try {
-      const response = await campaignApi.delete(id)
-      setCampaigns(prev => prev.filter(c => c.id !== id));
+      await campaignApi.delete(deleteModal.campaignId);
+      setCampaigns(prev => prev.filter(c => c.id !== deleteModal.campaignId));
       setSuccess('Campagne supprimée avec succès');
     } catch (error) {
       setError('Erreur lors de la suppression');
     }
+    setDeleteModal({ isOpen: false, campaignId: null });
   };
 
   if (loading) {
@@ -143,6 +150,9 @@ const AdminPage: React.FC = () => {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
+          <button onClick={handleGoBack} className="mb-6 inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900">
+              <ChevronLeft className="h-4 w-4 mr-1" /> Retour
+            </button>
             <h1 className="text-3xl font-bold text-gray-900 mb-4">
               Administration des campagnes
             </h1>
@@ -152,8 +162,8 @@ const AdminPage: React.FC = () => {
           </div>
           <button
             onClick={handleCreateCampaign}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-          >
+
+className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-red-500 hover:to-red-600 hover:to-red-600"          >
             <Plus className="h-4 w-4 mr-2" />
             Nouvelle campagne
           </button>
@@ -208,6 +218,16 @@ const AdminPage: React.FC = () => {
         editmode={editmode}
         error={error}
         setError={setError}
+      />
+
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, campaignId: null })}
+        onConfirm={confirmDeleteCampaign}
+        title="Supprimer la campagne"
+        message="Êtes-vous sûr de vouloir supprimer cette campagne ? Cette action est irréversible."
+        confirmText="Supprimer"
+        type="danger"
       />
     </div>
   );

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect }from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navigation from './components/Navigation';
 import EndUserPage from './pages/EndUserPage';
@@ -10,12 +10,16 @@ import { AuthProvider } from './context/AuthContext'; // Importer le provider
 import { ToastProvider } from './components/Toast/ToastContext';
 
 function App() {
+    useEffect(() => {
+    document.body.className = 'bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50';
+    return () => { document.body.className = ''; };
+  }, []);
   return (
     // 1. Envelopper toute l'application dans AuthProvider
     <AuthProvider>
       <ToastProvider>
         <Router>
-          <div className="min-h-screen bg-gray-50">
+          <div >
             <Navigation />
             <main>
               <Routes>

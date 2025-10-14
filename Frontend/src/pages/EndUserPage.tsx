@@ -5,6 +5,8 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import StatusMessage from '../components/StatusMessage';
 import DataTable from '../components/DataTable';
 import Filters from '../components/Filters';
+import Stepper from '../components/Stepper';
+import ConfirmModal from '../components/ConfirmModal';
 import { Campaign, Agent, DataRow } from '../types';
 import { campaignApi, dataApi } from '../services/api';
 
@@ -26,54 +28,11 @@ interface StoredState {
   };
 }
 
-const Stepper = ({ currentStep }: { currentStep: Step }) => {
-  const steps = [
-    { id: 'select_campaign', title: 'Choisir la Campagne' },
-    { id: 'select_period', title: 'Définir la Période' },
-    { id: 'view_data', title: 'Visualiser et Traiter' },
-  ];
-  const currentStepIndex = steps.findIndex(s => s.id === currentStep);
-
-  return (
-    <nav aria-label="Progress">
-      <ol role="list" className="flex items-center">
-        {steps.map((step, stepIdx) => (
-          <li key={step.title} className={`relative ${stepIdx !== steps.length - 1 ? 'pr-8 sm:pr-20' : ''}`}>
-            {stepIdx < currentStepIndex ? (
-              <>
-                <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                  <div className="h-0.5 w-full bg-blue-600" />
-                </div>
-                <div className="relative flex h-8 w-8 items-center justify-center bg-blue-600 rounded-full">
-                  <CheckCircle className="h-5 w-5 text-white" aria-hidden="true" />
-                </div>
-              </>
-            ) : stepIdx === currentStepIndex ? (
-              <>
-                <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                  <div className="h-0.5 w-full bg-gray-200" />
-                </div>
-                <div className="relative flex h-8 w-8 items-center justify-center bg-white border-2 border-blue-600 rounded-full" aria-current="step">
-                  <span className="h-2.5 w-2.5 bg-blue-600 rounded-full" aria-hidden="true" />
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                  <div className="h-0.5 w-full bg-gray-200" />
-                </div>
-                <div className="group relative flex h-8 w-8 items-center justify-center bg-white border-2 border-gray-300 rounded-full">
-                  <span className="h-2.5 w-2.5 bg-transparent rounded-full" aria-hidden="true" />
-                </div>
-              </>
-            )}
-            <span className="absolute top-10 w-max text-center text-xs text-gray-600">{step.title}</span>
-          </li>
-        ))}
-      </ol>
-    </nav>
-  );
-};
+const ENDUSER_STEPS = [
+  { id: 'select_campaign', title: 'Choisir la Campagne' },
+  { id: 'select_period', title: 'Définir la Période' },
+  { id: 'view_data', title: 'Visualiser et Traiter' },
+];
 
 
 const EndUserPage: React.FC = () => {
@@ -95,6 +54,7 @@ const EndUserPage: React.FC = () => {
     agentId: '',
     dateRange: { start: '', end: '' },
   });
+  const [resetModal, setResetModal] = useState(false);
   
   useEffect(() => {
     const loadInitialData = async () => {
@@ -244,21 +204,23 @@ const EndUserPage: React.FC = () => {
   };
 
   const handleHardReset = () => {
-    if (window.confirm("Voulez-vous vraiment réinitialiser et effacer toutes les données en cours ?")) {
-        localStorage.removeItem(LOCAL_STORAGE_KEY);
-        setCurrentStep('select_campaign');
-        setSelectedCampaign(null);
-        setFullData([]);
-        setHeaders([]);
-        setServerDateRange({ start: '', end: '' });
-        setFilters({
-            processingCampaignId: '',
-            agentId: '',
-            dateRange: { start: '', end: '' },
-        });
-        setError(null);
-        setDateError(null);
-    }
+    setResetModal(true);
+  };
+
+  const confirmHardReset = () => {
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
+    setCurrentStep('select_campaign');
+    setSelectedCampaign(null);
+    setFullData([]);
+    setHeaders([]);
+    setServerDateRange({ start: '', end: '' });
+    setFilters({
+      processingCampaignId: '',
+      agentId: '',
+      dateRange: { start: '', end: '' },
+    });
+    setError(null);
+    setDateError(null);
   };
 
   const renderStepContent = () => {
@@ -268,7 +230,7 @@ const EndUserPage: React.FC = () => {
           <div className="p-8 flex flex-col items-center justify-center text-center">
             <h3 className="text-2xl font-semibold text-gray-800 mb-2">Choisissez une campagne</h3>
             <p className="text-gray-600 mb-6">Sélectionnez la campagne pour générer des données depuis le serveur.</p>
-            <div className="w-full max-w-md space-y-4">
+            <div className="w-full max-w-md space-y-4 ">
               <select
                 id="campaign-selection"
                 value={selectedCampaign?.id || ""}
@@ -286,7 +248,7 @@ const EndUserPage: React.FC = () => {
               <button
                 onClick={() => setCurrentStep('select_period')}
                 disabled={!selectedCampaign}
-                className="w-full inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="w-full inline-flex items-center justify-center px-6 py-3 font-medium rounded-md text-white  bg-gradient-to-r from-orange-500 to-red-500 hover:to-red-600 disabled:bg-purple-400 disabled:cursor-not-allowed"
               >
                 Continuer <ChevronRight className="h-5 w-5 ml-2" />
               </button>
@@ -296,12 +258,12 @@ const EndUserPage: React.FC = () => {
 
       case 'select_period':
         return (
-          <div className="p-8">
+          <div className="p-8 ">
             <button onClick={() => resetFlow('select_campaign')} className="mb-6 inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900">
               <ChevronLeft className="h-4 w-4 mr-1" /> Retour
             </button>
             <h3 className="text-2xl font-semibold text-gray-800 mb-2 text-center">Générer depuis le Serveur</h3>
-            <p className="text-gray-600 mb-6 text-center">Pour la campagne : <strong className="text-blue-600">{selectedCampaign?.name}</strong></p>
+            <p className="text-gray-600 mb-6 text-center">Pour la campagne : <strong className="text-purple-400">{selectedCampaign?.name}</strong></p>
             <div className="p-6 border border-gray-200 rounded-lg flex flex-col items-center justify-center text-center hover:shadow-lg transition-shadow space-y-4 max-w-lg mx-auto">
               <div className="w-full space-y-3">
                   <label className="block text-sm font-medium text-gray-700 text-left">
@@ -327,7 +289,8 @@ const EndUserPage: React.FC = () => {
               <button
                 onClick={handleGenerateFromServer}
                 disabled={isProcessing || !serverDateRange.start || !serverDateRange.end || !!dateError}
-                className="w-fit inline-flex items-center justify-center p-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="w-fit inline-flex items-center justify-center p-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-red-500
+ hover:to-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 <Server className="h-5 w-5 mr-2" /> Charger les données
               </button>
@@ -382,8 +345,8 @@ const EndUserPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8 ">
-      <div className="flex justify-between items-start">
+    <div className="max-w-7xl mx-auto bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 py-8 px-4 sm:px-6 lg:px-8 space-y-8 ">
+      <div className="flex justify-between  items-start">
         <div>
             <h1 className="text-3xl font-bold text-gray-900">Tableau de Bord de Traitement</h1>
             <p className="mt-2 text-lg text-gray-600">Générez des rapports depuis le serveur en suivant les étapes ci-dessous.</p>
@@ -391,7 +354,7 @@ const EndUserPage: React.FC = () => {
         <div className="flex items-center space-x-2">
             <button 
                 onClick={() => navigate('/import')}
-                className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                className="inline-flex items-center px-3 py-2 text-white border text-sm bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 font-bold rounded-xl shadow-lg"
                 title="Importer un fichier"
             >
                 <Upload className="h-4 w-4 mr-2" /> Importer un Fichier
@@ -410,7 +373,7 @@ const EndUserPage: React.FC = () => {
 
       <div className="bg-white shadow-xl rounded-lg ">
         <div className="p-6 border-b flex justify-center">
-          <Stepper currentStep={currentStep} />
+          <Stepper steps={ENDUSER_STEPS} currentStep={currentStep} />
         </div>
         <div className="min-h-[400px] flex flex-col justify-center">
           {isProcessing || isLoading ? (
@@ -421,6 +384,16 @@ const EndUserPage: React.FC = () => {
           ) : renderStepContent()}
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={resetModal}
+        onClose={() => setResetModal(false)}
+        onConfirm={confirmHardReset}
+        title="Recommencer"
+        message="Voulez-vous vraiment réinitialiser et effacer toutes les données en cours ?"
+        confirmText="Recommencer"
+        type="warning"
+      />
     </div>
   );
 };
