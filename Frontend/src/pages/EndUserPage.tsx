@@ -5,6 +5,8 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import StatusMessage from '../components/StatusMessage';
 import DataTable from '../components/DataTable';
 import Filters from '../components/Filters';
+import Stepper from '../components/Stepper';
+import ConfirmModal from '../components/ConfirmModal';
 import { Campaign, Agent, DataRow } from '../types';
 import { campaignApi, dataApi } from '../services/api';
 
@@ -26,55 +28,11 @@ interface StoredState {
   };
 }
 
-const Stepper = ({ currentStep }: { currentStep: Step }) => {
-  const steps = [
-    { id: 'select_campaign', title: 'Choisir la Campagne' },
-    { id: 'select_period', title: 'Définir la Période' },
-    { id: 'view_data', title: 'Visualiser et Traiter' },
-  ];
-  const currentStepIndex = steps.findIndex(s => s.id === currentStep);
-
-
-  return (
-    <nav aria-label="Progress">
-      <ol role="list" className="flex items-center">
-        {steps.map((step, stepIdx) => (
-          <li key={step.title} className={`relative ${stepIdx !== steps.length - 1 ? 'pr-8 sm:pr-20' : ''}`}>
-            {stepIdx < currentStepIndex ? (
-              <>
-                <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                  <div className="h-0.5 w-full bg-red-400" />
-                </div>
-                <div className="relative flex h-8 w-8 items-center justify-center bg-red-600 rounded-full">
-                  <CheckCircle className="h-5 w-5 text-white" aria-hidden="true" />
-                </div>
-              </>
-            ) : stepIdx === currentStepIndex ? (
-              <>
-                <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                  <div className="h-0.5 w-full bg-red-200" />
-                </div>
-                <div className="relative flex h-8 w-8 items-center justify-center bg-white border-2 border-purple-600 rounded-full" aria-current="step">
-                  <span className="h-2.5 w-2.5 bg-purple-600 rounded-full" aria-hidden="true" />
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                  <div className="h-0.5 w-full bg-red-200" />
-                </div>
-                <div className="group relative flex h-8 w-8 items-center justify-center bg-white border-2 border-purple-300 rounded-full">
-                  <span className="h-2.5 w-2.5 bg-transparent rounded-full" aria-hidden="true" />
-                </div>
-              </>
-            )}
-            <span className="absolute top-10 w-max text-center text-xs text-gray-600">{step.title}</span>
-          </li>
-        ))}
-      </ol>
-    </nav>
-  );
-};
+const ENDUSER_STEPS = [
+  { id: 'select_campaign', title: 'Choisir la Campagne' },
+  { id: 'select_period', title: 'Définir la Période' },
+  { id: 'view_data', title: 'Visualiser et Traiter' },
+];
 
 
 const EndUserPage: React.FC = () => {
@@ -96,6 +54,7 @@ const EndUserPage: React.FC = () => {
     agentId: '',
     dateRange: { start: '', end: '' },
   });
+  const [resetModal, setResetModal] = useState(false);
   
   useEffect(() => {
     const loadInitialData = async () => {
@@ -245,21 +204,23 @@ const EndUserPage: React.FC = () => {
   };
 
   const handleHardReset = () => {
-    if (window.confirm("Voulez-vous vraiment réinitialiser et effacer toutes les données en cours ?")) {
-        localStorage.removeItem(LOCAL_STORAGE_KEY);
-        setCurrentStep('select_campaign');
-        setSelectedCampaign(null);
-        setFullData([]);
-        setHeaders([]);
-        setServerDateRange({ start: '', end: '' });
-        setFilters({
-            processingCampaignId: '',
-            agentId: '',
-            dateRange: { start: '', end: '' },
-        });
-        setError(null);
-        setDateError(null);
-    }
+    setResetModal(true);
+  };
+
+  const confirmHardReset = () => {
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
+    setCurrentStep('select_campaign');
+    setSelectedCampaign(null);
+    setFullData([]);
+    setHeaders([]);
+    setServerDateRange({ start: '', end: '' });
+    setFilters({
+      processingCampaignId: '',
+      agentId: '',
+      dateRange: { start: '', end: '' },
+    });
+    setError(null);
+    setDateError(null);
   };
 
   const renderStepContent = () => {
@@ -384,8 +345,8 @@ const EndUserPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8 ">
-      <div className="flex justify-between items-start">
+    <div className="max-w-7xl mx-auto bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 py-8 px-4 sm:px-6 lg:px-8 space-y-8 ">
+      <div className="flex justify-between  items-start">
         <div>
             <h1 className="text-3xl font-bold text-gray-900">Tableau de Bord de Traitement</h1>
             <p className="mt-2 text-lg text-gray-600">Générez des rapports depuis le serveur en suivant les étapes ci-dessous.</p>
@@ -412,7 +373,7 @@ const EndUserPage: React.FC = () => {
 
       <div className="bg-white shadow-xl rounded-lg ">
         <div className="p-6 border-b flex justify-center">
-          <Stepper currentStep={currentStep} />
+          <Stepper steps={ENDUSER_STEPS} currentStep={currentStep} />
         </div>
         <div className="min-h-[400px] flex flex-col justify-center">
           {isProcessing || isLoading ? (
@@ -423,6 +384,16 @@ const EndUserPage: React.FC = () => {
           ) : renderStepContent()}
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={resetModal}
+        onClose={() => setResetModal(false)}
+        onConfirm={confirmHardReset}
+        title="Recommencer"
+        message="Voulez-vous vraiment réinitialiser et effacer toutes les données en cours ?"
+        confirmText="Recommencer"
+        type="warning"
+      />
     </div>
   );
 };

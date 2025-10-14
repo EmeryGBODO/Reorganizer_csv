@@ -4,6 +4,7 @@ import DragDropZone from '../components/DragDropZone';
 import LoadingSpinner from '../components/LoadingSpinner';
 import StatusMessage from '../components/StatusMessage';
 import DataTable from '../components/DataTable';
+import Stepper from '../components/Stepper';
 import { Campaign, DataRow } from '../types';
 import { campaignApi, fileApi } from '../services/api';
 import Papa from 'papaparse';
@@ -21,54 +22,11 @@ export interface UploadState {
   progress: number;
 }
 
-const Stepper = ({ currentStep }: { currentStep: Step }) => {
-    const steps = [
-        { id: 'select_campaign', title: 'Choisir la Campagne' },
-        { id: 'upload_file', title: 'Importer le Fichier' },
-        { id: 'view_data', title: 'Visualiser et Traiter' },
-    ];
-    const currentStepIndex = steps.findIndex(s => s.id === currentStep);
-
-    return (
-        <nav aria-label="Progress">
-            <ol role="list" className="flex items-center">
-                {steps.map((step, stepIdx) => (
-                    <li key={step.title} className={`relative ${stepIdx !== steps.length - 1 ? 'pr-8 sm:pr-20' : ''}`}>
-                        {stepIdx < currentStepIndex ? (
-                            <>
-                                <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                                    <div className="h-0.5 w-full bg-blue-600" />
-                                </div>
-                                <div className="relative flex h-8 w-8 items-center justify-center bg-blue-600 rounded-full">
-                                    <CheckCircle className="h-5 w-5 text-white" aria-hidden="true" />
-                                </div>
-                            </>
-                        ) : stepIdx === currentStepIndex ? (
-                            <>
-                                <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                                    <div className="h-0.5 w-full bg-gray-200" />
-                                </div>
-                                <div className="relative flex h-8 w-8 items-center justify-center bg-white border-2 border-blue-600 rounded-full" aria-current="step">
-                                    <span className="h-2.5 w-2.5 bg-blue-600 rounded-full" aria-hidden="true" />
-                                </div>
-                            </>
-                        ) : (
-                            <>
-                                <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                                    <div className="h-0.5 w-full bg-gray-200" />
-                                </div>
-                                <div className="group relative flex h-8 w-8 items-center justify-center bg-white border-2 border-gray-300 rounded-full">
-                                    <span className="h-2.5 w-2.5 bg-transparent rounded-full" aria-hidden="true" />
-                                </div>
-                            </>
-                        )}
-                        <span className="absolute top-10 w-max text-center text-xs text-gray-600">{step.title}</span>
-                    </li>
-                ))}
-            </ol>
-        </nav>
-    );
-};
+const IMPORT_STEPS = [
+    { id: 'select_campaign', title: 'Choisir la Campagne' },
+    { id: 'upload_file', title: 'Importer le Fichier' },
+    { id: 'view_data', title: 'Visualiser et Traiter' },
+];
 
 const ImportPage: React.FC = () => {
     const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -361,25 +319,27 @@ const ImportPage: React.FC = () => {
 
     return (
         <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8">
-            <div className="flex justify-between items-start">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Importation et Traitement de Fichier</h1>
-                    <p className="mt-2 text-lg text-gray-600">Suivez les étapes pour importer et préparer vos données.</p>
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
+                <div className="flex justify-between items-center">
+                    <div>
+                        <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Importation et Traitement de Fichier</h1>
+                        <p className="mt-2 text-gray-600">Suivez les étapes pour importer et préparer vos données.</p>
+                    </div>
+                    <button
+                        onClick={() => navigate('/')}
+                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 shadow-md transition-all duration-200 hover:shadow-lg"
+                    >
+                        <ChevronLeft className="h-4 w-4 mr-2" />
+                        Retour à l'accueil
+                    </button>
                 </div>
-                <button
-                    onClick={() => navigate('/')}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-                >
-                    <ChevronLeft className="h-4 w-4 mr-2" />
-                    Retour à l'accueil
-                </button>
             </div>
 
             {error && <StatusMessage type="error" message={error} />}
 
             <div className="bg-white shadow-xl rounded-lg ">
                 <div className="p-6 border-b flex justify-center">
-                    <Stepper currentStep={currentStep} />
+                    <Stepper steps={IMPORT_STEPS} currentStep={currentStep} />
                 </div>
                 <div className="min-h-[400px] flex flex-col justify-center">
                     {isProcessing || isLoading ? (

@@ -88,17 +88,17 @@ const ColumnEditor: React.FC<ColumnEditorProps> = ({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4  ">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-medium text-gray-900">Configuration des colonnes</h3>
-        <button
+        {/* <button
           onClick={handleAddColumn}
           disabled={disabled}
-          className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-purple-600 hover:bg-red-500"
         >
           <Plus className="h-4 w-4 mr-2" />
           Ajouter une colonne
-        </button>
+        </button> */}
       </div>
 
       <DragDropContext onDragEnd={handleDragEnd}>
@@ -194,5 +194,4 @@ const ColumnEditor: React.FC<ColumnEditorProps> = ({
     </div>
   );
 };
-
 export default ColumnEditor;

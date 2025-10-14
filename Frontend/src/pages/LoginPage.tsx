@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Eye, EyeOff, Lock, TrendingUp, BarChart3, PieChart, Users, User } from 'lucide-react';
+import { Eye, EyeOff, Lock, TrendingUp, BarChart3, PieChart, Users, User, Unplug } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Toast/ToastContext';
 import { useNavigate } from 'react-router-dom';
@@ -306,7 +306,7 @@ export default function LoginPage() {
 
                         <div className="text-center mb-8">
                             <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl flex items-center justify-center mx-auto mb-4 transform hover:rotate-12 transition-transform duration-300">
-                                {showPasswordChangeForm ? <Lock size={32} className="text-white" /> : <BarChart3 size={32} className="text-white" />}
+                                {showPasswordChangeForm ? <Lock size={32} className="text-white" /> : <Unplug  size={32} className="text-white" />}
                             </div>
                             <h2 className="text-2xl font-bold text-slate-800 mb-2">
                                 {showPasswordChangeForm ? 'Créer votre mot de passe' : 'Connexion'}
