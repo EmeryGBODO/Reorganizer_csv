@@ -10,6 +10,7 @@ interface DataTableProps {
 }
 
 const DataTable: React.FC<DataTableProps> = ({ headers, data, totalRowCount, className = '' }) => {
+
   if (data.length === 0) {
     return (
       <div className="text-center py-12 text-gray-500">
@@ -18,7 +19,7 @@ const DataTable: React.FC<DataTableProps> = ({ headers, data, totalRowCount, cla
       </div>
     );
   }
-
+console.log("data de data table",data)
   const isPreview = data.length < totalRowCount;
 
   return (
