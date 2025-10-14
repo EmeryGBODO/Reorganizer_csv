@@ -205,7 +205,7 @@ const ImportPage: React.FC = () => {
                                 <button
                                     onClick={handleProcessAndDownload}
                                     disabled={fullData.length === 0}
-                                    className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-md"
+                                    className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-md"
                                 >
                                     <Download className="h-5 w-5 mr-2" /> Traiter et Télécharger ({fullData.length} lignes)
                                 </button>
