@@ -115,31 +115,18 @@ export const dataApi = {
     },
     // --- FONCTION MISE À JOUR ---
     generateDataFromServer: async (
-      campaignId: string | number,
       startDate: string,
       endDate: string
     ): Promise<{ data: { success: boolean, data: DataRow[] } }> => {
         await delay(1500);
         
         // Log pour vérifier que les dates sont bien reçues
-        console.log(`Récupération des données pour la campagne ID: ${campaignId} entre le ${startDate} et le ${endDate}`);
+        console.log(`Récupération des données entre le ${startDate} et le ${endDate}`);
 
         // Dans une vraie application, vous feriez :
-        // const response = await api.get(`/api/remote-data/${campaignId}/`, { 
-        //   params: { start_date: startDate, end_date: endDate }
-        // });
-        // return response.data;
+        const response = await api.get(`/api/remote-data/?beginDate=${startDate}&endDate=${endDate}`);
+        return response;
 
-        // Simulation : on filtre les données mockées par campagne ET par date
-        const data = mockServerData.filter(row => {
-            const rowDate = new Date(row.date);
-            const start = new Date(startDate);
-            const end = new Date(endDate);
-            return row.campaign_id === campaignId && rowDate >= start && rowDate <= end;
-        });
-        
-        // Retourne les données filtrées, ou un tableau vide si rien ne correspond
-        return { data: { success: true, data: data } }; 
     }
 }
 
