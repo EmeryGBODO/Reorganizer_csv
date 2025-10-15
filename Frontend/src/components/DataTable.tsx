@@ -20,7 +20,7 @@ const DataTable: React.FC<DataTableProps> = ({ headers, data, totalRowCount, cla
 
   if (totalRowCount === 0) {
     return (
-      <div className="text-center py-12 text-gray-500">
+      <div className="text-center py-12 text-gray-500 dark:text-gray-400">
         <p>Aucune donnée à afficher.</p>
         <p className="text-sm mt-1">Générez des données depuis le serveur pour commencer.</p>
       </div>
@@ -30,7 +30,7 @@ const DataTable: React.FC<DataTableProps> = ({ headers, data, totalRowCount, cla
   const virtualRows = rowVirtualizer.getVirtualItems();
 
   return (
-    <div className={`bg-white rounded-lg shadow overflow-hidden ${className}`}>
+    <div className={`bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden ${className}`}>
       <div
         ref={parentRef}
         className="overflow-auto"
@@ -41,7 +41,7 @@ const DataTable: React.FC<DataTableProps> = ({ headers, data, totalRowCount, cla
           {/* EN-TÊTE STICKY */}
           <div
             role="row"
-            className="flex bg-gray-50 sticky top-0 z-10 border-b border-gray-200"
+            className="flex bg-gray-50 dark:bg-gray-700 sticky top-0 z-10 border-b border-gray-200 dark:border-gray-600"
           >
             {headers.map((header) => (
               <div
@@ -50,7 +50,7 @@ const DataTable: React.FC<DataTableProps> = ({ headers, data, totalRowCount, cla
                 // --- STYLE DE LA CELLULE D'EN-TÊTE ---
                 // flex: 1 permet aux colonnes de partager l'espace équitablement.
                 // la bordure droite crée la ligne verticale.
-                className="flex-1 px-6 py-3 text-xs font-bold text-gray-800 uppercase whitespace-nowrap border-r border-gray-200 last:border-r-0"
+                className="flex-1 px-6 py-3 text-xs font-bold text-gray-800 dark:text-gray-200 uppercase whitespace-nowrap border-r border-gray-200 dark:border-gray-600 last:border-r-0"
                 style={{ minWidth: '150px' }} // Donnez une largeur minimale à vos colonnes
               >
                 {header.replace(/_/g, ' ')}
@@ -80,7 +80,7 @@ const DataTable: React.FC<DataTableProps> = ({ headers, data, totalRowCount, cla
                       role="gridcell"
                       // --- STYLE DE LA CELLULE DE DONNÉES ---
                       // Doit correspondre à la structure de l'en-tête pour l'alignement.
-                      className="flex-1 px-6 py-4 text-sm text-gray-700 whitespace-nowrap border-b border-r border-gray-200 last:border-r-0"
+                      className="flex-1 px-6 py-4 text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap border-b border-r border-gray-200 dark:border-gray-600 last:border-r-0"
                       style={{ minWidth: '150px' }}
                     >
                       {String(row[header] ?? '')}
@@ -93,7 +93,7 @@ const DataTable: React.FC<DataTableProps> = ({ headers, data, totalRowCount, cla
         </div>
       </div>
 
-      <div className="px-6 py-3 bg-gray-50 text-xs text-gray-600 border-t">
+      <div className="px-6 py-3 bg-gray-50 dark:bg-gray-700 text-xs text-gray-600 dark:text-gray-400 border-t dark:border-gray-600">
         {totalRowCount.toLocaleString()} lignes au total. Le traitement s'appliquera à l'ensemble des données.
       </div>
     </div>

@@ -225,7 +225,7 @@ export default function LoginPage() {
 
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 flex items-center justify-center p-4 overflow-hidden relative">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4 overflow-hidden relative">
             {/* Éléments flottants animés */}
             {floatingElements.map((el) => (
                 <div
@@ -273,10 +273,10 @@ export default function LoginPage() {
                             </span>
                             {/* <span className="text-slate-700">LIGHT</span> */}
                         </h1>
-                        <p className="text-xl text-slate-600 mb-2 pl-2">
+                        <p className="text-xl text-slate-600 dark:text-gray-300 mb-2 pl-2">
                             La plateforme essentielle pour maîtriser vos données CSV.
                         </p>
-                        <p className="text-slate-500 pl-2">
+                        <p className="text-slate-500 dark:text-gray-400 pl-2">
                             Importez, réorganisez et structurez vos fichiers pour une analyse fluide et persistante.
                         </p>
 
@@ -308,7 +308,7 @@ export default function LoginPage() {
 
                 {/* Section droite - Formulaire de connexion */}
                 <div className="flex-1 max-w-md w-full">
-                    <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 p-8 relative overflow-hidden">
+                    <div className="bg-white/80 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 dark:border-gray-700/50 p-8 relative overflow-hidden">
                         {/* Effet de lumière */}
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500  via-purple-500 to-blue-500 animate-pulse"></div>
 
@@ -316,10 +316,10 @@ export default function LoginPage() {
                             <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl flex items-center justify-center mx-auto mb-4 transform hover:rotate-12 transition-transform duration-300">
                                 {showPasswordChangeForm ? <Lock size={32} className="text-white" /> : <Unplug  size={32} className="text-white" />}
                             </div>
-                            <h2 className="text-2xl font-bold text-slate-800 mb-2">
+                            <h2 className="text-2xl font-bold text-slate-800 dark:text-gray-100 mb-2">
                                 {showPasswordChangeForm ? 'Créer votre mot de passe' : 'Connexion'}
                             </h2>
-                            <p className="text-slate-600">
+                            <p className="text-slate-600 dark:text-gray-300">
                                 {showPasswordChangeForm ? 'Veuillez créer un nouveau mot de passe sécurisé pour votre compte' : 'Accédez à votre tableau de bord'}
                             </p>
                         </div>
@@ -335,7 +335,7 @@ export default function LoginPage() {
 
                                 {/* Nouveau mot de passe */}
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2 text-left">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 text-left">
                                         Nouveau mot de passe *
                                     </label>
                                     <div className="relative">
@@ -343,7 +343,7 @@ export default function LoginPage() {
                                             type={showNewPassword ? 'text' : 'password'}
                                             value={newPassword}
                                             onChange={(e) => setNewPassword(e.target.value)}
-                                            className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                             placeholder="Entrez votre nouveau mot de passe"
                                             required
                                         />
@@ -359,7 +359,7 @@ export default function LoginPage() {
 
                                 {/* Confirmer le mot de passe */}
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2 text-left">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 text-left">
                                         Confirmer le mot de passe *
                                     </label>
                                     <div className="relative">
@@ -367,7 +367,7 @@ export default function LoginPage() {
                                             type={showConfirmPassword ? 'text' : 'password'}
                                             value={confirmPassword}
                                             onChange={(e) => setConfirmPassword(e.target.value)}
-                                            className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                             placeholder="Confirmez votre nouveau mot de passe"
                                             required
                                         />
@@ -382,8 +382,8 @@ export default function LoginPage() {
                                 </div>
 
                                 {/* Critères de validation */}
-                                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                                    <p className="text-sm font-medium text-gray-700 mb-3">Le mot de passe doit contenir :</p>
+                                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Le mot de passe doit contenir :</p>
                                     <div className="grid grid-cols-1 gap-2">
                                         <div className={`flex items-center space-x-2 text-sm ${newPassword.length >= 8 ? 'text-green-600' : 'text-gray-500'
                                             }`}>
@@ -441,16 +441,16 @@ export default function LoginPage() {
 
                                 {/* Champ Username */}
                                 <div className="group">
-                                    <label className="block text-sm font-medium text-slate-700 mb-2 text-left">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 text-left">
                                         Email ou nom d'utilisateur
                                     </label>
                                     <div className="relative">
-                                        <User size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 group-focus-within:text-orange-500 transition-colors duration-200" />
+                                        <User size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-gray-500 group-focus-within:text-orange-500 transition-colors duration-200" />
                                         <input
                                             type="text"
                                             value={username}
                                             onChange={(e) => setUsername(e.target.value)}
-                                            className="w-full h-10 pl-12 pr-4 py-4 bg-slate-50/50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200 placeholder:text-slate-400"
+                                            className="w-full h-10 pl-12 pr-4 py-4 bg-slate-50/50 dark:bg-gray-700 border border-slate-200 dark:border-gray-600 dark:text-white rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200 placeholder:text-slate-400 dark:placeholder:text-gray-400"
                                             placeholder="user@company.com ou john.doe"
                                             required
                                         />
@@ -459,23 +459,23 @@ export default function LoginPage() {
 
                                 {/* Champ Mot de passe */}
                                 <div className="group">
-                                    <label className="block text-sm font-medium text-slate-700 mb-2 text-left">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 text-left">
                                         Mot de passe
                                     </label>
                                     <div className="relative">
-                                        <Lock size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 group-focus-within:text-orange-500 transition-colors duration-200" />
+                                        <Lock size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-gray-500 group-focus-within:text-orange-500 transition-colors duration-200" />
                                         <input
                                             type={showPassword ? "text" : "password"}
                                             value={password}
                                             onChange={(e) => setPassword(e.target.value)}
-                                            className="w-full h-10 pl-12 pr-12 py-4 bg-slate-50/50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200 placeholder:text-slate-400"
+                                            className="w-full h-10 pl-12 pr-12 py-4 bg-slate-50/50 dark:bg-gray-700 border border-slate-200 dark:border-gray-600 dark:text-white rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200 placeholder:text-slate-400 dark:placeholder:text-gray-400"
                                             placeholder="••••••••"
                                             required
                                         />
                                         <button
                                             type="button"
                                             onClick={() => setShowPassword(!showPassword)}
-                                            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors duration-200"
+                                            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-gray-500 hover:text-slate-600 dark:hover:text-gray-300 transition-colors duration-200"
                                         >
                                             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                                         </button>

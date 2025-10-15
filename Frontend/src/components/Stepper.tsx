@@ -27,7 +27,7 @@ const Stepper: React.FC<StepperProps> = ({ steps, currentStep }) => {
               {!isLast && (
                 <div className="absolute inset-0 flex items-center" aria-hidden="true">
                   <div className={`h-0.5 w-full transition-all duration-500 ${
-                    isCompleted ? 'bg-gradient-to-r from-blue-500 to-blue-600' : 'bg-gray-200'
+                    isCompleted ? 'bg-gradient-to-r from-blue-500 to-blue-600' : 'bg-gray-200 dark:bg-gray-600'
                   }`} />
                 </div>
               )}
@@ -37,19 +37,19 @@ const Stepper: React.FC<StepperProps> = ({ steps, currentStep }) => {
                   isCompleted 
                     ? 'bg-gradient-to-r from-blue-500 to-blue-600 shadow-lg' 
                     : isCurrent 
-                    ? 'bg-white border-2 border-blue-500 shadow-md' 
-                    : 'bg-white border-2 border-gray-300'
+                    ? 'bg-white dark:bg-gray-800 border-2 border-blue-500 shadow-md' 
+                    : 'bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600'
                 }`}>
                   {isCompleted ? (
                     <CheckCircle className="h-6 w-6 text-white" />
                   ) : (
                     <span className={`h-3 w-3 rounded-full transition-all duration-300 ${
-                      isCurrent ? 'bg-blue-500' : 'bg-gray-400'
+                      isCurrent ? 'bg-blue-500' : 'bg-gray-400 dark:bg-gray-500'
                     }`} />
                   )}
                 </div>
                 <span className={`absolute top-12 w-max text-center text-sm transition-colors duration-300 ${
-                  isCompleted || isCurrent ? 'text-gray-800 font-medium' : 'text-gray-500'
+                  isCompleted || isCurrent ? 'text-gray-800 dark:text-gray-200 font-medium' : 'text-gray-500 dark:text-gray-400'
                 }`}>
                   {step.title}
                 </span>
