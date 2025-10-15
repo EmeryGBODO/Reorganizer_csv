@@ -195,23 +195,23 @@ const ImportPage: React.FC = () => {
                         <div className="p-6 pb-0">
                             <div className="flex items-center justify-between mb-6">
                                 <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Aperçu des données et traitement</h2>
-                                <button onClick={() => resetFlow('upload_file')} className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                <button onClick={() => resetFlow('upload_file')} className="inline-flex text-white items-center px-3 py-2 text-sm bg-blue-600 hover:bg-blue-700 font-medium rounded-md">
                                     <ChevronLeft className="h-4 w-4 mr-2" /> Changer de fichier
                                 </button>
                             </div>
                         </div>
-                        <div className="sticky top-16 bg-transparent z-50 px-6 py-4">
+                        <div className="sticky top-16 bg-transparent z-50 px-6 py-1">
                             <div className="flex justify-end">
                                 <button
                                     onClick={handleProcessAndDownload}
                                     disabled={fullData.length === 0}
-                                    className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-md"
+                                    className="inline-flex items-center p-2 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-md"
                                 >
-                                    <Download className="h-5 w-5 mr-2" /> Traiter et Télécharger ({fullData.length} lignes)
+                                    <Download className="h-5 w-5 mr-2" /> Télécharger
                                 </button>
                             </div>
                         </div>
-                        <div className="flex-1 overflow-auto p-6 pt-0">
+                        <div className="flex-1 overflow-auto dark:border-gray-700 border-t">
                             <DataTable headers={headers} data={fullData.slice(0, PREVIEW_ROW_COUNT)} totalRowCount={fullData.length} />
                         </div>
                     </div>
