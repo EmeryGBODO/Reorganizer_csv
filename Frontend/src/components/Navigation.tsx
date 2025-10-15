@@ -38,7 +38,7 @@ const Navigation: React.FC = () => {
                     }`
                   }
                 >
-                  <Settings className="h-4 w-4 hover:text-red-700 transition-colors" />
+                  <Settings className="h-4 w-4 hover:text-orange-700 dark:hover:text-purple-500 transition-colors" />
                 </NavLink>)}
                             
                           </div>
@@ -47,9 +47,9 @@ const Navigation: React.FC = () => {
                              <div className="flex items-center">
                   <button
                       onClick={logout}
-                      className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-red-50 dark:hover:bg-red-900/30 hover:shadow-sm transition-all duration-200"
+                      className="inline-flex items-center px-4 py-2 dark:hover:border text-sm font-medium rounded-lg text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-red-50 dark:hover:bg-red-900/30 hover:shadow-sm transition-all duration-200"
                   >
-                      <LogOut className="h-4 w-4 mr-2 hover:text-red-500 transition-colors" />
+                      <LogOut className="h-4 w-4 mr-2 hover:text-red-500  transition-colors" />
                   </button>
                              </div>
                           )}

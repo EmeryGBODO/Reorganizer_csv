@@ -17,15 +17,15 @@ const Toast: React.FC<ToastProps> = ({ id, type, message, duration = 3000, onClo
   const getTypeStyles = () => {
     switch (type) {
       case 'success':
-        return 'bg-green-vs-500 text-white';
+        return 'bg-green-500 dark:bg-green-600 text-white';
       case 'error':
-        return 'bg-red-vs-500 text-white';
+        return 'bg-red-500 dark:bg-red-600 text-white';
       case 'warning':
-        return 'bg-yellow-500 text-black';
+        return 'bg-yellow-500 dark:bg-yellow-600 text-black dark:text-white';
       case 'info':
-        return 'bg-green-vs-500 text-white';
+        return 'bg-blue-500 dark:bg-blue-600 text-white';
       default:
-        return 'bg-gray-vs-500 text-white';
+        return 'bg-gray-500 dark:bg-gray-600 text-white';
     }
   };
 
