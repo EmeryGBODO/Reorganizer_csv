@@ -78,65 +78,68 @@ const ImportPage: React.FC = () => {
 
 
     const handleFileDrop = (file: File) => {
-        setIsProcessing(true);
-        setError(null);
-        const extension = file.name.split('.').pop()?.toLowerCase();
+  setIsProcessing(true); // Le loader démarre
+  setError(null);
+  setSelectedFile(file); // On stocke le fichier immédiatement
 
-        if (extension === 'csv') {
-            setSelectedFile(file);
-            return;
-        }
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const data = new Uint8Array(e.target?.result as ArrayBuffer);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData  = XLSX.utils.sheet_to_json(firstSheet);
+  const reader = new FileReader();
 
-                setFullData(jsonData as DataRow[]);
-                if (jsonData.length > 0) setHeaders(Object.keys(jsonData[0]));
-                setCurrentStep('view_data');
-            } catch (err) {
-                setError(`Erreur lors de la lecture du fichier: ${err}`);
-            } finally {
-                setIsProcessing(false);
-            }
-        };
-        reader.readAsArrayBuffer(file);
+  reader.onload = (e) => {
+    try {
+      const fileContent = e.target?.result;
+      const extension = file.name.split('.').pop()?.toLowerCase();
+      let jsonData: DataRow[] = [];
 
+      // --- Logique unifiée pour tous les types de fichiers ---
 
-        if (extension === 'xlsx' || extension === 'xls') {
-            setIsConverting(true);
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const data = e.target?.result;
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const firstSheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[firstSheetName];
-                    const csvData = XLSX.utils.sheet_to_csv(worksheet);
+      if (extension === 'csv') {
+        // On utilise PapaParse pour lire le contenu CSV
+        const parsedData = Papa.parse(fileContent as string, {
+          header: true, // Très important: traite la première ligne comme des en-têtes
+          skipEmptyLines: true,
+        });
+        jsonData = parsedData.data as DataRow[];
+      
+      } else if (extension === 'xlsx' || extension === 'xls') {
+        // On utilise XLSX pour lire le contenu Excel
+        const data = new Uint8Array(fileContent as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        jsonData = XLSX.utils.sheet_to_json(firstSheet) as DataRow[];
+      
+      } else {
+        setError("Type de fichier non supporté. Utilisez CSV, XLS ou XLSX.");
+        setIsProcessing(false); // On arrête le loader en cas d'erreur
+        return;
+      }
 
-                    const newFileName = file.name.replace(/\.(xlsx|xls)$/i, '.csv');
-                    const csvFile = new File([csvData], newFileName, { type: 'text/csv' });
+      // --- Étapes finales communes à tous les fichiers valides ---
 
-                    setSelectedFile(csvFile);
-                } catch (err) {
-                    setUploadState(prev => ({ ...prev, error: "Erreur lors de la conversion du fichier Excel." }));
-                } finally {
-                    setIsConverting(false);
-                }
-            };
-            reader.onerror = () => {
-                setUploadState(prev => ({ ...prev, error: "Impossible de lire le fichier." }));
-                setIsConverting(false);
-            }
-            reader.readAsArrayBuffer(file);
-            return;
-        }
+      setFullData(jsonData);
+      if (jsonData.length > 0) {
+        setHeaders(Object.keys(jsonData[0]));
+      } else {
+        setHeaders([]);
+        setError("Le fichier est vide ou son format est incorrect.");
+      }
+      setCurrentStep('view_data'); // On passe à l'étape suivante
 
-        setUploadState(prev => ({ ...prev, error: "Type de fichier non supporté." }));
-    };
+    } catch (err) {
+      console.error("Erreur lors de la lecture du fichier:", err);
+      setError(`Erreur lors de la lecture du fichier.`);
+    } finally {
+      setIsProcessing(false); // On arrête le loader dans tous les cas (succès ou erreur)
+    }
+  };
+
+  // On détermine comment lire le fichier en fonction de son type
+  const extension = file.name.split('.').pop()?.toLowerCase();
+  if (extension === 'xlsx' || extension === 'xls') {
+    reader.readAsArrayBuffer(file); // Pour Excel
+  } else {
+    reader.readAsText(file); // Pour CSV et autres types de texte
+  }
+};
 
 
     const resetFlow = (step: Step = 'select_campaign') => {
@@ -211,7 +214,7 @@ const ImportPage: React.FC = () => {
                         </div>
                         
                         <div className="flex-1 overflow-auto dark:border-gray-700 border-t">
-                            <DataTable headers={headers} data={fullData.slice(0, PREVIEW_ROW_COUNT)} totalRowCount={fullData.length} />
+                            <DataTable headers={headers} data={fullData} totalRowCount={fullData.length} />
                         </div>
                     </div>
                 );
