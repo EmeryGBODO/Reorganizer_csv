@@ -10,13 +10,14 @@ import ConfirmModal from '../components/ConfirmModal';
 import { Campaign, Agent, DataRow } from '../types';
 import { campaignApi, dataApi, fileApi } from '../services/api';
 import Papa from "papaparse";
+import localforage from "localforage";
 
 const PREVIEW_ROW_COUNT = 20;
 const LOCAL_STORAGE_KEY = 'csvReorganizerSession_EndUser'; // Clé de stockage modifiée
 
 type Step = 'select_campaign' | 'select_period' | 'view_data';
 
-interface StoredState {
+interface   StoredState {
   currentStep: Step;
   selectedCampaignId: number | string | null;
   fullData: DataRow[];
@@ -69,17 +70,17 @@ const EndUserPage: React.FC = () => {
         setCampaigns(loadedCampaigns);
         setAgents(agentsRes.data.data || []);
 
-        const savedStateJSON = localStorage.getItem(LOCAL_STORAGE_KEY);
+       const savedStateJSON :StoredState | null = await localforage.getItem(LOCAL_STORAGE_KEY);
+       
         if (savedStateJSON) {
-          const savedState: StoredState = JSON.parse(savedStateJSON);
-          setCurrentStep(savedState.currentStep);
-          setFullData(savedState.fullData);
-          setHeaders(savedState.headers);
-          setServerDateRange(savedState.serverDateRange);
-          setFilters(savedState.filters);
+          setCurrentStep(savedStateJSON.currentStep);
+          setFullData(savedStateJSON.fullData);
+          setHeaders(savedStateJSON.headers);
+          setServerDateRange(savedStateJSON.serverDateRange);
+          setFilters(savedStateJSON.filters);
 
-          if (savedState.selectedCampaignId) {
-            const campaign = loadedCampaigns.find(c => c.id === savedState.selectedCampaignId);
+          if (savedStateJSON.selectedCampaignId) {
+            const campaign = loadedCampaigns.find(c => c.id === savedStateJSON.selectedCampaignId);
             setSelectedCampaign(campaign || null);
           }
         }
@@ -92,7 +93,14 @@ const EndUserPage: React.FC = () => {
     loadInitialData();
   }, []);
 
+
+  localforage.config({
+  name: "CsvReorganizerApp",
+  storeName: "userData"
+});
+
   useEffect(() => {
+  const saveState = async () => {
     if (!isLoading) {
       const stateToSave: StoredState = {
         currentStep,
@@ -102,9 +110,13 @@ const EndUserPage: React.FC = () => {
         serverDateRange,
         filters,
       };
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave));
+      
+      await localforage.setItem(LOCAL_STORAGE_KEY, stateToSave);
     }
-  }, [currentStep, selectedCampaign?.id, fullData, headers, serverDateRange, filters, isLoading]);
+  };
+
+  saveState();
+}, [currentStep, selectedCampaign?.id, fullData, headers, serverDateRange, filters, isLoading]);
 
 
   useEffect(() => {
