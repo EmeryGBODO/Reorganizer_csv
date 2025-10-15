@@ -211,7 +211,6 @@ className="inline-flex items-center px-4 py-2 border border-transparent text-sm 
         onSave={handleSaveCampaign}
         campaign={editingCampaign}
         editmode={editmode}
-        setEditmode={setEditmod}
         error={error}
         setError={setError}
       />

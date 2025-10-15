@@ -84,7 +84,7 @@ const ColumnEditor: React.FC<ColumnEditorProps> = ({
       rules: [], // Initialiser avec un tableau de règles vide
     };
 
-    onColumnsChange([...columns, newColumn]);
+    onColumnsChange([newColumn, ...columns]);
   };
 
   return (

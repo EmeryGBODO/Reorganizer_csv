@@ -10,12 +10,11 @@ interface CampaignModalProps {
   onSave: (campaign: Campaign) => void;
   campaign: Campaign | null;
   editmode: boolean;
-  setEditMode: (editmode: boolean) => void;
   error: string | null;
   setError: (error: string | null) => void;
 }
 
-const CampaignModal: React.FC<CampaignModalProps> = ({ isOpen, onClose, onSave, campaign, editmode, setEditMode, error, setError }) => {
+const CampaignModal: React.FC<CampaignModalProps> = ({ isOpen, onClose, onSave, campaign, editmode, error, setError }) => {
   const [editedCampaign, setEditedCampaign] = useState<Campaign | null>(campaign);
 
   useEffect(() => {
@@ -44,7 +43,7 @@ const CampaignModal: React.FC<CampaignModalProps> = ({ isOpen, onClose, onSave, 
       required: false,
       rules: [],
     };
-    handleColumnsChange([...columns, newColumn]);
+    handleColumnsChange([newColumn, ...columns]);
   };
 
   const handleSaveClick = () => {
@@ -58,7 +57,6 @@ const CampaignModal: React.FC<CampaignModalProps> = ({ isOpen, onClose, onSave, 
     onSave(editedCampaign);
   };
 
-  const isCreating = !editedCampaign.id;
 
   return (
     <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 p-4">
