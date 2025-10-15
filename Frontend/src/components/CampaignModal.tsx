@@ -64,7 +64,7 @@ const CampaignModal: React.FC<CampaignModalProps> = ({ isOpen, onClose, onSave, 
       <div className="bg-white rounded-lg shadow-xl w-full max-w-xl max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-xl font-semibold text-gray-900">
-            {isCreating ? 'Créer une nouvelle campagne' : 'Modifier la campagne'}
+            {isCreating ? 'Créer une nouvelle campagne' : 'Créer une campagne'}
           </h2>
           <div className="flex items-center space-x-2">
             <button
