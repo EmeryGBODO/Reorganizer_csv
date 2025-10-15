@@ -286,7 +286,7 @@ const ImportPage: React.FC = () => {
                 <div className="flex justify-between items-center">
                     <div>
                         <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">Importation et Traitement de Fichier</h1>
-                        <p className="mt-2 text-gray-600 dark:text-gray-300">Suivez les étapes pour importer et préparer vos données.</p>
+                        <p className="mt-2 text-gray-600 dark:text-gray-300 text-lg">Suivez les étapes pour importer et préparer vos données.</p>
                     </div>
                     <button
                         onClick={() => navigate('/')}

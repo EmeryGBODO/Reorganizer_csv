@@ -15,7 +15,7 @@ const Stepper: React.FC<StepperProps> = ({ steps, currentStep }) => {
   const currentStepIndex = steps.findIndex(s => s.id === currentStep);
 
   return (
-    <nav aria-label="Progress" className="px-4">
+    <nav aria-label="Progress" className="px-4 pb-4">
       <ol className="flex items-center justify-center">
         {steps.map((step, stepIdx) => {
           const isCompleted = stepIdx < currentStepIndex;
@@ -25,7 +25,7 @@ const Stepper: React.FC<StepperProps> = ({ steps, currentStep }) => {
           return (
             <li key={step.id} className={`relative ${!isLast ? 'pr-8 sm:pr-28' : ''}`}>
               {!isLast && (
-                <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                <div className="absolute inset-0 flex items-center " aria-hidden="true">
                   <div className={`h-0.5 w-full transition-all duration-500 ${
                     isCompleted ? 'bg-gradient-to-r from-blue-500 to-blue-600' : 'bg-gray-200 dark:bg-gray-600'
                   }`} />

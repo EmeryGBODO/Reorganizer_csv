@@ -373,15 +373,15 @@ const EndUserPage: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8">
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-blue-100 dark:border-blue-800">
-        <div className="flex justify-between  items-start">
+        <div className="flex justify-between items-center">
           <div>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Tableau de Bord de Traitement</h1>
               <p className="mt-2 text-lg text-gray-600 dark:text-gray-300">Générez des rapports depuis le serveur en suivant les étapes ci-dessous.</p>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex px-4 items-center space-x-2">
               <button
                   onClick={() => navigate('/import')}
-                  className="inline-flex items-center px-3 py-2 text-white border text-sm bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 font-bold rounded-lg shadow-lg"
+                  className="inline-flex items-center  px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 shadow-md transition-all duration-200 hover:shadow-lg"
                   title="Importer un fichier"
               >
                   <Upload className="h-4 w-4 mr-2" /> Importer un Fichier

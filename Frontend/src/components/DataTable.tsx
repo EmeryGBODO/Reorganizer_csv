@@ -33,7 +33,7 @@ const DataTable: React.FC<DataTableProps> = ({ headers, data, totalRowCount, cla
     <div className={`bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden ${className}`}>
       <div
         ref={parentRef}
-        className="overflow-auto"
+        className="overflow-auto custom-scrollbar"
         style={{ height: '600px' }} // Hauteur fixe obligatoire
       >
         {/* On utilise des divs avec des rôles ARIA pour l'accessibilité */}

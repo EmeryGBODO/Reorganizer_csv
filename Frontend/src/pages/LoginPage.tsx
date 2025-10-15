@@ -34,19 +34,19 @@ export default function LoginPage() {
     const navigate = useNavigate();
 
     // Génération d'éléments flottants animés
-    useEffect(() => {
-        const elements = [];
-        for (let i = 0; i < 6; i++) {
-            elements.push({
-                id: i,
-                x: Math.random() * 100,
-                y: Math.random() * 100,
-                delay: Math.random() * 2,
-                duration: 3 + Math.random() * 2,
-            });
-        }
-        setFloatingElements(elements);
-    }, []);
+    // useEffect(() => {
+    //     const elements = [];
+    //     for (let i = 0; i < 6; i++) {
+    //         elements.push({
+    //             id: i,
+    //             x: Math.random() * 100,
+    //             y: Math.random() * 100,
+    //             delay: Math.random() * 2,
+    //             duration: 3 + Math.random() * 2,
+    //         });
+    //     }
+    //     setFloatingElements(elements);
+    // }, []);
 
 
 
@@ -225,7 +225,7 @@ export default function LoginPage() {
 
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4 overflow-hidden relative">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center dark:shadow-2xl justify-center p-4 overflow-hidden relative">
             {/* Éléments flottants animés */}
             {floatingElements.map((el) => (
                 <div
@@ -308,7 +308,7 @@ export default function LoginPage() {
 
                 {/* Section droite - Formulaire de connexion */}
                 <div className="flex-1 max-w-md w-full">
-                    <div className="bg-white/80 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 dark:border-gray-700/50 p-8 relative overflow-hidden">
+                    <div className="bg-white/80 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl dark:shadow-orange-500/80 dark:shadow-2xl  dark:border-orange-500/50 p-8 relative overflow-hidden">
                         {/* Effet de lumière */}
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500  via-purple-500 to-blue-500 animate-pulse"></div>
 
