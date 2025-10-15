@@ -8,7 +8,8 @@ import Filters from '../components/Filters';
 import Stepper from '../components/Stepper';
 import ConfirmModal from '../components/ConfirmModal';
 import { Campaign, Agent, DataRow } from '../types';
-import { campaignApi, dataApi } from '../services/api';
+import { campaignApi, dataApi, fileApi } from '../services/api';
+import Papa from "papaparse";
 
 const PREVIEW_ROW_COUNT = 20;
 const LOCAL_STORAGE_KEY = 'csvReorganizerSession_EndUser'; // Clé de stockage modifiée
@@ -103,7 +104,7 @@ const EndUserPage: React.FC = () => {
       };
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave));
     }
-  }, [currentStep, selectedCampaign, fullData, headers, serverDateRange, filters, isLoading]);
+  }, [currentStep, selectedCampaign?.id, fullData, headers, serverDateRange, filters, isLoading]);
 
 
   useEffect(() => {
@@ -146,10 +147,10 @@ const EndUserPage: React.FC = () => {
     setError(null);
     try {
       const response = await dataApi.generateDataFromServer(
-        selectedCampaign.id,
         serverDateRange.start,
         serverDateRange.end
       );
+      
       setFullData(response.data.data);
       if (response.data.data.length > 0) {
         setHeaders(Object.keys(response.data.data[0]));
@@ -164,36 +165,69 @@ const EndUserPage: React.FC = () => {
     }
   };
 
-  const filteredData = useMemo(() => fullData.filter(row => !filters.agentId || row.agent === agents.find(a => a.id === filters.agentId)?.name), [fullData, filters, agents]);
-  const dataPreview = useMemo(() => filteredData.slice(0, PREVIEW_ROW_COUNT), [filteredData]);
+  const handleProcessAndDownload = async () => {
+  // 1. Vérification essentielle : s'assurer qu'une campagne est bien sélectionnée.
+  if (!selectedCampaign) {
+    setError("Aucune campagne n'est sélectionnée. Veuillez recommencer le processus.");
+    return;
+  }
 
-  const handleProcessAndDownload = () => {
-    if (!selectedCampaign?.id) {
-      setError("Veuillez sélectionner une campagne pour le traitement.");
-      return;
-    }
-    const processingCampaign = campaigns.find(c => c.id === filters.processingCampaignId);
-    if (!processingCampaign) {
-      setError("Campagne de traitement non valide.");
-      return;
-    }
-    const processedData = filteredData.map(row => {
-      const newRow: DataRow = {};
-      processingCampaign.columns.forEach(col => {
-        newRow[col.displayName] = row[col.name] || '';
-      });
-      return newRow;
+  try {
+    // 2. Mettre l'interface en état de traitement
+    setIsProcessing(true);
+    setError(null);
+
+    // 3. Conversion directe des données actuelles (fullData) en une chaîne de caractères CSV
+    const csvString = Papa.unparse(fullData, {
+      delimiter: ';',
     });
-    const csv = Papa.unparse(processedData);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'donnees_traitees.csv');
+
+    // 4. Création du fichier à envoyer au backend
+    // Utilise le nom de fichier défini dans la campagne, avec un nom par défaut pour la robustesse
+    const filename = selectedCampaign.output_file_name.endsWith(".csv") ? selectedCampaign.output_file_name : selectedCampaign.output_file_name + ".csv";
+    const csvBlob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+    const csvFile = new File([csvBlob], filename, { type: "text/csv;charset=utf-8;" });
+
+    // --- NOTE IMPORTANTE ---
+    // Votre appel API dans `fileApi.ts` DOIT être configuré pour recevoir un 'blob' en réponse.
+    // Exemple avec Axios : { responseType: 'blob' }
+    // Sans cela, le téléchargement du fichier final échouera.
+    
+    // 5. Envoi du fichier CSV au backend pour traitement
+    const response = await fileApi.processCSV(
+      csvFile,
+      +selectedCampaign.id
+    );
+    
+    // 6. Réception du fichier traité et déclenchement du téléchargement
+    const returnedBlob = response.data;
+    const downloadUrl = window.URL.createObjectURL(returnedBlob);
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    
+    // Le nom du fichier téléchargé par l'utilisateur final
+    link.setAttribute(
+      "download",
+      filename
+    );
+    
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
-  };
+    link.remove();
+    window.URL.revokeObjectURL(downloadUrl);
+
+  } catch (err: any) {
+    // Gestion propre des erreurs potentielles
+    console.error("Erreur lors du traitement et téléchargement : ", err);
+    setError(
+      err?.response?.data?.detail ??
+        "Une erreur est survenue pendant le traitement du fichier."
+    );
+  } finally {
+    // S'assurer que l'état de traitement est terminé, même en cas d'erreur
+    setIsProcessing(false);
+  }
+};
 
   const resetFlow = (step: Step = 'select_campaign') => {
     setFullData([]);
@@ -209,6 +243,7 @@ const EndUserPage: React.FC = () => {
 
   const confirmHardReset = () => {
     localStorage.removeItem(LOCAL_STORAGE_KEY);
+    setResetModal(false); // Fermer la modale
     setCurrentStep('select_campaign');
     setSelectedCampaign(null);
     setFullData([]);
@@ -289,8 +324,7 @@ const EndUserPage: React.FC = () => {
               <button
                 onClick={handleGenerateFromServer}
                 disabled={isProcessing || !serverDateRange.start || !serverDateRange.end || !!dateError}
-                className="w-fit inline-flex items-center justify-center p-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-red-500
- hover:to-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="w-fit inline-flex items-center justify-center p-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-red-500 hover:to-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 <Server className="h-5 w-5 mr-2" /> Charger les données
               </button>
@@ -307,33 +341,16 @@ const EndUserPage: React.FC = () => {
                 <ChevronLeft className="h-4 w-4 mr-2" /> Changer de période
               </button>
             </div>
-            <Filters
-              campaigns={campaigns}
-              agents={agents}
-              selectedCampaignId={filters.processingCampaignId}
-              onCampaignChange={(id) => setFilters(f => ({ ...f, processingCampaignId: id }))}
-              onAgentChange={(id) => setFilters(f => ({ ...f, agentId: id }))}
-              dateRange={filters.dateRange}
-              onDateChange={(dates) => {
-                setFilters(f => {
-                    const newDateRange = {
-                        start: dates.start || f.dateRange.start, 
-                        end: dates.end || f.dateRange.end 
-                    };
-                    return { ...f, dateRange: newDateRange };
-                });
-              }}
-              disabled={isProcessing}
-            />
+            
             <div className="border-t pt-6">
-              <DataTable headers={headers} data={dataPreview} totalRowCount={filteredData.length} />
+              <DataTable headers={headers} data={fullData} totalRowCount={fullData.length} />
               <div className="mt-6 flex justify-end">
                 <button
                   onClick={handleProcessAndDownload}
-                  disabled={filteredData.length === 0 || !filters.processingCampaignId}
+                  disabled={isProcessing || fullData.length === 0}
                   className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
-                  <Download className="h-5 w-5 mr-2" /> Traiter et Télécharger ({filteredData.length} lignes)
+                  <Download className="h-5 w-5 mr-2" /> Traiter et Télécharger ({fullData.length} lignes)
                 </button>
               </div>
             </div>
