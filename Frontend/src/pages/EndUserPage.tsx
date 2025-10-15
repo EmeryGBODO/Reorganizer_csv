@@ -335,24 +335,33 @@ const EndUserPage: React.FC = () => {
       case 'view_data':
         return (
           <div className="p-6 space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Affinez et traitez les données</h2>
-              <button onClick={() => resetFlow('select_period')} className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                <ChevronLeft className="h-4 w-4 mr-2" /> Changer de période
-              </button>
+            <div className="flex flex-col h-full">
+              <div className="p-6 pb-0">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-semibold text-gray-900">Affinez et traitez les données</h2>
+                  <div className="flex flex-col gap-4 items-end">
+                    <button onClick={() => resetFlow('select_period')} className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                      <ChevronLeft className="h-4 w-4 mr-2" /> Changer de période
+                    </button>
+                </div>
+              </div>
+                <div className="sticky top-16 bg-transparent z-50 ">
+                  <div className="flex justify-end">
+                    <button
+                      onClick={handleProcessAndDownload}
+                      disabled={isProcessing || fullData.length === 0}
+                      className="inline-flex items-center p-2 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    >
+                      <Download className="h-5 w-5 mr-2"/>  Télécharger
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
             
             <div className="border-t dark:border-gray-700 pt-6">
               <DataTable headers={headers} data={fullData} totalRowCount={fullData.length} />
-              <div className="mt-6 flex justify-end">
-                <button
-                  onClick={handleProcessAndDownload}
-                  disabled={isProcessing || fullData.length === 0}
-                  className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                >
-                  <Download className="h-5 w-5 mr-2" /> Traiter et Télécharger ({fullData.length} lignes)
-                </button>
-              </div>
+              
             </div>
           </div>
         );

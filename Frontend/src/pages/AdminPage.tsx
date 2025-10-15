@@ -55,7 +55,6 @@ const AdminPage: React.FC = () => {
 
   const handleCreateCampaign = () => {
     const newCampaign: Campaign = {
-      id: generateUniqueRandomNumbers(2,8),
       name: '',
       description: '',
       columns: [],
@@ -63,17 +62,12 @@ const AdminPage: React.FC = () => {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
+    setEditmod(false)
     setEditingCampaign(newCampaign);
     setIsModalOpen(true);
     setError(null);
     setSuccess(null);
   };
-
-
-  function generateUniqueRandomNumbers( min:number, max:number) {
-  const randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
-  return randomNumber ; 
-}
 
 
   const handleEditCampaign = (campaign: Campaign) => {
@@ -99,12 +93,13 @@ const AdminPage: React.FC = () => {
         setSuccess('Campagne créée avec succès');
       } else {
         // --- APPEL RÉEL POUR LA MISE À JOUR ---
-        const response = await campaignApi.update(campaignToSave.id, campaignToSave);
+        const response = await campaignApi.update(campaignToSave?.id, campaignToSave);
         setCampaigns(prev =>
           prev.map(c => (c.id === campaignToSave.id ? response.data : c))
         );
         setSuccess('Campagne mise à jour avec succès');
       }
+      setEditmod(false);
       handleCloseModal();
     } catch (error) {
       setError('Erreur lors de la sauvegarde de la campagne.');

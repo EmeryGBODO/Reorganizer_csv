@@ -12,7 +12,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 
 function App() {
     useEffect(() => {
-    document.body.className = 'bg-gray-50 dark:bg-gray-900 transition-colors';
+    document.body.className = 'min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50';
     return () => { document.body.className = ''; };
   }, []);
   return (
