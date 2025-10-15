@@ -140,7 +140,7 @@ const AdminPage: React.FC = () => {
     return (
       <div className="flex items-center justify-center min-h-96">
         <LoadingSpinner size="lg" />
-        <span className="ml-3 text-gray-600">Chargement des campagnes...</span>
+        <span className="ml-3 text-gray-600 dark:text-gray-400">Chargement des campagnes...</span>
       </div>
     );
   }
@@ -150,13 +150,13 @@ const AdminPage: React.FC = () => {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-          <button onClick={handleGoBack} className="mb-6 inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900">
+          <button onClick={handleGoBack} className="mb-6 inline-flex items-center text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200">
               <ChevronLeft className="h-4 w-4 mr-1" /> Retour
             </button>
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Administration des campagnes
             </h1>
-            <p className="text-lg text-gray-600">
+            <p className="text-lg text-gray-600 dark:text-gray-400">
               Gérez vos campagnes de réorganisation CSV et configurez les colonnes.
             </p>
           </div>
@@ -179,28 +179,28 @@ className="inline-flex items-center px-4 py-2 border border-transparent text-sm 
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {campaigns.length === 0 ? (
-          <div className="col-span-1 md:col-span-2 text-center py-8 text-gray-500">
+          <div className="col-span-1 md:col-span-2 text-center py-8 text-gray-500 dark:text-gray-400">
             Aucune campagne créée.
           </div>
         ) : (
           campaigns.map((campaign) => (
             <div
               key={campaign?.id}
-              className="bg-white border rounded-lg p-4 shadow-sm"
+              className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-4 shadow-sm"
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <h3 className="font-medium text-gray-900">{campaign.name}</h3>
-                  <p className="text-sm text-gray-500 mt-1">{campaign.description}</p>
-                  <p className="text-xs text-gray-400 mt-2">
+                  <h3 className="font-medium text-gray-900 dark:text-gray-100">{campaign.name}</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{campaign.description}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
                     {campaign.columns?.length} colonnes configurées
                   </p>
                 </div>
                 <div className="flex items-center space-x-2 ml-4">
-                  <button onClick={() => handleEditCampaign(campaign)} className="p-2 text-gray-600 hover:text-gray-700">
+                  <button onClick={() => handleEditCampaign(campaign)} className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
                     <Edit2 className="h-4 w-4" />
                   </button>
-                  <button onClick={() => handleDeleteCampaign(campaign.id)} className="p-2 text-red-600 hover:text-red-700">
+                  <button onClick={() => handleDeleteCampaign(campaign.id)} className="p-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>

@@ -152,15 +152,15 @@ const ImportPage: React.FC = () => {
             case 'select_campaign':
                 return (
                     <div className="p-8 flex flex-col items-center justify-center text-center">
-                        <h3 className="text-2xl font-semibold text-gray-800 mb-2">Choisissez une campagne de traitement</h3>
-                        <p className="text-gray-600 mb-6">Sélectionnez la campagne qui définit comment votre fichier sera traité.</p>
+                        <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2">Choisissez une campagne de traitement</h3>
+                        <p className="text-gray-600 dark:text-gray-400 mb-6">Sélectionnez la campagne qui définit comment votre fichier sera traité.</p>
                         <div className="w-full max-w-md">
                             <select
                                 id="campaign-selection"
                                 value={selectedCampaign?.id || ""}
                                 onChange={(e) => handleCampaignSelection(e.target.value)}
                                 disabled={isLoading}
-                                className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-3 text-lg"
+                                className="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-3 text-lg"
                             >
                                 <option value="">-- Sélectionnez une campagne --</option>
                                 {campaigns.map((campaign) => (
@@ -177,13 +177,13 @@ const ImportPage: React.FC = () => {
             case 'upload_file':
                 return (
                     <div className="p-8">
-                        <button onClick={() => resetFlow('select_campaign')} className="mb-6 inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900">
+                        <button onClick={() => resetFlow('select_campaign')} className="mb-6 inline-flex items-center text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200">
                             <ChevronLeft className="h-4 w-4 mr-1" /> Changer de campagne
                         </button>
-                        <h3 className="text-2xl font-semibold text-gray-800 mb-2 text-center">Importez votre fichier</h3>
-                        <p className="text-gray-600 mb-6 text-center">Pour la campagne : <strong className="text-blue-600">{selectedCampaign?.name}</strong></p>
+                        <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2 text-center">Importez votre fichier</h3>
+                        <p className="text-gray-600 dark:text-gray-400 mb-6 text-center">Pour la campagne : <strong className="text-blue-600 dark:text-blue-400">{selectedCampaign?.name}</strong></p>
                         <div className="p-6 border border-gray-200 rounded-lg flex flex-col items-center justify-center text-center hover:shadow-lg transition-shadow">
-                            <h4 className="text-xl font-semibold text-gray-800 mb-4">Importer un Fichier CSV ou Excel</h4>
+                            <h4 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Importer un Fichier CSV ou Excel</h4>
                             <DragDropZone onFileDrop={handleFileDrop} accept=".csv,.xlsx,.xls" />
                         </div>
                     </div>
@@ -194,8 +194,8 @@ const ImportPage: React.FC = () => {
                     <div className="flex flex-col h-full">
                         <div className="p-6 pb-0">
                             <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-xl font-semibold text-gray-900">Aperçu des données et traitement</h2>
-                                <button onClick={() => resetFlow('upload_file')} className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Aperçu des données et traitement</h2>
+                                <button onClick={() => resetFlow('upload_file')} className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                                     <ChevronLeft className="h-4 w-4 mr-2" /> Changer de fichier
                                 </button>
                             </div>
@@ -282,11 +282,11 @@ const ImportPage: React.FC = () => {
 
     return (
         <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8">
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-blue-100 dark:border-blue-800">
                 <div className="flex justify-between items-center">
                     <div>
-                        <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Importation et Traitement de Fichier</h1>
-                        <p className="mt-2 text-gray-600">Suivez les étapes pour importer et préparer vos données.</p>
+                        <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">Importation et Traitement de Fichier</h1>
+                        <p className="mt-2 text-gray-600 dark:text-gray-300">Suivez les étapes pour importer et préparer vos données.</p>
                     </div>
                     <button
                         onClick={() => navigate('/')}
@@ -300,15 +300,15 @@ const ImportPage: React.FC = () => {
 
             {error && <StatusMessage type="error" message={error} />}
 
-            <div className="bg-white shadow-xl rounded-lg ">
-                <div className="p-6 border-b flex justify-center">
+            <div className="bg-white dark:bg-gray-800 shadow-xl rounded-lg ">
+                <div className="p-6 border-b dark:border-gray-700 flex justify-center">
                     <Stepper steps={IMPORT_STEPS} currentStep={currentStep} />
                 </div>
                 <div className="min-h-[400px] flex flex-col justify-center">
                     {isProcessing || isLoading ? (
                         <div className="flex items-center justify-center py-12">
                             <LoadingSpinner size="lg" />
-                            <span className="ml-3 text-gray-600">{isLoading ? 'Chargement...' : 'Traitement...'}</span>
+                            <span className="ml-3 text-gray-600 dark:text-gray-400">{isLoading ? 'Chargement...' : 'Traitement...'}</span>
                         </div>
                     ) : renderStepContent()}
                 </div>

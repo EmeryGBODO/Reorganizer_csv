@@ -485,7 +485,7 @@ export default function LoginPage() {
                                 {/* Bouton de soumission */}
                                 <button
                                     type="submit"
-                                    className="w-full  text-white py-3 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 font-bold rounded-2xl shadow-lg"
+                                    className="w-full cursor-pointer text-white py-3 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 font-bold rounded-2xl shadow-lg"
                                     disabled={isLoading}
                                 >
                                     Se connecter

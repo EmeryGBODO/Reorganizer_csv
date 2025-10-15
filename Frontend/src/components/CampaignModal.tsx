@@ -61,9 +61,9 @@ const CampaignModal: React.FC<CampaignModalProps> = ({ isOpen, onClose, onSave, 
 
   return (
     <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-xl max-h-[90vh] flex flex-col">
-        <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-semibold text-gray-900">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-xl max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between p-6 border-b dark:border-gray-700">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
             {isCreating ? 'Créer une nouvelle campagne' : 'Créer une campagne'}
           </h2>
           <div className="flex items-center space-x-2">
@@ -74,7 +74,7 @@ const CampaignModal: React.FC<CampaignModalProps> = ({ isOpen, onClose, onSave, 
               <Plus className="h-4 w-4 mr-2" />
               Ajouter une colonne
             </button>
-            <button onClick={onClose} className="p-2 text-gray-500 hover:text-gray-800">
+            <button onClick={onClose} className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
               <X className="h-5 w-5 hover:text-red-400" />
             </button>
           </div>
@@ -87,7 +87,7 @@ const CampaignModal: React.FC<CampaignModalProps> = ({ isOpen, onClose, onSave, 
         <div className="p-6 space-y-6 border overflow-y-auto">
           <div className="">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Nom de la campagne *
               </label>
               <input
@@ -96,12 +96,12 @@ const CampaignModal: React.FC<CampaignModalProps> = ({ isOpen, onClose, onSave, 
                 onChange={(e) =>
                   setEditedCampaign({ ...editedCampaign, name: e.target.value })
                 }
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Nom de la campagne"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Description
               </label>
               <textarea
@@ -110,12 +110,12 @@ const CampaignModal: React.FC<CampaignModalProps> = ({ isOpen, onClose, onSave, 
                   setEditedCampaign({ ...editedCampaign, description: e.target.value })
                 }
                 rows={2}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Description de la campagne"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Nom du fichier de sortie par défaut
               </label>
               <input
@@ -124,10 +124,10 @@ const CampaignModal: React.FC<CampaignModalProps> = ({ isOpen, onClose, onSave, 
                 onChange={(e) =>
                   setEditedCampaign({ ...editedCampaign, output_file_name: e.target.value })
                 }
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="ex: export__{date}__.csv"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 Variables disponibles : `__nom_original__` `__date__`.
               </p>
             </div>
@@ -139,10 +139,10 @@ const CampaignModal: React.FC<CampaignModalProps> = ({ isOpen, onClose, onSave, 
             />
           </div>
         </div>
-        <div className="flex items-center justify-end p-6 border-t space-x-3">
+        <div className="flex items-center justify-end p-6 border-t dark:border-gray-700 space-x-3">
           <button
             onClick={onClose}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+            className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
           >
             Annuler
           </button>

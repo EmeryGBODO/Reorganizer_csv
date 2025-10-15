@@ -8,16 +8,18 @@ import ImportPage from './pages/ImportPage';
 import ProtectedRoute from './components/ProtectedRoute'; // Importer le composant de protection
 import { AuthProvider } from './context/AuthContext'; // Importer le provider
 import { ToastProvider } from './components/Toast/ToastContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 function App() {
     useEffect(() => {
-    document.body.className = 'bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50';
+    document.body.className = 'bg-gray-50 dark:bg-gray-900 transition-colors';
     return () => { document.body.className = ''; };
   }, []);
   return (
     // 1. Envelopper toute l'application dans AuthProvider
-    <AuthProvider>
-      <ToastProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <ToastProvider>
         <Router>
           <div >
             <Navigation />
@@ -42,8 +44,9 @@ function App() {
             </main>
           </div>
         </Router>
-      </ToastProvider>
-    </AuthProvider>
+        </ToastProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

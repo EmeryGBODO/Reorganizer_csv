@@ -263,15 +263,15 @@ const EndUserPage: React.FC = () => {
       case 'select_campaign':
         return (
           <div className="p-8 flex flex-col items-center justify-center text-center">
-            <h3 className="text-2xl font-semibold text-gray-800 mb-2">Choisissez une campagne</h3>
-            <p className="text-gray-600 mb-6">Sélectionnez la campagne pour générer des données depuis le serveur.</p>
+            <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2">Choisissez une campagne</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">Sélectionnez la campagne pour générer des données depuis le serveur.</p>
             <div className="w-full max-w-md space-y-4 ">
               <select
                 id="campaign-selection"
                 value={selectedCampaign?.id || ""}
                 onChange={(e) => handleCampaignSelection(e.target.value)}
                 disabled={isLoading}
-                className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-3 text-lg"
+                className="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-3 text-lg"
               >
                 <option value="">-- Sélectionnez une campagne --</option>
                 {campaigns.map((campaign) => (
@@ -294,14 +294,14 @@ const EndUserPage: React.FC = () => {
       case 'select_period':
         return (
           <div className="p-8 ">
-            <button onClick={() => resetFlow('select_campaign')} className="mb-6 inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900">
+            <button onClick={() => resetFlow('select_campaign')} className="mb-6 inline-flex items-center text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200">
               <ChevronLeft className="h-4 w-4 mr-1" /> Retour
             </button>
-            <h3 className="text-2xl font-semibold text-gray-800 mb-2 text-center">Générer depuis le Serveur</h3>
-            <p className="text-gray-600 mb-6 text-center">Pour la campagne : <strong className="text-purple-400">{selectedCampaign?.name}</strong></p>
-            <div className="p-6 border border-gray-200 rounded-lg flex flex-col items-center justify-center text-center hover:shadow-lg transition-shadow space-y-4 max-w-lg mx-auto">
+            <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2 text-center">Générer depuis le Serveur</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6 text-center">Pour la campagne : <strong className="text-purple-400 dark:text-purple-300">{selectedCampaign?.name}</strong></p>
+            <div className="p-6 border border-gray-200 dark:border-gray-700 rounded-lg flex flex-col items-center justify-center text-center hover:shadow-lg transition-shadow space-y-4 max-w-lg mx-auto">
               <div className="w-full space-y-3">
-                  <label className="block text-sm font-medium text-gray-700 text-left">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 text-left">
                       Période requise *
                   </label>
                   <div className="flex items-center space-x-2">
@@ -309,14 +309,14 @@ const EndUserPage: React.FC = () => {
                           type="date"
                           value={serverDateRange.start}
                           onChange={(e) => setServerDateRange(d => ({ ...d, start: e.target.value }))}
-                          className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                       />
-                      <span className="text-gray-500">-</span>
+                      <span className="text-gray-500 dark:text-gray-400">-</span>
                       <input
                           type="date"
                           value={serverDateRange.end}
                           onChange={(e) => setServerDateRange(d => ({ ...d, end: e.target.value }))}
-                          className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                       />
                   </div>
                   {dateError && <p className="text-xs text-red-600 mt-1">{dateError}</p>}
@@ -336,13 +336,13 @@ const EndUserPage: React.FC = () => {
         return (
           <div className="p-6 space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900">Affinez et traitez les données</h2>
-              <button onClick={() => resetFlow('select_period')} className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Affinez et traitez les données</h2>
+              <button onClick={() => resetFlow('select_period')} className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                 <ChevronLeft className="h-4 w-4 mr-2" /> Changer de période
               </button>
             </div>
             
-            <div className="border-t pt-6">
+            <div className="border-t dark:border-gray-700 pt-6">
               <DataTable headers={headers} data={fullData} totalRowCount={fullData.length} />
               <div className="mt-6 flex justify-end">
                 <button
@@ -362,12 +362,12 @@ const EndUserPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 py-8 px-4 sm:px-6 lg:px-8 space-y-8 ">
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
+    <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8">
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-blue-100 dark:border-blue-800">
         <div className="flex justify-between  items-start">
           <div>
-              <h1 className="text-3xl font-bold text-gray-900">Tableau de Bord de Traitement</h1>
-              <p className="mt-2 text-lg text-gray-600">Générez des rapports depuis le serveur en suivant les étapes ci-dessous.</p>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Tableau de Bord de Traitement</h1>
+              <p className="mt-2 text-lg text-gray-600 dark:text-gray-300">Générez des rapports depuis le serveur en suivant les étapes ci-dessous.</p>
           </div>
           <div className="flex items-center space-x-2">
               <button
@@ -390,15 +390,15 @@ const EndUserPage: React.FC = () => {
 
       {error && <StatusMessage type="error" message={error} />}
 
-      <div className="bg-white shadow-xl rounded-lg ">
-        <div className="p-6 border-b flex justify-center">
+      <div className="bg-white dark:bg-gray-800 shadow-xl rounded-lg ">
+        <div className="p-6 border-b dark:border-gray-700 flex justify-center">
           <Stepper steps={ENDUSER_STEPS} currentStep={currentStep} />
         </div>
         <div className="min-h-[400px] flex flex-col justify-center">
           {isProcessing || isLoading ? (
             <div className="flex items-center justify-center py-12">
               <LoadingSpinner size="lg" />
-              <span className="ml-3 text-gray-600">{isLoading ? 'Chargement des données...' : 'Traitement en cours...'}</span>
+              <span className="ml-3 text-gray-600 dark:text-gray-400">{isLoading ? 'Chargement des données...' : 'Traitement en cours...'}</span>
             </div>
           ) : renderStepContent()}
         </div>
