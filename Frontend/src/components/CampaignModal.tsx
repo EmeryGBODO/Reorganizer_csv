@@ -10,11 +10,12 @@ interface CampaignModalProps {
   onSave: (campaign: Campaign) => void;
   campaign: Campaign | null;
   editmode: boolean;
+  setEditMode: (editmode: boolean) => void;
   error: string | null;
   setError: (error: string | null) => void;
 }
 
-const CampaignModal: React.FC<CampaignModalProps> = ({ isOpen, onClose, onSave, campaign, editmode, error, setError }) => {
+const CampaignModal: React.FC<CampaignModalProps> = ({ isOpen, onClose, onSave, campaign, editmode, setEditMode, error, setError }) => {
   const [editedCampaign, setEditedCampaign] = useState<Campaign | null>(campaign);
 
   useEffect(() => {
@@ -61,19 +62,13 @@ const CampaignModal: React.FC<CampaignModalProps> = ({ isOpen, onClose, onSave, 
 
   return (
     <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-xl max-h-[90vh] flex flex-col">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-xl font-semibold text-gray-900">
-            {isCreating ? 'Créer une nouvelle campagne' : 'Créer une campagne'}
+            {!editmode ? 'Créer une nouvelle campagne' : 'Modification de la campagne'}
           </h2>
           <div className="flex items-center space-x-2">
-            <button
-              onClick={handleAddColumn}
-              className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-purple-600 hover:bg-red-500"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Ajouter une colonne
-            </button>
+            
             <button onClick={onClose} className="p-2 text-gray-500 hover:text-gray-800">
               <X className="h-5 w-5 hover:text-red-400" />
             </button>
@@ -132,12 +127,12 @@ const CampaignModal: React.FC<CampaignModalProps> = ({ isOpen, onClose, onSave, 
               </p>
             </div>
           </div>
-          {/* <div className="mt-4">
+          <div className="">
             <ColumnEditor
               columns={editedCampaign.columns}
               onColumnsChange={handleColumnsChange}
             />
-          </div> */}
+          </div>
         </div>
         <div className="flex items-center justify-end p-6 border-t space-x-3">
           <button
