@@ -5,7 +5,7 @@
 /* Scrollbar personnalisée */
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #9ca3af #f3f4f6;
+  scrollbar-color: #f97316 #f3f4f6;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -19,18 +19,19 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #9ca3af;
+  background: linear-gradient(135deg, #f97316, #dc2626);
   border-radius: 4px;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #6b7280;
+  background: linear-gradient(135deg, #ea580c, #b91c1c);
+  transform: scale(1.1);
 }
 
 /* Mode sombre */
 .dark .custom-scrollbar {
-  scrollbar-color: #6b7280 #374151;
+  scrollbar-color: #f97316 #374151;
 }
 
 .dark .custom-scrollbar::-webkit-scrollbar-track {
@@ -38,9 +39,47 @@
 }
 
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #6b7280;
+  background: linear-gradient(135deg, #f97316, #dc2626);
 }
 
 .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: linear-gradient(135deg, #ea580c, #b91c1c);
+  transform: scale(1.1);
+}
+
+/* Date picker icon adaptation pour dark mode */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0);
+  cursor: pointer;
+}
+
+.dark input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.2 );
+  cursor: pointer;
+}
+
+/* Maintenir le dark mode sur le calendrier */
+input[type="date"] {
+  color-scheme: light;
+}
+
+.dark input[type="date"] {
+  color-scheme: dark;
+}
+/* Scrollbar plus petite pour les cellules */
+.cell-scrollbar::-webkit-scrollbar {
+  height: 2px;
+}
+
+.cell-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.cell-scrollbar::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 2px;
+}
+
+.dark .cell-scrollbar::-webkit-scrollbar-thumb {
+  background: #6b7280;
 }

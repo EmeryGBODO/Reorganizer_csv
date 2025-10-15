@@ -182,7 +182,7 @@ const ImportPage: React.FC = () => {
                         </button>
                         <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2 text-center">Importez votre fichier</h3>
                         <p className="text-gray-600 dark:text-gray-400 mb-6 text-center">Pour la campagne : <strong className="text-blue-600 dark:text-blue-400">{selectedCampaign?.name}</strong></p>
-                        <div className="p-6 border border-gray-200 rounded-lg flex flex-col items-center justify-center text-center hover:shadow-lg transition-shadow">
+                        <div className="p-6 shadow-2xl dark:shadow-orange-500/20 rounded-lg flex flex-col items-center justify-center text-center hover:shadow-lg transition-shadow">
                             <h4 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Importer un Fichier CSV ou Excel</h4>
                             <DragDropZone onFileDrop={handleFileDrop} accept=".csv,.xlsx,.xls" />
                         </div>
@@ -192,7 +192,7 @@ const ImportPage: React.FC = () => {
             case 'view_data':
                 return (
                     <div className="flex flex-col h-full">
-                        <div className="p-6 space-y-6 pb-0  mb-6">
+                        <div className="pt-2 space-y-6 pb-0  mb-6">
                             <div className="flex items-center justify-between mb-6">
                                 <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Aperçu des données et traitement</h2>
                                 <button onClick={() => resetFlow('upload_file')} className="inline-flex text-white items-center px-3 py-2 text-sm bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 font-medium rounded-md">
@@ -280,7 +280,7 @@ const ImportPage: React.FC = () => {
     };
 
     return (
-        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8">
+        <div className="max-w-7xl mx-auto py-28 px-4 sm:px-6 lg:px-8 space-y-8">
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-blue-100 dark:border-blue-800">
                 <div className="flex justify-between items-center">
                     <div>
@@ -299,8 +299,8 @@ const ImportPage: React.FC = () => {
 
             {error && <StatusMessage type="error" message={error} />}
 
-            <div className="bg-white dark:bg-gray-800 shadow-xl rounded-lg ">
-                <div className="p-6 border-b dark:border-gray-700 flex justify-center">
+            <div className="bg-white dark:bg-gray-800 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-blue-100 dark:border-blue-800  shadow-xl ">
+                <div className="p-6 border-b dark:border-gray-700 flex  justify-center">
                     <Stepper steps={IMPORT_STEPS} currentStep={currentStep} />
                 </div>
                 <div className="min-h-[400px] flex flex-col justify-center">

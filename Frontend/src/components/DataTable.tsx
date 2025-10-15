@@ -82,8 +82,8 @@ const DataTable: React.FC<DataTableProps> = ({ headers, data, totalRowCount, cla
                         role="gridcell"
                         // --- STYLE DE LA CELLULE DE DONNÉES ---
                         // Doit correspondre à la structure de l'en-tête pour l'alignement.
-                        className="flex-1 px-6 py-4 text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap border-b border-r border-gray-200 dark:border-gray-600 last:border-r-0"
-                        style={{ minWidth: '150px' }}
+                        className="flex-1 px-6 py-4 text-sm text-gray-700 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-600 last:border-r-0 overflow-x-auto cell-scrollbar"
+                        style={{ minWidth: '150px', maxWidth: '300px', whiteSpace: 'nowrap' }}
                       >
                         {String(row[header] ?? '')}
                       </div>
