@@ -21,12 +21,12 @@ const Navigation: React.FC = () => {
           </div>
 
           <div className="flex items-center space-x-2">
-            {/* <button
+            <button
               onClick={toggleTheme}
               className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </button> */}
+            </button>
               <div>
                 {location.pathname != "/admin" && (<NavLink
                   to="/admin"
