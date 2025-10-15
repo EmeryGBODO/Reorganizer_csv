@@ -338,9 +338,9 @@ const EndUserPage: React.FC = () => {
             <div className="flex flex-col h-full">
               <div className="p- pb-0">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-200">Affinez et traitez les données</h2>
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Affinez et traitez les données</h2>
                   <div className="flex flex-col gap-4 items-end">
-                    <button onClick={() => resetFlow('select_period')} className="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                    <button onClick={() => resetFlow('select_period')} className="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600">
                       <ChevronLeft className="h-4 w-4 mr-2" /> Changer de période
                     </button>
                   </div>
@@ -350,7 +350,7 @@ const EndUserPage: React.FC = () => {
                     <button
                       onClick={handleProcessAndDownload}
                       disabled={isProcessing || fullData.length === 0}
-                      className="inline-flex items-center p-2 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                      className="inline-flex items-center p-2 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
                     >
                       <Download className="h-5 w-5 mr-2" />  Télécharger
                     </button>
