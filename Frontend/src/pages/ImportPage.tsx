@@ -349,7 +349,7 @@ const ImportPage: React.FC = () => {
                 </div>
             </div>
 
-            {error && <StatusMessage type="error" message={error} />}
+            {error && <StatusMessage type="error" message={error} onClose={() => setError(null)} />}
 
             <div className="bg-white dark:bg-gray-800 bg-gradient-to-r from-white to-gray-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-gray-200 dark:border-blue-800 shadow-xl">
                 <div className="p-6 border-b dark:border-gray-700 flex  justify-center">
