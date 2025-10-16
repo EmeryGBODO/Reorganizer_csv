@@ -59,7 +59,10 @@ const ImportPage: React.FC = () => {
     const validateHeaders = (fileHeaders: string[]) => {
         if (!selectedCampaign) return { isValid: true, missingColumns: [] };
         
-        const requiredColumns = selectedCampaign.columns.map(col => col.name);
+        console.log('File headers:', fileHeaders);
+        console.log('Required columns:', selectedCampaign.columns.map(col => col.displayName));
+        
+        const requiredColumns = selectedCampaign.columns.map(col => col.displayName);
         const missingColumns = requiredColumns.filter(col => !fileHeaders.includes(col));
         
         return {
@@ -83,12 +86,12 @@ const ImportPage: React.FC = () => {
         loadCampaigns();
     }, []);
 
-    useEffect(() => {
-        if (error) {
-            const timer = setTimeout(() => setError(null), 5000);
-            return () => clearTimeout(timer);
-        }
-    }, [error]);
+    // useEffect(() => {
+    //     if (error) {
+    //         const timer = setTimeout(() => setError(null), 5000);
+    //         return () => clearTimeout(timer);
+    //     }
+    // }, [error]);
 
     const handleCampaignSelection = (campaignId: string | number) => {
 
@@ -135,35 +138,6 @@ const ImportPage: React.FC = () => {
             reader.readAsText(file);
             return;
         }
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const data = new Uint8Array(e.target?.result as ArrayBuffer);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData  = XLSX.utils.sheet_to_json(firstSheet);
-
-                const fileHeaders = Object.keys(jsonData[0]);
-                const validation = validateHeaders(fileHeaders);
-                
-                if (!validation.isValid) {
-                    setError(`Colonnes manquantes dans le fichier : ${validation.missingColumns.join(', ')}`);
-                    setIsProcessing(false);
-                    return;
-                }
-                
-                setFullData(jsonData as DataRow[]);
-                setHeaders(fileHeaders);
-                setCurrentStep('view_data');
-            } catch (err) {
-                setError(`Erreur lors de la lecture du fichier: ${err}`);
-            } finally {
-                setIsProcessing(false);
-            }
-        };
-        reader.readAsArrayBuffer(file);
-
-
         if (extension === 'xlsx' || extension === 'xls') {
             setIsConverting(true);
             const reader = new FileReader();
@@ -178,7 +152,20 @@ const ImportPage: React.FC = () => {
                     const newFileName = file.name.replace(/\.(xlsx|xls)$/i, '.csv');
                     const csvFile = new File([csvData], newFileName, { type: 'text/csv' });
 
-                    setSelectedFile(csvFile);
+                    // Parse le CSV converti pour validation
+                    const parsed = Papa.parse(csvData, { header: true });
+                    const fileHeaders = parsed.meta.fields || [];
+                    
+                    const validation = validateHeaders(fileHeaders);
+                    if (!validation.isValid) {
+                        setError(`Colonnes manquantes dans le fichier : ${validation.missingColumns.join(', ')}`);
+                        setIsProcessing(false);
+                        return;
+                    }
+                    
+                    setFullData(parsed.data as DataRow[]);
+                    setHeaders(fileHeaders);
+                    setCurrentStep('view_data');
                 } catch (err) {
                     setUploadState(prev => ({ ...prev, error: "Erreur lors de la conversion du fichier Excel." }));
                 } finally {
@@ -346,7 +333,7 @@ const ImportPage: React.FC = () => {
 
     return (
         <div className="max-w-7xl mx-auto py-20 sm:py-28 px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
-            <div className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-orange-100 dark:border-blue-800">
+            <div className="bg-white dark:bg-gray-800 bg-gradient-to-r from-white to-gray-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-gray-200 dark:border-blue-800 shadow-xl">
                 <div className="flex justify-between items-center">
                     <div>
                         <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">Importation et Traitement de Fichier</h1>
@@ -364,7 +351,7 @@ const ImportPage: React.FC = () => {
 
             {error && <StatusMessage type="error" message={error} />}
 
-            <div className="bg-white dark:bg-gray-800 bg-gradient-to-r from-orange-50 to-red-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-orange-100 dark:border-blue-800  shadow-xl ">
+            <div className="bg-white dark:bg-gray-800 bg-gradient-to-r from-white to-gray-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-gray-200 dark:border-blue-800 shadow-xl">
                 <div className="p-6 border-b dark:border-gray-700 flex  justify-center">
                     <Stepper steps={IMPORT_STEPS} currentStep={currentStep} />
                 </div>
