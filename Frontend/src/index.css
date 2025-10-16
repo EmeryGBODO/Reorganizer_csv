@@ -67,37 +67,8 @@ input[type="date"] {
   color-scheme: dark;
 }
 /* Scrollbar plus petite pour les cellules */
-.cell-scrollbar::-webkit-scrollbar {
-  height: 2px;
-  width: 2px;
-}
-
-.cell-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: #e5e7eb #f9fafb;
-}
-
-html.dark .cell-scrollbar {
-  scrollbar-color: #6b7280 #374151;
-}
-
-.cell-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.cell-scrollbar::-webkit-scrollbar-thumb {
-  background: #e5e7eb;
-  border-radius: 1px;
-}
-
-.dark .cell-scrollbar::-webkit-scrollbar-thumb {
-  background: #6b7280;
-}
 /* Scrollbar globale du navigateur */
-html {
-  scrollbar-width: thin;
-  scrollbar-color: #f97316 #f3f4f6;
-}
+
 
 
 
@@ -148,9 +119,7 @@ html::-webkit-scrollbar-thumb:hover {
 }
 
 /* Mode sombre pour scrollbar globale */
-html.dark {
-  scrollbar-color: #f97316 #374151;
-}
+
 
 html.dark::-webkit-scrollbar-track {
   background: #374151;
