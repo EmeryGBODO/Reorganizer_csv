@@ -351,18 +351,14 @@ const EndUserPage: React.FC = () => {
               <div className='pt-2'>
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Affinez et traitez les données</h2>
-                  <div className="flex flex-col gap-4 items-end">
-                    <button onClick={() => resetFlow('select_period')} className="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-center">
+                    <button onClick={() => resetFlow('select_period')} className="inline-flex items-center justify-center px-3 py-2 text-sm font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600">
                       <ChevronLeft className="h-4 w-4 mr-2" /> Changer de période
                     </button>
-                  </div>
-                </div>
-                <div className="sticky top-16 bg-transparent z-50 ">
-                  <div className="flex justify-end">
                     <button
                       onClick={handleProcessAndDownload}
                       disabled={isProcessing || fullData.length === 0}
-                      className="inline-flex items-center p-2 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                      className="inline-flex items-center justify-center p-2 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
                     >
                       <Download className="h-5 w-5 mr-2" />  Télécharger
                     </button>
@@ -384,8 +380,8 @@ const EndUserPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto py-28 px-4 sm:px-6 lg:px-8 space-y-8">
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-blue-100 dark:border-blue-800">
+    <div className="max-w-7xl mx-auto py-20 sm:py-28 px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
+      <div className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-orange-100 dark:border-blue-800">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Tableau de Bord de Traitement</h1>
@@ -412,7 +408,7 @@ const EndUserPage: React.FC = () => {
 
       {error && <StatusMessage type="error" message={error} />}
 
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-blue-100 dark:border-blue-800 shadow-xl ">
+      <div className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-orange-100 dark:border-blue-800 shadow-xl ">
         <div className="p-6 border-b flex dark:border-gray-700 justify-center">
           <Stepper steps={ENDUSER_STEPS} currentStep={currentStep} />
         </div>

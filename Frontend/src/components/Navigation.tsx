@@ -20,20 +20,20 @@ const Navigation: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 sm:space-x-3">
             <button
               onClick={toggleTheme}
-              className="p-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 hover:scale-105"
+              className="p-2 sm:p-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 hover:scale-105"
               title={isDark ? 'Mode clair' : 'Mode sombre'}
             >
-              {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              {isDark ? <Sun className="h-4 w-4 sm:h-5 sm:w-5" /> : <Moon className="h-4 w-4 sm:h-5 sm:w-5" />}
             </button>
             
             {location.pathname !== "/admin" && (
               <NavLink
                 to="/admin"
                 className={({ isActive }) =>
-                  `inline-flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
+                  `inline-flex items-center px-2 py-2 sm:px-3 sm:py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
                     isActive
                       ? 'text-orange-600 bg-orange-50 dark:text-orange-400 dark:bg-orange-900/30 shadow-sm'
                       : 'text-gray-600 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:shadow-sm'
@@ -48,7 +48,7 @@ const Navigation: React.FC = () => {
             {isAuthenticated && (
               <button
                 onClick={logout}
-                className="inline-flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 hover:shadow-sm transition-all duration-200"
+                className="inline-flex items-center px-2 py-2 sm:px-3 sm:py-2.5 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 hover:shadow-sm transition-all duration-200"
                 title="Se déconnecter"
               >
                 <LogOut className="h-4 w-4 transition-colors" />

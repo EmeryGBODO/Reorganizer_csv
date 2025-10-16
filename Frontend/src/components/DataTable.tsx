@@ -45,7 +45,8 @@ const DataTable: React.FC<DataTableProps> = ({ headers, data, totalRowCount, cla
             {/* EN-TÊTE STICKY */}
             <div
               role="row"
-              className="flex bg-gray-50 dark:bg-gray-700 sticky top-0 z-10 border-b border-gray-200 dark:border-gray-600"
+              className="flex bg-slate-100 dark:bg-slate-700 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-600"
+              style={{ width: '100%', minWidth: 'max-content' }}
             >
               {headers.map((header) => (
                 <div
@@ -54,8 +55,8 @@ const DataTable: React.FC<DataTableProps> = ({ headers, data, totalRowCount, cla
                   // --- STYLE DE LA CELLULE D'EN-TÊTE ---
                   // flex: 1 permet aux colonnes de partager l'espace équitablement.
                   // la bordure droite crée la ligne verticale.
-                  className="flex-1 px-6 py-3 text-xs font-bold text-gray-800 dark:text-gray-200 uppercase whitespace-nowrap border-r border-gray-200 dark:border-gray-600 last:border-r-0"
-                  style={{ minWidth: '150px' }} // Donnez une largeur minimale à vos colonnes
+                  className="flex-1 px-3 py-3 sm:px-6 text-xs font-bold text-gray-800 dark:text-gray-200 uppercase whitespace-nowrap border-r border-gray-200 dark:border-gray-600 last:border-r-0"
+                  style={{ minWidth: '120px' }} // Largeur minimale réduite pour mobile
                 >
                   {header.replace(/_/g, ' ')}
                 </div>
@@ -82,8 +83,8 @@ const DataTable: React.FC<DataTableProps> = ({ headers, data, totalRowCount, cla
                         role="gridcell"
                         // --- STYLE DE LA CELLULE DE DONNÉES ---
                         // Doit correspondre à la structure de l'en-tête pour l'alignement.
-                        className="flex-1 px-6 py-4 text-sm text-gray-700 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-600 last:border-r-0 overflow-x-auto cell-scrollbar"
-                        style={{ minWidth: '150px', maxWidth: '300px', whiteSpace: 'nowrap' }}
+                        className="flex-1 px-3 py-4 sm:px-6 text-sm text-gray-700 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-600 last:border-r-0 overflow-x-auto cell-scrollbar"
+                        style={{ minWidth: '120px', maxWidth: '250px', whiteSpace: 'nowrap' }}
                       >
                         {String(row[header] ?? '')}
                       </div>
