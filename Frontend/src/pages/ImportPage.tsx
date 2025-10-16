@@ -43,6 +43,18 @@ const ImportPage: React.FC = () => {
     const [uploadState, setUploadState] = useState<UploadState>({isUploading:false, success:false, error:null, progress:0})
     const navigate = useNavigate();
 
+    // Fonction pour calculer la taille estimée du fichier de sortie
+    // const getEstimatedFileSize = () => {
+    //     if (!fullData.length || !selectedCampaign) return null;
+    //     
+    //     const csvString = Papa.unparse(fullData);
+    //     const sizeInBytes = new Blob([csvString]).size;
+    //     
+    //     if (sizeInBytes < 1024) return `${sizeInBytes} B`;
+    //     if (sizeInBytes < 1024 * 1024) return `${(sizeInBytes / 1024).toFixed(1)} KB`;
+    //     return `${(sizeInBytes / (1024 * 1024)).toFixed(1)} MB`;
+    // };
+
     useEffect(() => {
         const loadCampaigns = async () => {
             try {
@@ -194,7 +206,14 @@ const ImportPage: React.FC = () => {
                     <div className="flex flex-col h-full">
                         <div className="pt-2 space-y-6 pb-0  mb-6">
                             <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Aperçu des données et traitement</h2>
+                                <div>
+                                    <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Aperçu des données et traitement</h2>
+                                    {/* {getEstimatedFileSize() && (
+                                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                            Taille estimée du fichier : <span className="font-medium text-orange-600 dark:text-orange-400">{getEstimatedFileSize()}</span>
+                                        </p>
+                                    )} */}
+                                </div>
                                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-center">
                                     <button onClick={() => resetFlow('upload_file')} className="inline-flex text-white items-center justify-center px-3 py-2 text-sm bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 font-medium rounded-md">
                                         <ChevronLeft className="h-4 w-4 mr-2" /> Changer de fichier
@@ -281,7 +300,7 @@ const ImportPage: React.FC = () => {
 
     return (
         <div className="max-w-7xl mx-auto py-20 sm:py-28 px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
-            <div className="bg-gradient-to-r from-white to-gray-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-gray-200 dark:border-blue-800">
+            <div className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-orange-100 dark:border-blue-800">
                 <div className="flex justify-between items-center">
                     <div>
                         <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">Importation et Traitement de Fichier</h1>
@@ -299,7 +318,7 @@ const ImportPage: React.FC = () => {
 
             {error && <StatusMessage type="error" message={error} />}
 
-            <div className="bg-white dark:bg-gray-800 bg-gradient-to-r from-white to-gray-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-gray-200 dark:border-blue-800  shadow-xl ">
+            <div className="bg-white dark:bg-gray-800 bg-gradient-to-r from-orange-50 to-red-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-orange-100 dark:border-blue-800  shadow-xl ">
                 <div className="p-6 border-b dark:border-gray-700 flex  justify-center">
                     <Stepper steps={IMPORT_STEPS} currentStep={currentStep} />
                 </div>

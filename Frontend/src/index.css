@@ -74,11 +74,11 @@ input[type="date"] {
 
 .cell-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #d1d5db #f3f4f6;
+  scrollbar-color: #e5e7eb #f9fafb;
 }
 
 html.dark .cell-scrollbar {
-  scrollbar-color: #9ca3af #374151;
+  scrollbar-color: #6b7280 #374151;
 }
 
 .cell-scrollbar::-webkit-scrollbar-track {
@@ -86,12 +86,12 @@ html.dark .cell-scrollbar {
 }
 
 .cell-scrollbar::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: #e5e7eb;
   border-radius: 1px;
 }
 
 .dark .cell-scrollbar::-webkit-scrollbar-thumb {
-  background: #9ca3af;
+  background: #6b7280;
 }
 /* Scrollbar globale du navigateur */
 html {

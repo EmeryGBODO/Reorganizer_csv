@@ -45,7 +45,7 @@ const DataTable: React.FC<DataTableProps> = ({ headers, data, totalRowCount, cla
             {/* EN-TÊTE STICKY */}
             <div
               role="row"
-              className="flex bg-slate-100 dark:bg-slate-700 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-600"
+              className="flex bg-gray-50 dark:bg-gray-700 sticky top-0 z-10 border-b border-gray-200 dark:border-gray-600"
               style={{ width: '100%', minWidth: 'max-content' }}
             >
               {headers.map((header) => (
