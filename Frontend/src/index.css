@@ -44,3 +44,34 @@
 .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #9ca3af;
 }
+
+
+
+
+
+
+
+
+/* 🌙 Scrollbar ultra fine et quasi invisible */
+.scrollbar-thin::-webkit-scrollbar {
+  height: 3px; /* pour les scrollbars horizontales */
+  width: 3px;  /* pour les scrollbars verticales */
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent; /* pas de fond */
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: transparent; /* invisible par défaut */
+  border-radius: 10px;
+}
+
+/* Affiche la barre au survol */
+.scrollbar-thin:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5); /* gris clair visible au hover */
+}
+
+.dark .scrollbar-thin:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(107, 114, 128, 0.6); /* gris adapté au dark mode */
+}
