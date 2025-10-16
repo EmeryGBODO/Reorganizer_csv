@@ -269,7 +269,7 @@ export default function LoginPage() {
                     <div className="mb-8">
                         <h1 className="text-5xl lg:text-6xl font-bold mb-4">
                             <span className="bg-gradient-to-r from-orange-500 via-red-500 to-purple-600 bg-clip-text text-transparent animate-pulse">
-                                FLO WOP
+                                FLOWUP
                             </span>
                             {/* <span className="text-slate-700">LIGHT</span> */}
                         </h1>

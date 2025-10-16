@@ -16,44 +16,45 @@ const Navigation: React.FC = () => {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <div className="flex-shrink-0 cursor-pointer hover:scale-105 transition-transform duration-200" onClick={()=>navigate("/")}>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-500 via-red-500 to-purple-600 bg-clip-text text-transparent">FLO WOP</h1>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-500 via-red-500 to-purple-600 bg-clip-text text-transparent">FLOWUP</h1>
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 sm:space-x-3">
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="p-2 sm:p-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 hover:scale-105"
+              title={isDark ? 'Mode clair' : 'Mode sombre'}
             >
-              {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              {isDark ? <Sun className="h-4 w-4 sm:h-5 sm:w-5" /> : <Moon className="h-4 w-4 sm:h-5 sm:w-5" />}
             </button>
-              <div>
-                {location.pathname != "/admin" && (<NavLink
-                  to="/admin"
-                  className={({ isActive }) =>
-                    `inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                      isActive
-                        ? 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/30 shadow-sm'
-                        : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 hover:shadow-sm'
-                    }`
-                  }
-                >
-                  <Settings className="h-4 w-4 hover:text-orange-700 dark:hover:text-purple-500 transition-colors" />
-                </NavLink>)}
-                            
-                          </div>
-                
-                          {isAuthenticated && (
-                             <div className="flex items-center">
-                  <button
-                      onClick={logout}
-                      className="inline-flex items-center px-4 py-2 dark:hover:border text-sm font-medium rounded-lg text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-red-50 dark:hover:bg-red-900/30 hover:shadow-sm transition-all duration-200"
-                  >
-                      <LogOut className="h-4 w-4 mr-2 hover:text-red-500  transition-colors" />
-                  </button>
-                             </div>
-                          )}
-              </div>
+            
+            {location.pathname !== "/admin" && (
+              <NavLink
+                to="/admin"
+                className={({ isActive }) =>
+                  `inline-flex items-center px-2 py-2 sm:px-3 sm:py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
+                    isActive
+                      ? 'text-orange-600 bg-orange-50 dark:text-orange-400 dark:bg-orange-900/30 shadow-sm'
+                      : 'text-gray-600 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:shadow-sm'
+                  }`
+                }
+                title="Administration"
+              >
+                <Settings className="h-4 w-4 transition-colors" />
+              </NavLink>
+            )}
+            
+            {isAuthenticated && (
+              <button
+                onClick={logout}
+                className="inline-flex items-center px-2 py-2 sm:px-3 sm:py-2.5 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 hover:shadow-sm transition-all duration-200"
+                title="Se déconnecter"
+              >
+                <LogOut className="h-4 w-4 transition-colors" />
+              </button>
+            )}
+          </div>
 
         </div>
       </div>
