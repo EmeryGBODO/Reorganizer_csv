@@ -55,6 +55,19 @@ const ImportPage: React.FC = () => {
     //     return `${(sizeInBytes / (1024 * 1024)).toFixed(1)} MB`;
     // };
 
+    // Fonction pour valider les en-têtes du fichier
+    const validateHeaders = (fileHeaders: string[]) => {
+        if (!selectedCampaign) return { isValid: true, missingColumns: [] };
+        
+        const requiredColumns = selectedCampaign.columns.map(col => col.name);
+        const missingColumns = requiredColumns.filter(col => !fileHeaders.includes(col));
+        
+        return {
+            isValid: missingColumns.length === 0,
+            missingColumns
+        };
+    };
+
     useEffect(() => {
         const loadCampaigns = async () => {
             try {
@@ -95,7 +108,31 @@ const ImportPage: React.FC = () => {
         const extension = file.name.split('.').pop()?.toLowerCase();
 
         if (extension === 'csv') {
-            setSelectedFile(file);
+            // Valider les en-têtes pour les fichiers CSV
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const csvText = e.target?.result as string;
+                    const parsed = Papa.parse(csvText, { header: true });
+                    const fileHeaders = parsed.meta.fields || [];
+                    
+                    const validation = validateHeaders(fileHeaders);
+                    if (!validation.isValid) {
+                        setError(`Colonnes manquantes dans le fichier : ${validation.missingColumns.join(', ')}`);
+                        setIsProcessing(false);
+                        return;
+                    }
+                    
+                    setFullData(parsed.data as DataRow[]);
+                    setHeaders(fileHeaders);
+                    setCurrentStep('view_data');
+                } catch (err) {
+                    setError('Erreur lors de la lecture du fichier CSV.');
+                } finally {
+                    setIsProcessing(false);
+                }
+            };
+            reader.readAsText(file);
             return;
         }
         const reader = new FileReader();
@@ -106,8 +143,17 @@ const ImportPage: React.FC = () => {
                 const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                 const jsonData  = XLSX.utils.sheet_to_json(firstSheet);
 
+                const fileHeaders = Object.keys(jsonData[0]);
+                const validation = validateHeaders(fileHeaders);
+                
+                if (!validation.isValid) {
+                    setError(`Colonnes manquantes dans le fichier : ${validation.missingColumns.join(', ')}`);
+                    setIsProcessing(false);
+                    return;
+                }
+                
                 setFullData(jsonData as DataRow[]);
-                if (jsonData.length > 0) setHeaders(Object.keys(jsonData[0]));
+                setHeaders(fileHeaders);
                 setCurrentStep('view_data');
             } catch (err) {
                 setError(`Erreur lors de la lecture du fichier: ${err}`);
