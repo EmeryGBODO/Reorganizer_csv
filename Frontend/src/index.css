@@ -72,17 +72,26 @@ input[type="date"] {
   width: 2px;
 }
 
+.cell-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db #f3f4f6;
+}
+
+html.dark .cell-scrollbar {
+  scrollbar-color: #9ca3af #374151;
+}
+
 .cell-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
 
 .cell-scrollbar::-webkit-scrollbar-thumb {
-  background: #e5e7eb;
+  background: #d1d5db;
   border-radius: 1px;
 }
 
 .dark .cell-scrollbar::-webkit-scrollbar-thumb {
-  background: #4b5563;
+  background: #9ca3af;
 }
 /* Scrollbar globale du navigateur */
 html {

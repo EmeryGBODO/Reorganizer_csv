@@ -381,7 +381,7 @@ const EndUserPage: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto py-20 sm:py-28 px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
-      <div className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-orange-100 dark:border-blue-800">
+      <div className="bg-gradient-to-r from-white to-gray-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-gray-200 dark:border-blue-800">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Tableau de Bord de Traitement</h1>
@@ -408,7 +408,7 @@ const EndUserPage: React.FC = () => {
 
       {error && <StatusMessage type="error" message={error} />}
 
-      <div className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-orange-100 dark:border-blue-800 shadow-xl ">
+      <div className="bg-gradient-to-r from-white to-gray-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-gray-200 dark:border-blue-800 shadow-xl ">
         <div className="p-6 border-b flex dark:border-gray-700 justify-center">
           <Stepper steps={ENDUSER_STEPS} currentStep={currentStep} />
         </div>

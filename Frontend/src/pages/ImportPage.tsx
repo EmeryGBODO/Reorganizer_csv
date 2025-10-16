@@ -281,7 +281,7 @@ const ImportPage: React.FC = () => {
 
     return (
         <div className="max-w-7xl mx-auto py-20 sm:py-28 px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
-            <div className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-orange-100 dark:border-blue-800">
+            <div className="bg-gradient-to-r from-white to-gray-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-gray-200 dark:border-blue-800">
                 <div className="flex justify-between items-center">
                     <div>
                         <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">Importation et Traitement de Fichier</h1>
@@ -299,7 +299,7 @@ const ImportPage: React.FC = () => {
 
             {error && <StatusMessage type="error" message={error} />}
 
-            <div className="bg-white dark:bg-gray-800 bg-gradient-to-r from-orange-50 to-red-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-orange-100 dark:border-blue-800  shadow-xl ">
+            <div className="bg-white dark:bg-gray-800 bg-gradient-to-r from-white to-gray-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-gray-200 dark:border-blue-800  shadow-xl ">
                 <div className="p-6 border-b dark:border-gray-700 flex  justify-center">
                     <Stepper steps={IMPORT_STEPS} currentStep={currentStep} />
                 </div>
