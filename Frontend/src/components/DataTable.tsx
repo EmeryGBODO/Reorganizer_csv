@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import '../style.css'
 
 interface DataTableProps {
   headers: string[];
@@ -14,7 +15,7 @@ const DataTable: React.FC<DataTableProps> = ({ headers, data, totalRowCount, cla
   const rowVirtualizer = useVirtualizer({
     count: totalRowCount,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 53, // Hauteur estimée d'une ligne
+    estimateSize: () => 53,
     overscan: 5,
   });
 
@@ -32,61 +33,63 @@ const DataTable: React.FC<DataTableProps> = ({ headers, data, totalRowCount, cla
   return (
     <div>
       <div className="px-6 py-3 bg-transparent dark:bg-transparent text-xs text-gray-600 dark:text-gray-400 dark:border-gray-600">
-          {totalRowCount.toLocaleString()} lignes au total. Le traitement s'appliquera à l'ensemble des données.
-        </div>
+        {totalRowCount.toLocaleString()} lignes au total. Le traitement s'appliquera à l'ensemble des données.
+      </div>
+
       <div className={`bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden ${className}`}>
         <div
           ref={parentRef}
-          className="overflow-auto custom-scrollbar"
-          style={{ height: '600px' }} // Hauteur fixe obligatoire
+          className="overflow-auto [--scroll-thumb-hover:#059669] [--scroll-track:#374151] "
+          style={{ height: '600px' }}
         >
-          {/* On utilise des divs avec des rôles ARIA pour l'accessibilité */}
-          <div role="grid" className="relative w-full">
-            {/* EN-TÊTE STICKY */}
+          <div role="grid" className="relative w-full ">
+            {/* EN-TÊTE */}
             <div
               role="row"
-              className="flex bg-gray-50 dark:bg-gray-700 sticky top-0 z-10 border-b border-gray-200 dark:border-gray-600"
-              style={{ width: '100%', minWidth: 'max-content' }}
+              className="flex bg-gray-50 min-w-min dark:bg-gray-700 sticky top-0 z-10 border-b border-gray-200 dark:border-gray-600"
             >
               {headers.map((header) => (
                 <div
                   key={header}
                   role="columnheader"
-                  // --- STYLE DE LA CELLULE D'EN-TÊTE ---
-                  // flex: 1 permet aux colonnes de partager l'espace équitablement.
-                  // la bordure droite crée la ligne verticale.
-                  className="flex-1 px-3 py-3 sm:px-6 text-xs font-bold text-gray-800 dark:text-gray-200 uppercase whitespace-nowrap border-r border-gray-200 dark:border-gray-600 last:border-r-0"
-                  style={{ minWidth: '120px' }} // Largeur minimale réduite pour mobile
+                  className="flex-1 px-6 py-3 text-xs font-bold text-gray-800 dark:text-gray-200 uppercase whitespace-nowrap border-r border-gray-200 dark:border-gray-600 last:border-r-0"
+                  style={{ minWidth: '150px' }}
                 >
                   {header.replace(/_/g, ' ')}
                 </div>
               ))}
             </div>
-            {/* CORPS VIRTUALISÉ */}
+
+            {/* LIGNES VIRTUALISÉES */}
             <div
-              className="relative"
+              className="relative "
               style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
             >
               {virtualRows.map((virtualRow) => {
                 const row = data[virtualRow.index];
                 if (!row) return null;
+
                 return (
                   <div
                     key={virtualRow.key}
                     role="row"
-                    className="flex absolute top-0 left-0 w-full"
+                    className="flex absolute top-0 left-0 w-full scrollbar-thin"
                     style={{ transform: `translateY(${virtualRow.start}px)` }}
                   >
                     {headers.map((header) => (
                       <div
                         key={`${virtualRow.key}-${header}`}
                         role="gridcell"
-                        // --- STYLE DE LA CELLULE DE DONNÉES ---
-                        // Doit correspondre à la structure de l'en-tête pour l'alignement.
-                        className="flex-1 px-3 py-4 sm:px-6 text-sm text-gray-700 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-600 last:border-r-0 overflow-x-auto cell-scrollbar"
-                        style={{ minWidth: '120px', maxWidth: '250px', whiteSpace: 'nowrap' }}
+                        className="flex-1 px-6 py-4 text-sm text-gray-700 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-600 last:border-r-0"
+                        style={{
+                          minWidth: '150px',
+                          overflow: 'hidden',
+                        }}
                       >
-                        {String(row[header] ?? '')}
+                        {/* contenu scrollable horizontalement */}
+                        <div className="overflow-x-auto max-w-full whitespace-nowrap scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
+                          {String(row[header] ?? '')}
+                        </div>
                       </div>
                     ))}
                   </div>

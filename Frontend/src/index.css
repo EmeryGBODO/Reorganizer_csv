@@ -2,50 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Scrollbar personnalisée */
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: #f97316 #f3f4f6;
-}
 
-.custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #f3f4f6;
-  border-radius: 4px;
-}
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #f97316, #dc2626);
-  border-radius: 4px;
-  transition: all 0.2s ease;
-}
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #ea580c, #b91c1c);
-  transform: scale(1.1);
-}
 
-/* Mode sombre */
-.dark .custom-scrollbar {
-  scrollbar-color: #f97316 #374151;
-}
 
-.dark .custom-scrollbar::-webkit-scrollbar-track {
-  background: #374151;
-}
 
-.dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #f97316, #dc2626);
-}
-
-.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #ea580c, #b91c1c);
-  transform: scale(1.1);
-}
 
 /* Date picker icon adaptation pour dark mode */
 input[type="date"]::-webkit-calendar-picker-indicator {
@@ -66,37 +29,37 @@ input[type="date"] {
 .dark input[type="date"] {
   color-scheme: dark;
 }
-/* Scrollbar plus petite pour les cellules */
-.cell-scrollbar::-webkit-scrollbar {
-  height: 2px;
-  width: 2px;
+
+
+
+
+
+
+
+
+
+/* 🌙 Scrollbar ultra fine et quasi invisible */
+.scrollbar-thin::-webkit-scrollbar {
+  height: 3px; /* pour les scrollbars horizontales */
+  width: 3px;  /* pour les scrollbars verticales */
 }
 
-.cell-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: #e5e7eb #f9fafb;
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent; /* pas de fond */
 }
 
-html.dark .cell-scrollbar {
-  scrollbar-color: #6b7280 #374151;
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: transparent; /* invisible par défaut */
+  border-radius: 10px;
 }
 
-.cell-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
+/* Affiche la barre au survol */
+.scrollbar-thin:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5); /* gris clair visible au hover */
 }
 
-.cell-scrollbar::-webkit-scrollbar-thumb {
-  background: #e5e7eb;
-  border-radius: 1px;
-}
-
-.dark .cell-scrollbar::-webkit-scrollbar-thumb {
-  background: #6b7280;
-}
-/* Scrollbar globale du navigateur */
-html {
-  scrollbar-width: thin;
-  scrollbar-color: #f97316 #f3f4f6;
+.dark .scrollbar-thin:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(107, 114, 128, 0.6); /* gris adapté au dark mode */
 }
 
 html::-webkit-scrollbar {
@@ -117,9 +80,7 @@ html::-webkit-scrollbar-thumb:hover {
 }
 
 /* Mode sombre pour scrollbar globale */
-html.dark {
-  scrollbar-color: #f97316 #374151;
-}
+
 
 html.dark::-webkit-scrollbar-track {
   background: #374151;

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Download, UploadCloud, ChevronLeft, CheckCircle, ChevronRight } from 'lucide-react';
+import { Download, UploadCloud, ChevronLeft, CheckCircle, ChevronRight, FileSignature } from 'lucide-react';
 import DragDropZone from '../components/DragDropZone';
 import LoadingSpinner from '../components/LoadingSpinner';
 import StatusMessage from '../components/StatusMessage';
@@ -17,10 +17,10 @@ const PREVIEW_ROW_COUNT = 20;
 type Step = 'select_campaign' | 'upload_file' | 'view_data';
 
 export interface UploadState {
-  isUploading: boolean;
-  success: boolean;
-  error: string | null;
-  progress: number;
+    isUploading: boolean;
+    success: boolean;
+    error: string | null;
+    progress: number;
 }
 
 const IMPORT_STEPS = [
@@ -40,32 +40,22 @@ const ImportPage: React.FC = () => {
     const [fullData, setFullData] = useState<DataRow[]>([]);
     const [headers, setHeaders] = useState<string[]>([]);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [isConverting,setIsConverting] = useState<boolean>(false);
-    const [uploadState, setUploadState] = useState<UploadState>({isUploading:false, success:false, error:null, progress:0})
+    const [isConverting, setIsConverting] = useState<boolean>(false);
+    const [uploadState, setUploadState] = useState<UploadState>({ isUploading: false, success: false, error: null, progress: 0 })
+    const [outputFileName, setOutputFileName] = useState('');
     const navigate = useNavigate();
 
-    // Fonction pour calculer la taille estimée du fichier de sortie
-    // const getEstimatedFileSize = () => {
-    //     if (!fullData.length || !selectedCampaign) return null;
-    //     
-    //     const csvString = Papa.unparse(fullData);
-    //     const sizeInBytes = new Blob([csvString]).size;
-    //     
-    //     if (sizeInBytes < 1024) return `${sizeInBytes} B`;
-    //     if (sizeInBytes < 1024 * 1024) return `${(sizeInBytes / 1024).toFixed(1)} KB`;
-    //     return `${(sizeInBytes / (1024 * 1024)).toFixed(1)} MB`;
-    // };
 
     // Fonction pour valider les en-têtes du fichier
     const validateHeaders = (fileHeaders: string[]) => {
         if (!selectedCampaign) return { isValid: true, missingColumns: [] };
-        
+
         console.log('File headers:', fileHeaders);
         console.log('Required columns:', selectedCampaign.columns.map(col => col.displayName));
-        
+
         const requiredColumns = selectedCampaign.columns.map(col => col.displayName);
         const missingColumns = requiredColumns.filter(col => !fileHeaders.includes(col));
-        
+
         return {
             isValid: missingColumns.length === 0,
             missingColumns
@@ -87,12 +77,12 @@ const ImportPage: React.FC = () => {
         loadCampaigns();
     }, []);
 
-    // useEffect(() => {
-    //     if (error) {
-    //         const timer = setTimeout(() => setError(null), 5000);
-    //         return () => clearTimeout(timer);
-    //     }
-    // }, [error]);
+    useEffect(() => {
+        if (selectedCampaign) {
+            setOutputFileName(selectedCampaign.output_file_name || 'donnees_traitees.csv');
+        }
+    }, [selectedCampaign]);
+
 
     const handleCampaignSelection = (campaignId: string | number) => {
 
@@ -107,68 +97,68 @@ const ImportPage: React.FC = () => {
 
 
     const handleFileDrop = (file: File) => {
-  setIsProcessing(true); // Le loader démarre
-  setError(null);
-  setSelectedFile(file); // On stocke le fichier immédiatement
+        setIsProcessing(true); // Le loader démarre
+        setError(null);
+        setSelectedFile(file); // On stocke le fichier immédiatement
 
-  const reader = new FileReader();
+        const reader = new FileReader();
 
-  reader.onload = (e) => {
-    try {
-      const fileContent = e.target?.result;
-      const extension = file.name.split('.').pop()?.toLowerCase();
-      let jsonData: DataRow[] = [];
+        reader.onload = (e) => {
+            try {
+                const fileContent = e.target?.result;
+                const extension = file.name.split('.').pop()?.toLowerCase();
+                let jsonData: DataRow[] = [];
 
-      // --- Logique unifiée pour tous les types de fichiers ---
+                // --- Logique unifiée pour tous les types de fichiers ---
 
-      if (extension === 'csv') {
-        // On utilise PapaParse pour lire le contenu CSV
-        const parsedData = Papa.parse(fileContent as string, {
-          header: true, // Très important: traite la première ligne comme des en-têtes
-          skipEmptyLines: true,
-        });
-        jsonData = parsedData.data as DataRow[];
-      
-      } else if (extension === 'xlsx' || extension === 'xls') {
-        // On utilise XLSX pour lire le contenu Excel
-        const data = new Uint8Array(fileContent as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        jsonData = XLSX.utils.sheet_to_json(firstSheet) as DataRow[];
-      
-      } else {
-        setError("Type de fichier non supporté. Utilisez CSV, XLS ou XLSX.");
-        setIsProcessing(false); // On arrête le loader en cas d'erreur
-        return;
-      }
+                if (extension === 'csv') {
+                    // On utilise PapaParse pour lire le contenu CSV
+                    const parsedData = Papa.parse(fileContent as string, {
+                        header: true, // Très important: traite la première ligne comme des en-têtes
+                        skipEmptyLines: true,
+                    });
+                    jsonData = parsedData.data as DataRow[];
 
-      // --- Étapes finales communes à tous les fichiers valides ---
+                } else if (extension === 'xlsx' || extension === 'xls') {
+                    // On utilise XLSX pour lire le contenu Excel
+                    const data = new Uint8Array(fileContent as ArrayBuffer);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    jsonData = XLSX.utils.sheet_to_json(firstSheet) as DataRow[];
 
-      setFullData(jsonData);
-      if (jsonData.length > 0) {
-        setHeaders(Object.keys(jsonData[0]));
-      } else {
-        setHeaders([]);
-        setError("Le fichier est vide ou son format est incorrect.");
-      }
-      setCurrentStep('view_data'); // On passe à l'étape suivante
+                } else {
+                    setError("Type de fichier non supporté. Utilisez CSV, XLS ou XLSX.");
+                    setIsProcessing(false); // On arrête le loader en cas d'erreur
+                    return;
+                }
 
-    } catch (err) {
-      console.error("Erreur lors de la lecture du fichier:", err);
-      setError(`Erreur lors de la lecture du fichier.`);
-    } finally {
-      setIsProcessing(false); // On arrête le loader dans tous les cas (succès ou erreur)
-    }
-  };
+                // --- Étapes finales communes à tous les fichiers valides ---
 
-  // On détermine comment lire le fichier en fonction de son type
-  const extension = file.name.split('.').pop()?.toLowerCase();
-  if (extension === 'xlsx' || extension === 'xls') {
-    reader.readAsArrayBuffer(file); // Pour Excel
-  } else {
-    reader.readAsText(file); // Pour CSV et autres types de texte
-  }
-};
+                setFullData(jsonData);
+                if (jsonData.length > 0) {
+                    setHeaders(Object.keys(jsonData[0]));
+                } else {
+                    setHeaders([]);
+                    setError("Le fichier est vide ou son format est incorrect.");
+                }
+                setCurrentStep('view_data'); // On passe à l'étape suivante
+
+            } catch (err) {
+                console.error("Erreur lors de la lecture du fichier:", err);
+                setError(`Erreur lors de la lecture du fichier.`);
+            } finally {
+                setIsProcessing(false); // On arrête le loader dans tous les cas (succès ou erreur)
+            }
+        };
+
+        // On détermine comment lire le fichier en fonction de son type
+        const extension = file.name.split('.').pop()?.toLowerCase();
+        if (extension === 'xlsx' || extension === 'xls') {
+            reader.readAsArrayBuffer(file); // Pour Excel
+        } else {
+            reader.readAsText(file); // Pour CSV et autres types de texte
+        }
+    };
 
 
     const resetFlow = (step: Step = 'select_campaign') => {
@@ -224,31 +214,59 @@ const ImportPage: React.FC = () => {
             case 'view_data':
                 return (
                     <div className="flex flex-col h-full">
-                        <div className="pt-2 space-y-6 pb-0  mb-6">
-                            <div className="flex items-center justify-between mb-6">
+                        <div className="pt-2 space-y-6 pb-0 mb-6">
+                            <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
                                 <div>
                                     <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Aperçu des données et traitement</h2>
-                                    {/* {getEstimatedFileSize() && (
-                                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                            Taille estimée du fichier : <span className="font-medium text-orange-600 dark:text-orange-400">{getEstimatedFileSize()}</span>
-                                        </p>
-                                    )} */}
+
                                 </div>
                                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-center">
                                     <button onClick={() => resetFlow('upload_file')} className="inline-flex text-white items-center justify-center px-3 py-2 text-sm bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 font-medium rounded-md">
                                         <ChevronLeft className="h-4 w-4 mr-2" /> Changer de fichier
                                     </button>
-                                    <button
-                                        onClick={handleProcessAndDownload}
-                                        disabled={fullData.length === 0}
-                                        className="inline-flex items-center justify-center p-2 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                                    >
-                                        <Download className="h-5 w-5 mr-2" /> Télécharger
-                                    </button>
+
+                                </div>
+                            </div>
+                            {/* Champ pour le nom du fichier de sortie */}
+                            <div className="w-full mb-6">
+                                <div className='flex justify-between items-start w-full'>
+                                    <div className="flex flex-col gap-y-3">
+                                        <p className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Fichier original
+                                        </p>
+                                        <span className="font-medium text-orange-600 dark:text-orange-400">{selectedFile?.name}</span>
+                                    </div>
+                                    <div className='flex gap-10 '>
+                                        <div className='flex flex-col '>
+                                            <label htmlFor="output-filename" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                Nom du fichier de sortie
+                                            </label>
+                                            <div className="relative flex">
+                                                <FileSignature className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                                <input
+                                                    type="text"
+                                                    id="output-filename"
+                                                    value={outputFileName}
+                                                    onChange={(e) => setOutputFileName(e.target.value)}
+                                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                                    placeholder="exemple_export.csv"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className='flex items-end'>
+                                            <button
+                                                onClick={handleProcessAndDownload}
+                                                disabled={fullData.length === 0}
+                                                className="inline-flex items-center justify-center p-2 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                            >
+                                                <Download className="h-5 w-5 mr-2" /> Traiter et télécharger
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div className="flex-1 overflow-auto dark:border-gray-700 border-t">
                             <DataTable headers={headers} data={fullData} totalRowCount={fullData.length} />
                         </div>
@@ -264,17 +282,23 @@ const ImportPage: React.FC = () => {
             setError("Veuillez sélectionner une campagne pour le traitement.");
             return;
         }
+        if (!outputFileName.trim()) {
+            setError("Le nom du fichier de sortie ne peut pas être vide.");
+            return;
+        }
 
         try {
             // --- APPEL BACKEND RÉEL ---
             const response = await fileApi.processCSV(selectedFile, selectedCampaign.id);
             console.log(response);
-            
+
             const blob = new Blob([response.data], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = selectedCampaign.output_file_name.endsWith('.csv') ? selectedCampaign.output_file_name : `${selectedCampaign.output_file_name}.csv`;
+
+            const finalFileName = outputFileName.endsWith('.csv') ? outputFileName : `${outputFileName}.csv`;
+            link.download = finalFileName;
 
             document.body.appendChild(link);
             link.click();
@@ -311,7 +335,10 @@ const ImportPage: React.FC = () => {
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
             link.setAttribute('href', url);
-            link.setAttribute('download', `${selectedCampaign.output_file_name || 'donnees_traitees'}.csv`);
+
+            const finalFileName = outputFileName.endsWith('.csv') ? outputFileName : `${outputFileName}.csv`;
+            link.setAttribute('download', finalFileName);
+
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -336,7 +363,7 @@ const ImportPage: React.FC = () => {
                 </div>
             </div>
 
-            {error && <StatusMessage type="error" message={error} onClose={() => setError(null)} />}
+            {error && <StatusMessage type="error" message={error} />}
 
             <div className="bg-white dark:bg-gray-800 bg-gradient-to-r from-white to-gray-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-gray-200 dark:border-blue-800 shadow-xl">
                 <div className="p-6 border-b dark:border-gray-700 flex  justify-center">
@@ -355,4 +382,4 @@ const ImportPage: React.FC = () => {
     );
 }
 
-    export default ImportPage;
+export default ImportPage;
