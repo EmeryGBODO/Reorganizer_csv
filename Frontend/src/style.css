@@ -1,0 +1,27 @@
+/* Conteneur scroll isolé */
+.scroll-isolated {
+  overflow: auto;
+  position: relative;
+  isolation: isolate; /* ⚡ crée un nouveau contexte de stacking */
+}
+
+/* Scrollbar personnalisée UNIQUEMENT pour .scroll-isolated */
+
+
+.scroll-isolated::-webkit-scrollbar-track {
+  background-color: #f1f5f9 !important; /* fond gris clair */
+  border-radius: 8px;
+}
+
+
+.scroll-isolated:hover::-webkit-scrollbar-thumb {
+  background-color: #2563eb !important; /* bleu foncé au survol */
+}
+
+
+
+.scroll-isolated *::-webkit-scrollbar,
+.scroll-isolated *::-webkit-scrollbar-track,
+.scroll-isolated *::-webkit-scrollbar-thumb {
+  all: revert !important; /* supprime l’héritage forcé */
+}

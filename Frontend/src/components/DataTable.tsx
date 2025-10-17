@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import '../style.css'
 
 interface DataTableProps {
   headers: string[];
@@ -38,10 +39,10 @@ const DataTable: React.FC<DataTableProps> = ({ headers, data, totalRowCount, cla
       <div className={`bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden ${className}`}>
         <div
           ref={parentRef}
-          className="overflow-auto "
+          className="overflow-auto [--scroll-thumb-hover:#059669] [--scroll-track:#374151] "
           style={{ height: '600px' }}
         >
-          <div role="grid" className="relative w-full">
+          <div role="grid" className="relative w-full ">
             {/* EN-TÊTE */}
             <div
               role="row"
@@ -61,7 +62,7 @@ const DataTable: React.FC<DataTableProps> = ({ headers, data, totalRowCount, cla
 
             {/* LIGNES VIRTUALISÉES */}
             <div
-              className="relative"
+              className="relative "
               style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
             >
               {virtualRows.map((virtualRow) => {
