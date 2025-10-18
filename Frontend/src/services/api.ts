@@ -90,21 +90,39 @@ export const campaignApi = {
 
 // --- API de Traitement de Fichier (maintenant réelle) ---
 export const fileApi = {
-  processCSV: (file: File | null , campaignId: string | number) => {
+  processCSV: async (file: File | null, campaignId: string | number) => {
     const formData = new FormData();
-    if (file!=null) {
+    if (file != null) {
       formData.append('file', file);
     }
-    console.log(campaignId);
-    console.log(formData);
-    console.log(file);
     
-    return api.post<Blob>(`/api/process-file/${campaignId}/`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-      responseType: 'blob', // Important pour recevoir le fichier en retour
-    });
+    try {
+      const response = await api.post(`/api/process-file/${campaignId}/`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        responseType: 'blob',
+      });
+
+      // Vérifier le type de contenu de la réponse
+      const contentType = response.headers['content-type'];
+      
+      if (contentType && contentType.includes('application/json')) {
+        // C'est une erreur JSON, convertir le blob en texte puis parser
+        const text = await response.data.text();
+        const errorData = JSON.parse(text);
+        return errorData
+      }
+      
+      // C'est bien un fichier blob
+      return response;
+      
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Erreur lors du traitement du fichier');
+    }
   }
 }
 
