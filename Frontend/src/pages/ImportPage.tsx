@@ -327,8 +327,14 @@ const ImportPage: React.FC = () => {
 
         try {
             const response = await fileApi.processCSV(selectedFile, selectedCampaign.id);
+            console.log("response dans importpage",response);
+            
+            if (response && response?.error) {
+                setError(response?.error)
+                return;
+            }
             // Ajouter le BOM UTF-8 pour la compatibilité Excel
-            const blob = new Blob(["\uFEFF", response.data], { type: 'text/csv;charset=utf-8;' });
+            const blob = response.data
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
@@ -344,25 +350,10 @@ const ImportPage: React.FC = () => {
                 setUploadState({ isUploading: false, success: false, error: null, progress: 0 });
             }, 3000);
         } catch (error: any) {
-            console.warn("API processing failed, falling back to frontend processing.");
-            const processedData = fullData.map(row => {
-                const newRow: DataRow = {};
-                selectedCampaign.columns.forEach(col => {
-                    newRow[col.displayName] = row[col.name] || '';
-                });
-                return newRow;
-            });
-            const csv = Papa.unparse(processedData);
-            // Ajouter le BOM UTF-8 ici aussi
-            const blob = new Blob(["\uFEFF", csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            const finalFileName = outputFileName.endsWith('.csv') ? outputFileName : `${outputFileName}.csv`;
-            link.setAttribute('download', finalFileName);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            setError(
+                error?.response?.data?.detail ??
+                "Une erreur est survenue pendant le traitement du fichier."
+            );
         }
     };
 
