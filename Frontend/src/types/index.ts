@@ -2,6 +2,8 @@ export interface Rule {
   id: string;
   type: 'TO_UPPERCASE' | 'TO_LOWERCASE' | 'ADD_PREFIX' | 'ADD_SUFFIX' | 'MULTIPLY_BY' | 'REPLACE_TEXT';
   value?: string | number;
+  searchValue?: string;
+  replaceValue?: string;
 }
 
 export interface ColumnConfig {

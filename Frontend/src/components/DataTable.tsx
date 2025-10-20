@@ -1,15 +1,23 @@
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { ColumnConfig } from '../types';
+import { processDataWithRules } from '../utils/ruleProcessor';
 import '../style.css'
 
 interface DataTableProps {
   headers: string[];
   data: Record<string, any>[];
   totalRowCount: number;
+  columns?: ColumnConfig[];
   className?: string;
 }
 
-const DataTable: React.FC<DataTableProps> = ({ headers, data, totalRowCount, className = '' }) => {
+const DataTable: React.FC<DataTableProps> = ({ headers, data, totalRowCount, columns = [], className = '' }) => {
+  // Appliquer les règles aux données
+  const processedData = useMemo(() => {
+    if (columns.length === 0) return data;
+    return processDataWithRules(data, columns);
+  }, [data, columns]);
   const parentRef = useRef<HTMLDivElement>(null);
 
   const rowVirtualizer = useVirtualizer({
@@ -72,7 +80,7 @@ const DataTable: React.FC<DataTableProps> = ({ headers, data, totalRowCount, cla
               style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
             >
               {virtualRows.map((virtualRow) => {
-                const row = data[virtualRow.index];
+                const row = processedData[virtualRow.index];
                 if (!row) return null;
 
                 return (

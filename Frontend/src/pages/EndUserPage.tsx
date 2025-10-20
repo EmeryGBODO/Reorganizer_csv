@@ -396,7 +396,12 @@ const EndUserPage: React.FC = () => {
                         </div>
 
                         <div className="flex-1 overflow-auto dark:border-gray-700 border-t">
-                            <DataTable headers={headers} data={fullData} totalRowCount={fullData.length} />
+                            <DataTable 
+                                headers={headers} 
+                                data={fullData} 
+                                totalRowCount={fullData.length} 
+                                columns={selectedCampaign?.columns || []}
+                            />
                         </div>
                     </div>
                 );

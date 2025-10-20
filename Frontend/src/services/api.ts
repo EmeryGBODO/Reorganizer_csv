@@ -75,16 +75,79 @@ export const authApi = {
   }
 };
 
+// Fonctions de conversion pour REPLACE_TEXT
+const convertRulesForBackend = (rules: any[]) => {
+  return rules.map(rule => {
+    if (rule.type === 'REPLACE_TEXT' && rule.searchValue !== undefined && rule.replaceValue !== undefined) {
+      return {
+        id: rule.id,
+        type: rule.type,
+        value: `${rule.searchValue}|${rule.replaceValue}`
+      };
+    }
+    return {
+      id: rule.id,
+      type: rule.type,
+      value: rule.value
+    };
+  });
+};
+
+const convertRulesFromBackend = (rules: any[]) => {
+  return rules.map(rule => {
+    if (rule.type === 'REPLACE_TEXT' && rule.value && typeof rule.value === 'string' && rule.value.includes('|')) {
+      const [searchValue, replaceValue] = rule.value.split('|');
+      return {
+        ...rule,
+        searchValue,
+        replaceValue,
+        value: undefined
+      };
+    }
+    return rule;
+  });
+};
+
 // --- API des Campagnes (maintenant réelle) ---
 export const campaignApi = {
-  getAll: () => api.get<Campaign[]>('/api/campaigns'), 
-  create: (campaignData: Campaign) =>{
+  getAll: async () => {
+    const response = await api.get<Campaign[]>('/api/campaigns');
+    // Convertir les règles REPLACE_TEXT du backend vers le frontend
+    if (response.data) {
+      response.data = response.data.map(campaign => ({
+        ...campaign,
+        columns: campaign.columns?.map(col => ({
+          ...col,
+          rules: convertRulesFromBackend(col.rules || [])
+        }))
+      }));
+    }
+    return response;
+  },
+  create: (campaignData: Campaign) => {
     console.log("campaign created🤞✌", campaignData);
-    return api.post<Campaign>('/api/campaigns/', campaignData)},
+    // Convertir les règles pour le backend
+    const backendData = {
+      ...campaignData,
+      columns: campaignData.columns?.map(col => ({
+        ...col,
+        rules: convertRulesForBackend(col.rules || [])
+      }))
+    };
+    return api.post<Campaign>('/api/campaigns/', backendData);
+  },
   update: (id: string | number, campaignData: Partial<Campaign>) => {
     console.log("Campaign updated", campaignData);
-    
-    return api.put<Campaign>(`/api/campaigns/${id}/`, campaignData)},
+    // Convertir les règles pour le backend
+    const backendData = {
+      ...campaignData,
+      columns: campaignData.columns?.map(col => ({
+        ...col,
+        rules: convertRulesForBackend(col.rules || [])
+      }))
+    };
+    return api.put<Campaign>(`/api/campaigns/${id}/`, backendData);
+  },
   delete: (id: string | number) => api.delete(`/api/campaigns/${id}/`),
 };
 
