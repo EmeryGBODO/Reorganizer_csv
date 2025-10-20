@@ -230,7 +230,7 @@ const EndUserPage: React.FC = () => {
             console.error("Erreur lors du traitement et téléchargement : ", err);
             setError(
                 err?.response?.data?.detail ??
-                "Une erreur est survenue pendant le traitement du fichier."+err
+                "Une erreur est survenue pendant le traitement du fichier."
             );
         } finally {
             setIsProcessing(false);
