@@ -2,14 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
-
-
-
-
-
-
-
 /* Date picker icon adaptation pour dark mode */
 input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(0);
@@ -17,7 +9,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .dark input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(0.2 );
+  filter: invert(0.2);
   cursor: pointer;
 }
 
@@ -29,14 +21,6 @@ input[type="date"] {
 .dark input[type="date"] {
   color-scheme: dark;
 }
-
-
-
-
-
-
-
-
 
 /* 🌙 Scrollbar ultra fine et quasi invisible */
 .scrollbar-thin::-webkit-scrollbar {
@@ -80,8 +64,6 @@ html::-webkit-scrollbar-thumb:hover {
 }
 
 /* Mode sombre pour scrollbar globale */
-
-
 html.dark::-webkit-scrollbar-track {
   background: #374151;
 }
@@ -93,6 +75,7 @@ html.dark::-webkit-scrollbar-thumb {
 html.dark::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(135deg, #ea580c, #b91c1c);
 }
+
 /* Responsive utilities */
 @media (max-width: 640px) {
   .mobile-text-sm {
@@ -106,4 +89,38 @@ html.dark::-webkit-scrollbar-thumb:hover {
   .mobile-gap-2 {
     gap: 0.5rem;
   }
+}
+
+/* NOUVEAUX STYLES POUR SCROLLBAR DES COMPOSANTS */
+.component-scrollbar::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.component-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Fond pour le mode clair */
+}
+
+.component-scrollbar::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 6px;
+  border: 3px solid #f1f1f1;
+}
+
+.component-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Version Dark Mode */
+.dark .component-scrollbar::-webkit-scrollbar-track {
+  background: #1f2937; /* Fond gris très foncé (gray-800) */
+}
+
+.dark .component-scrollbar::-webkit-scrollbar-thumb {
+  background: #4b5563; /* Barre de défilement grise (gray-600) */
+  border-color: #1f2937;
+}
+
+.dark .component-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #6b7280; /* Barre de défilement au survol (gray-500) */
 }

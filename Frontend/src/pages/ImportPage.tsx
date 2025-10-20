@@ -1,18 +1,20 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Download, UploadCloud, ChevronLeft, CheckCircle, ChevronRight, FileSignature } from 'lucide-react';
+import { Download, UploadCloud, ChevronLeft, CheckCircle, ChevronRight, FileSignature, RotateCcw } from 'lucide-react';
 import DragDropZone from '../components/DragDropZone';
 import LoadingSpinner from '../components/LoadingSpinner';
 import StatusMessage from '../components/StatusMessage';
 import DataTable from '../components/DataTable';
 import Stepper from '../components/Stepper';
+import ConfirmModal from '../components/ConfirmModal';
 import { Campaign, DataRow } from '../types';
 import { campaignApi, fileApi } from '../services/api';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import { useNavigate } from 'react-router-dom';
+import localforage from 'localforage';
 
-const PREVIEW_ROW_COUNT = 20;
+const LOCAL_STORAGE_KEY = 'csvReorganizerSession_Import';
 
 type Step = 'select_campaign' | 'upload_file' | 'view_data';
 
@@ -21,6 +23,15 @@ export interface UploadState {
     success: boolean;
     error: string | null;
     progress: number;
+}
+
+// Interface pour l'état à sauvegarder
+interface StoredState {
+    currentStep: Step;
+    selectedCampaignId: number | string | null;
+    fullData: DataRow[];
+    headers: string[];
+    fileName: string | null;
 }
 
 const IMPORT_STEPS = [
@@ -40,52 +51,82 @@ const ImportPage: React.FC = () => {
     const [fullData, setFullData] = useState<DataRow[]>([]);
     const [headers, setHeaders] = useState<string[]>([]);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [isConverting, setIsConverting] = useState<boolean>(false);
-    const [uploadState, setUploadState] = useState<UploadState>({ isUploading: false, success: false, error: null, progress: 0 })
+    const [uploadState, setUploadState] = useState<UploadState>({ isUploading: false, success: false, error: null, progress: 0 });
     const [outputFileName, setOutputFileName] = useState('');
+    const [resetModal, setResetModal] = useState(false);
     const navigate = useNavigate();
 
-
-    // Fonction pour valider les en-têtes du fichier
-    const validateHeaders = (fileHeaders: string[]) => {
-        if (!selectedCampaign) return { isValid: true, missingColumns: [] };
-
-        console.log('File headers:', fileHeaders);
-        console.log('Required columns:', selectedCampaign.columns.map(col => col.displayName));
-
-        const requiredColumns = selectedCampaign.columns.map(col => col.displayName);
-        const missingColumns = requiredColumns.filter(col => !fileHeaders.includes(col));
-
-        return {
-            isValid: missingColumns.length === 0,
-            missingColumns
-        };
-    };
-
+    // Chargement initial des données et de l'état sauvegardé
     useEffect(() => {
-        const loadCampaigns = async () => {
+        const loadInitialData = async () => {
             try {
                 setIsLoading(true);
                 const campaignsRes = await campaignApi.getAll();
-                setCampaigns(campaignsRes.data || []);
+                const loadedCampaigns = campaignsRes.data || [];
+                setCampaigns(loadedCampaigns);
+
+                const savedStateJSON: StoredState | null = await localforage.getItem(LOCAL_STORAGE_KEY);
+
+                if (savedStateJSON) {
+                    setCurrentStep(savedStateJSON.currentStep);
+                    setFullData(savedStateJSON.fullData);
+                    setHeaders(savedStateJSON.headers);
+                    if (savedStateJSON.fileName) {
+                        // On ne peut pas recréer l'objet File, mais on peut garder son nom pour l'affichage
+                        setSelectedFile(new File([], savedStateJSON.fileName));
+                    }
+
+                    if (savedStateJSON.selectedCampaignId) {
+                        const campaign = loadedCampaigns.find(c => c.id === savedStateJSON.selectedCampaignId);
+                        setSelectedCampaign(campaign || null);
+                    }
+                }
             } catch (err) {
-                setError('Erreur lors du chargement des campagnes.');
+                setError('Erreur lors du chargement des données initiales.');
             } finally {
                 setIsLoading(false);
             }
         };
-        loadCampaigns();
+        loadInitialData();
     }, []);
+
+    // Configuration de LocalForage
+    localforage.config({
+        name: "CsvReorganizerApp",
+        storeName: "importSession"
+    });
+
+    // Sauvegarde de l'état à chaque changement
+    useEffect(() => {
+        const saveState = async () => {
+            if (!isLoading) {
+                const stateToSave: StoredState = {
+                    currentStep,
+                    selectedCampaignId: selectedCampaign?.id || null,
+                    fullData,
+                    headers,
+                    fileName: selectedFile?.name || null,
+                };
+                await localforage.setItem(LOCAL_STORAGE_KEY, stateToSave);
+            }
+        };
+        saveState();
+    }, [currentStep, selectedCampaign, fullData, headers, selectedFile, isLoading]);
+
 
     useEffect(() => {
         if (selectedCampaign) {
-            setOutputFileName(selectedCampaign.output_file_name || 'donnees_traitees.csv');
+            let initialName = selectedCampaign.output_file_name || 'donnees_traitees.csv';
+            // Remplacer les placeholders
+            if (selectedFile) {
+                initialName = initialName.replace('{nom_original}', selectedFile.name.split('.').slice(0, -1).join('.'));
+            }
+            setOutputFileName(initialName);
         }
-    }, [selectedCampaign]);
+    }, [selectedCampaign, selectedFile]);
 
 
     const handleCampaignSelection = (campaignId: string | number) => {
-
         const campaign = campaigns.find(c => c.id == campaignId);
         setSelectedCampaign(campaign || null);
         if (campaign) {
@@ -93,46 +134,35 @@ const ImportPage: React.FC = () => {
         }
     };
 
-
-
-
     const handleFileDrop = (file: File) => {
-        setIsProcessing(true); // Le loader démarre
+        setIsProcessing(true);
         setError(null);
-        setSelectedFile(file); // On stocke le fichier immédiatement
+        setSelectedFile(file);
 
         const reader = new FileReader();
-
         reader.onload = (e) => {
             try {
                 const fileContent = e.target?.result;
                 const extension = file.name.split('.').pop()?.toLowerCase();
                 let jsonData: DataRow[] = [];
 
-                // --- Logique unifiée pour tous les types de fichiers ---
-
                 if (extension === 'csv') {
-                    // On utilise PapaParse pour lire le contenu CSV
                     const parsedData = Papa.parse(fileContent as string, {
-                        header: true, // Très important: traite la première ligne comme des en-têtes
+                        header: true,
                         skipEmptyLines: true,
+                        encoding: "UTF-8" // Spécifier l'encodage
                     });
                     jsonData = parsedData.data as DataRow[];
-
                 } else if (extension === 'xlsx' || extension === 'xls') {
-                    // On utilise XLSX pour lire le contenu Excel
                     const data = new Uint8Array(fileContent as ArrayBuffer);
                     const workbook = XLSX.read(data, { type: 'array' });
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                     jsonData = XLSX.utils.sheet_to_json(firstSheet) as DataRow[];
-
                 } else {
                     setError("Type de fichier non supporté. Utilisez CSV, XLS ou XLSX.");
-                    setIsProcessing(false); // On arrête le loader en cas d'erreur
+                    setIsProcessing(false);
                     return;
                 }
-
-                // --- Étapes finales communes à tous les fichiers valides ---
 
                 setFullData(jsonData);
                 if (jsonData.length > 0) {
@@ -141,22 +171,21 @@ const ImportPage: React.FC = () => {
                     setHeaders([]);
                     setError("Le fichier est vide ou son format est incorrect.");
                 }
-                setCurrentStep('view_data'); // On passe à l'étape suivante
-
+                setCurrentStep('view_data');
             } catch (err) {
                 console.error("Erreur lors de la lecture du fichier:", err);
                 setError(`Erreur lors de la lecture du fichier.`);
             } finally {
-                setIsProcessing(false); // On arrête le loader dans tous les cas (succès ou erreur)
+                setIsProcessing(false);
             }
         };
 
-        // On détermine comment lire le fichier en fonction de son type
         const extension = file.name.split('.').pop()?.toLowerCase();
         if (extension === 'xlsx' || extension === 'xls') {
-            reader.readAsArrayBuffer(file); // Pour Excel
+            reader.readAsArrayBuffer(file);
         } else {
-            reader.readAsText(file); // Pour CSV et autres types de texte
+            // Spécifier l'encodage UTF-8 pour la lecture
+            reader.readAsText(file, "UTF-8");
         }
     };
 
@@ -164,9 +193,21 @@ const ImportPage: React.FC = () => {
     const resetFlow = (step: Step = 'select_campaign') => {
         setFullData([]);
         setHeaders([]);
+        setSelectedFile(null);
         if (step === 'select_campaign') setSelectedCampaign(null);
         setCurrentStep(step);
         setError(null);
+    };
+
+    const handleHardReset = () => {
+        setResetModal(true);
+    };
+
+    const confirmHardReset = () => {
+        localforage.removeItem(LOCAL_STORAGE_KEY).then(() => {
+            setResetModal(false);
+            resetFlow('select_campaign');
+        });
     };
 
     const renderStepContent = () => {
@@ -191,11 +232,9 @@ const ImportPage: React.FC = () => {
                                     </option>
                                 ))}
                             </select>
-
                         </div>
                     </div>
                 );
-
             case 'upload_file':
                 return (
                     <div className="p-8">
@@ -210,7 +249,6 @@ const ImportPage: React.FC = () => {
                         </div>
                     </div>
                 );
-
             case 'view_data':
                 return (
                     <div className="flex flex-col h-full">
@@ -218,16 +256,13 @@ const ImportPage: React.FC = () => {
                             <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
                                 <div>
                                     <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Aperçu des données et traitement</h2>
-
                                 </div>
                                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-center">
                                     <button onClick={() => resetFlow('upload_file')} className="inline-flex text-white items-center justify-center px-3 py-2 text-sm bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 font-medium rounded-md">
                                         <ChevronLeft className="h-4 w-4 mr-2" /> Changer de fichier
                                     </button>
-
                                 </div>
                             </div>
-                            {/* Champ pour le nom du fichier de sortie */}
                             <div className="w-full mb-6">
                                 <div className='flex justify-between items-start w-full'>
                                     <div className="flex flex-col gap-y-3">
@@ -266,7 +301,6 @@ const ImportPage: React.FC = () => {
                                 </div>
                             </div>
                         </div>
-
                         <div className="flex-1 overflow-auto dark:border-gray-700 border-t">
                             <DataTable headers={headers} data={fullData} totalRowCount={fullData.length} />
                         </div>
@@ -286,59 +320,46 @@ const ImportPage: React.FC = () => {
             setError("Le nom du fichier de sortie ne peut pas être vide.");
             return;
         }
+        if (!selectedFile) {
+            setError("Aucun fichier sélectionné. Veuillez retourner à l'étape précédente.");
+            return;
+        }
 
         try {
-            // --- APPEL BACKEND RÉEL ---
             const response = await fileApi.processCSV(selectedFile, selectedCampaign.id);
-            console.log(response);
-
-            const blob = new Blob([response.data], { type: 'text/csv' });
+            // Ajouter le BOM UTF-8 pour la compatibilité Excel
+            const blob = new Blob(["\uFEFF", response.data], { type: 'text/csv;charset=utf-8;' });
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-
             const finalFileName = outputFileName.endsWith('.csv') ? outputFileName : `${outputFileName}.csv`;
             link.download = finalFileName;
-
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url);
 
             setUploadState({ isUploading: false, success: true, error: null, progress: 100 });
-
             setTimeout(() => {
-                setSelectedFile(null);
                 setUploadState({ isUploading: false, success: false, error: null, progress: 0 });
             }, 3000);
-
         } catch (error: any) {
-            let errorMessage = 'Erreur lors du traitement du fichier.';
-            if (error.response && error.response.data) {
-                // Essayer de lire le message d'erreur du backend s'il est au format JSON
-                try {
-                    const errorJson = JSON.parse(await error.response.data.text());
-                    if (errorJson.detail) errorMessage = errorJson.detail;
-                } catch { }
-            }
+            console.warn("API processing failed, falling back to frontend processing.");
             const processedData = fullData.map(row => {
                 const newRow: DataRow = {};
                 selectedCampaign.columns.forEach(col => {
-                    // Appliquer les règles ici si nécessaire
                     newRow[col.displayName] = row[col.name] || '';
                 });
                 return newRow;
             });
-
             const csv = Papa.unparse(processedData);
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            // Ajouter le BOM UTF-8 ici aussi
+            const blob = new Blob(["\uFEFF", csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
             link.setAttribute('href', url);
-
             const finalFileName = outputFileName.endsWith('.csv') ? outputFileName : `${outputFileName}.csv`;
             link.setAttribute('download', finalFileName);
-
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -353,13 +374,22 @@ const ImportPage: React.FC = () => {
                         <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">Importation et Traitement de Fichier</h1>
                         <p className="mt-2 text-gray-600 dark:text-gray-300 text-lg">Suivez les étapes pour importer et préparer vos données.</p>
                     </div>
-                    <button
-                        onClick={() => navigate('/')}
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 shadow-md transition-all duration-200 hover:shadow-lg"
-                    >
-                        <ChevronLeft className="h-4 w-4 mr-2" />
-                        Retour à l'accueil
-                    </button>
+                    <div className="flex items-center space-x-2">
+                        <button
+                            onClick={() => navigate('/')}
+                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 shadow-md transition-all duration-200 hover:shadow-lg"
+                        >
+                            <ChevronLeft className="h-4 w-4 mr-2" />
+                            Retour à l'accueil
+                        </button>
+                        <button
+                            onClick={handleHardReset}
+                            className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 hover:text-red-700"
+                            title="Réinitialiser la session"
+                        >
+                            <RotateCcw className="h-4 w-4" />
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -378,6 +408,16 @@ const ImportPage: React.FC = () => {
                     ) : renderStepContent()}
                 </div>
             </div>
+
+            <ConfirmModal
+                isOpen={resetModal}
+                onClose={() => setResetModal(false)}
+                onConfirm={confirmHardReset}
+                title="Réinitialiser l'importation"
+                message="Voulez-vous vraiment réinitialiser et effacer les données de la session en cours ?"
+                confirmText="Réinitialiser"
+                type="warning"
+            />
         </div>
     );
 }

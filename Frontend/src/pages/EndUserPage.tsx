@@ -210,7 +210,12 @@ const EndUserPage: React.FC = () => {
                 csvFile,
                 +selectedCampaign.id
             );
-
+            console.log("response reçu",response);
+            
+            if (response && response?.error) {
+                setError(response?.error)
+                return;
+            }
             const returnedBlob = response.data;
             const downloadUrl = window.URL.createObjectURL(returnedBlob);
             const link = document.createElement("a");
@@ -225,7 +230,7 @@ const EndUserPage: React.FC = () => {
             console.error("Erreur lors du traitement et téléchargement : ", err);
             setError(
                 err?.response?.data?.detail ??
-                "Une erreur est survenue pendant le traitement du fichier."
+                "Une erreur est survenue pendant le traitement du fichier."+err
             );
         } finally {
             setIsProcessing(false);
