@@ -41,7 +41,7 @@ const RuleEditor: React.FC<RuleEditorProps> = ({ rules, onRulesChange }) => {
 
   const handleAddRule = () => {
     if (!newRuleType) return;
-    if (newRuleType === 'REPLACE_TEXT' && (!newSearchValue || !newReplaceValue)) return;
+    if (newRuleType === 'REPLACE_TEXT' && !newReplaceValue) return;
     if (selectedRuleConfig?.needsValue && newRuleType !== 'REPLACE_TEXT' && !newRuleValue) return;
 
     const newRule: Rule = {

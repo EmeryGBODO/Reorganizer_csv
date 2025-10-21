@@ -43,10 +43,6 @@ export interface ApiResponse<T> {
   success: boolean;
 }
 
-// NOUVEAUX TYPES AJOUTÉS
-export interface Agent {
-    id: string;
-    name: string;
-}
+
 
 export type DataRow = Record<string, any>;

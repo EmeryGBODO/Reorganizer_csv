@@ -62,13 +62,11 @@ const EndUserPage: React.FC = () => {
         const loadInitialData = async () => {
             try {
                 setIsLoading(true);
-                const [campaignsRes, agentsRes] = await Promise.all([
+                const [campaignsRes] = await Promise.all([
                     campaignApi.getAll(),
-                    dataApi.getAgents(),
                 ]);
                 const loadedCampaigns = campaignsRes.data || [];
                 setCampaigns(loadedCampaigns);
-                setAgents(agentsRes.data.data || []);
 
                 const savedStateJSON: StoredState | null = await localforage.getItem(LOCAL_STORAGE_KEY);
 
