@@ -206,7 +206,7 @@ const ImportPage: React.FC = () => {
     const confirmHardReset = () => {
         localforage.removeItem(LOCAL_STORAGE_KEY).then(() => {
             setResetModal(false);
-            resetFlow('select_campaign');
+            resetFlow('select_campaign')
         });
     };
 
@@ -327,8 +327,8 @@ const ImportPage: React.FC = () => {
 
         try {
             const response = await fileApi.processCSV(selectedFile, selectedCampaign.id);
-            console.log("response dans importpage",response);
-            
+            console.log("response dans importpage", response);
+
             if (response && response?.error) {
                 setError(response?.error)
                 return;
@@ -367,19 +367,29 @@ const ImportPage: React.FC = () => {
                     </div>
                     <div className="flex items-center space-x-2">
                         <button
-                            onClick={() => navigate('/')}
+                            onClick={() => {
+                                localStorage.removeItem(LOCAL_STORAGE_KEY);
+                                setCurrentStep('select_campaign');
+                                setSelectedCampaign(null);
+                                setSelectedFile(null);
+                                setFullData([]);
+                                setHeaders([]);
+                                setOutputFileName('');
+                                setError(null);
+                                navigate('/');
+                            }}
                             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 shadow-md transition-all duration-200 hover:shadow-lg"
                         >
                             <ChevronLeft className="h-4 w-4 mr-2" />
                             Retour à l'accueil
                         </button>
-                        <button
+                        {/* <button
                             onClick={handleHardReset}
                             className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 hover:text-red-700"
                             title="Réinitialiser la session"
                         >
                             <RotateCcw className="h-4 w-4" />
-                        </button>
+                        </button> */}
                     </div>
                 </div>
             </div>
@@ -400,7 +410,7 @@ const ImportPage: React.FC = () => {
                 </div>
             </div>
 
-            <ConfirmModal
+            {/* <ConfirmModal
                 isOpen={resetModal}
                 onClose={() => setResetModal(false)}
                 onConfirm={confirmHardReset}
@@ -408,7 +418,7 @@ const ImportPage: React.FC = () => {
                 message="Voulez-vous vraiment réinitialiser et effacer les données de la session en cours ?"
                 confirmText="Réinitialiser"
                 type="warning"
-            />
+            /> */}
         </div>
     );
 }
