@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  background: linear-gradient(to bottom right, rgb(255, 255, 255), rgb(255, 247, 237), rgb(254, 242, 242)) !important;
+}
+
+.dark body {
+  background: rgb(17, 24, 39) !important; /* dark:bg-gray-900 */
+}
+
+
 /* Date picker icon adaptation pour dark mode */
 input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(0);
@@ -89,6 +98,107 @@ html.dark::-webkit-scrollbar-thumb:hover {
   .mobile-gap-2 {
     gap: 0.5rem;
   }
+  
+  /* Amélioration des boutons sur mobile */
+  .mobile-btn-full {
+    width: 100% !important;
+  }
+  
+  /* Espacement réduit sur mobile */
+  .mobile-space-y-4 > * + * {
+    margin-top: 1rem !important;
+  }
+  
+  /* Texte plus petit sur mobile */
+  .mobile-text-xs {
+    font-size: 0.75rem !important;
+  }
+}
+
+/* Stepper responsive - vertical sur mobile avec connecteurs */
+@media (max-width: 768px) {
+  .stepper-container {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 2rem !important;
+    padding-left: 2rem !important;
+  }
+  
+  .stepper-step {
+    position: relative !important;
+    padding-right: 0 !important;
+    margin-bottom: 0 !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 1rem !important;
+    width: 100% !important;
+  }
+  
+  /* Connecteur vertical entre les cercles - par défaut gris */
+  .stepper-step:not(:last-child)::before {
+    content: '' !important;
+    position: absolute !important;
+    left: 1.25rem !important;
+    top: 2.5rem !important;
+    width: 2px !important;
+    height: calc(2rem + 0.5rem) !important;
+    background: #d1d5db !important; /* gris par défaut */
+    z-index: 1 !important;
+  }
+  
+  /* Connecteur orange/rouge pour les étapes complétées */
+  .stepper-step.completed:not(:last-child)::before {
+    background: linear-gradient(to bottom, #f97316, #dc2626) !important;
+  }
+  
+  /* Mode sombre - connecteur gris */
+  .dark .stepper-step:not(:last-child)::before {
+    background: #4b5563 !important;
+  }
+  
+  /* Mode sombre - connecteur orange/rouge pour les étapes complétées */
+  .dark .stepper-step.completed:not(:last-child)::before {
+    background: linear-gradient(to bottom, #f97316, #dc2626) !important;
+  }
+  
+  /* Ajustement pour que le connecteur parte du bas du cercle */
+  .stepper-step > .relative > div:first-child {
+    position: relative !important;
+    z-index: 20 !important;
+  }
+  
+  /* Masquer les connecteurs horizontaux */
+  .stepper-connector {
+    display: none !important;
+  }
+  
+  /* Réorganiser le contenu en ligne */
+  .stepper-step > .relative {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 1rem !important;
+    width: 100% !important;
+  }
+  
+  /* Repositionner le texte */
+  .stepper-step .absolute {
+    position: static !important;
+    top: auto !important;
+    width: auto !important;
+    text-align: left !important;
+    margin-top: 0 !important;
+    white-space: nowrap !important;
+  }
+}
+
+/* Stepper - Styles pour desktop */
+.stepper-container {
+  position: relative;
+}
+
+.stepper-connector > div {
+  position: relative;
+  z-index: 1;
 }
 
 /* NOUVEAUX STYLES POUR SCROLLBAR DES COMPOSANTS */

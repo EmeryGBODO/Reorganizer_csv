@@ -16,24 +16,24 @@ const Stepper: React.FC<StepperProps> = ({ steps, currentStep }) => {
 
   return (
     <nav aria-label="Progress" className="px-4   pb-4">
-      <ol className="flex items-center  justify-center">
+      <ol className="stepper-container flex items-center justify-center">
         {steps.map((step, stepIdx) => {
           const isCompleted = stepIdx < currentStepIndex;
           const isCurrent = stepIdx === currentStepIndex;
           const isLast = stepIdx === steps.length - 1;
 
           return (
-            <li key={step.id} className={`relative ${!isLast ? 'pr-8 sm:pr-28' : ''}`}>
+            <li key={step.id} className={`stepper-step relative ${isCompleted ? 'completed' : ''} ${!isLast ? 'pr-8 sm:pr-28' : ''}`}>
               {!isLast && (
-                <div className="absolute inset-0 flex items-center " aria-hidden="true">
+                <div className="stepper-connector absolute inset-0 flex items-center" aria-hidden="true">
                   <div className={`h-0.5 w-full transition-all duration-500 ${
                     isCompleted ? 'bg-gradient-to-r from-orange-500 to-red-500' : 'bg-gray-200 dark:bg-gray-600'
                   }`} />
                 </div>
               )}
               
-              <div className="relative flex flex-col items-center">
-                <div className={`flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 ${
+              <div className="relative flex flex-col items-center z-10">
+                <div className={`flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 relative z-20 ${
                   isCompleted 
                     ? 'bg-gradient-to-r from-orange-500 to-red-500 shadow-lg' 
                     : isCurrent 

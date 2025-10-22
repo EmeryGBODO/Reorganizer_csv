@@ -264,15 +264,15 @@ const ImportPage: React.FC = () => {
                                 </div>
                             </div>
                             <div className="w-full mb-6">
-                                <div className='flex justify-between items-start w-full'>
+                                <div className='flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6 w-full'>
                                     <div className="flex flex-col gap-y-3">
                                         <p className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                             Fichier original
                                         </p>
-                                        <span className="font-medium text-orange-600 dark:text-orange-400">{selectedFile?.name}</span>
+                                        <span className="font-medium text-orange-600 dark:text-orange-400 break-all">{selectedFile?.name}</span>
                                     </div>
-                                    <div className='flex gap-10 '>
-                                        <div className='flex flex-col '>
+                                    <div className='flex flex-col sm:flex-row gap-4 sm:gap-6'>
+                                        <div className='flex flex-col flex-1'>
                                             <label htmlFor="output-filename" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                 Nom du fichier de sortie
                                             </label>
@@ -292,9 +292,9 @@ const ImportPage: React.FC = () => {
                                             <button
                                                 onClick={handleProcessAndDownload}
                                                 disabled={fullData.length === 0}
-                                                className="inline-flex items-center justify-center p-2 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                                className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm sm:text-base font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
                                             >
-                                                <Download className="h-5 w-5 mr-2" /> Traiter et télécharger
+                                                <Download className="h-4 w-4 sm:h-5 sm:w-5 mr-2" /> Traiter et télécharger
                                             </button>
                                         </div>
                                     </div>
