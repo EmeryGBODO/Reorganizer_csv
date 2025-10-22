@@ -225,7 +225,7 @@ export default function LoginPage() {
 
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center dark:shadow-2xl justify-center p-4 overflow-hidden relative">
+        <div className="min-h-screen bg-gradient-to-br from-white via-orange-50 to-red-50 dark:bg-gray-900 flex items-center justify-center p-4 overflow-hidden relative">
             {/* Éléments flottants animés */}
             {floatingElements.map((el) => (
                 <div
