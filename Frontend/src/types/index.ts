@@ -1,9 +1,33 @@
+// Nouveaux types pour les conditions
+export type ConditionType =
+  | 'GREATER_THAN'
+  | 'LESS_THAN'
+  | 'EQUALS'
+  | 'NOT_EQUALS'
+  | 'CONTAINS'
+  | 'NOT_CONTAINS';
+
+// Nouveaux types pour les règles
+export type RuleType =
+  | 'TO_UPPERCASE'
+  | 'TO_LOWERCASE'
+  | 'ADD_PREFIX'
+  | 'ADD_SUFFIX'
+  | 'MULTIPLY_BY'
+  | 'REPLACE_TEXT'
+  | 'ADJUST_PERCENTAGE' // Ajouté
+  | 'SET_MAX_VALUE'     // Ajouté
+  | 'SET_MIN_VALUE';    // Ajouté
+
 export interface Rule {
   id: string;
-  type: 'TO_UPPERCASE' | 'TO_LOWERCASE' | 'ADD_PREFIX' | 'ADD_SUFFIX' | 'MULTIPLY_BY' | 'REPLACE_TEXT';
+  type: RuleType; // Type mis à jour
   value?: string | number;
   searchValue?: string;
   replaceValue?: string;
+  // Champs conditionnels ajoutés (optionnels)
+  conditionType?: ConditionType;
+  conditionValue?: string | number;
 }
 
 export interface ColumnConfig {
@@ -12,7 +36,7 @@ export interface ColumnConfig {
   displayName: string;
   order: number;
   required: boolean;
-  rules: Rule[];
+  rules: Rule[]; // Utilise la nouvelle interface Rule
 }
 
 export interface Campaign {
@@ -42,7 +66,5 @@ export interface ApiResponse<T> {
   message: string;
   success: boolean;
 }
-
-
 
 export type DataRow = Record<string, any>;

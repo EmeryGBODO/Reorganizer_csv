@@ -125,7 +125,10 @@ const AdminPage: React.FC = () => {
       await campaignApi.delete(deleteModal.campaignId);
       setCampaigns(prev => prev.filter(c => c.id !== deleteModal.campaignId));
       setSuccess('Campagne supprimée avec succès');
-    } catch (error) {
+    } catch (error: unknown) {
+      console.log(error?.response.data.error);
+      
+      error?.response?.data.error == "Impossible de supprimer une campagne liée à des brokers."? setError("Impossible de supprimer une campagne liée à des brokers."):0
       setError('Erreur lors de la suppression');
     }
     setDeleteModal({ isOpen: false, campaignId: null });
@@ -158,7 +161,7 @@ const AdminPage: React.FC = () => {
           <button
             onClick={handleCreateCampaign}
 
-className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-red-500 hover:to-red-600 hover:to-red-600"          >
+className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-red-500 hover:to-red-600"          >
             <Plus className="h-4 w-4 mr-2" />
             Nouvelle campagne
           </button>
