@@ -260,7 +260,7 @@ const RuleEditor: React.FC<RuleEditorProps> = ({ rules, onRulesChange }) => {
     if (!editingRule) return;
 
     // Validations (inchangées)
-    if (editingRule.type === 'REPLACE_TEXT' && (!editingRule.searchValue || !editingRule.replaceValue)) {
+    if (editingRule.type === 'REPLACE_TEXT' && (!editingRule.replaceValue)) {
       alert('Les champs "Texte à chercher" et "Texte à remplacer" sont requis.'); return;
     }
     if (editingRuleConfig?.needsValue && editingRule.type !== 'REPLACE_TEXT' && (editingRule.value === '' || editingRule.value === undefined)) {

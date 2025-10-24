@@ -30,15 +30,19 @@ const convertRulesForBackend = (rules: Rule[]): any[] => { // Utiliser Rule[] en
 
     // Gérer le cas spécifique de REPLACE_TEXT
     if (rule.type === 'REPLACE_TEXT') {
-        // Envoyer searchValue et replaceValue si présents (nouvelle méthode préférée)
-         if (rule.searchValue !== undefined || rule.replaceValue !== undefined) {
-            backendRule.searchValue = rule.searchValue ?? ''; // Envoyer même si vide
-            backendRule.replaceValue = rule.replaceValue ?? ''; // Envoyer même si vide
-        }
-        // Ne PAS fusionner en `value` ici pour plus de clarté côté backend
+        // --- MODIFICATION ICI ---
+        // Combiner searchValue et replaceValue dans value avec un séparateur '|'
+        backendRule.value = `${rule.searchValue ?? ''}|${rule.replaceValue ?? ''}`;
+        // Ne PAS envoyer searchValue et replaceValue séparément
     } else {
       backendRule.value = rule.value; // Envoyer la valeur pour les autres types
     }
+
+    // Supprimer les champs undefined ou null pour ne pas les envoyer inutilement
+    if (backendRule.conditionType === undefined || backendRule.conditionType === null) delete backendRule.conditionType;
+    if (backendRule.conditionValue === undefined || backendRule.conditionValue === null) delete backendRule.conditionValue;
+    if (backendRule.value === undefined || backendRule.value === null) delete backendRule.value;
+
 
     return backendRule;
   });
@@ -50,25 +54,25 @@ const convertRulesFromBackend = (rules: any[]): Rule[] => { // Retourner Rule[]
     const frontendRule: Partial<Rule> = { // Utiliser Partial<Rule>
       id: rule.id,
       type: rule.type,
-      value: rule.value,
+      // value: rule.value, // Ne pas prendre directement la valeur brute pour REPLACE_TEXT
       conditionType: rule.conditionType,
       conditionValue: rule.conditionValue,
       order: rule.order ?? index, // Ajouter order (utiliser l'index comme fallback)
     };
 
-    // Gérer le cas spécifique de REPLACE_TEXT si le backend envoie searchValue/replaceValue
-     if (rule.type === 'REPLACE_TEXT') {
-        frontendRule.searchValue = rule.searchValue ?? '';
-        frontendRule.replaceValue = rule.replaceValue ?? '';
-        delete frontendRule.value; // Supprimer 'value' si searchValue/replaceValue existent
+    // Gérer le cas spécifique de REPLACE_TEXT
+    if (rule.type === 'REPLACE_TEXT' && typeof rule.value === 'string' && rule.value.includes('|')) {
+        // --- MODIFICATION ICI ---
+        // Séparer la chaîne 'value' pour récupérer searchValue et replaceValue
+        const parts = rule.value.split('|');
+        frontendRule.searchValue = parts[0] ?? '';
+        frontendRule.replaceValue = parts[1] ?? '';
+        // Ne pas assigner à frontendRule.value
+    } else {
+        // Pour les autres types de règles, assigner la valeur normalement
+        frontendRule.value = rule.value;
     }
-     // Gérer l'ancien format `value: "search|replace"` si nécessaire (pour compatibilité)
-    // else if (rule.type === 'REPLACE_TEXT' && typeof rule.value === 'string' && rule.value.includes('|')) {
-    //   const [searchValue, replaceValue] = rule.value.split('|');
-    //   frontendRule.searchValue = searchValue;
-    //   frontendRule.replaceValue = replaceValue;
-    //   delete frontendRule.value;
-    // }
+
 
     // S'assurer que les champs non définis sont bien undefined
     if (frontendRule.value === null || frontendRule.value === undefined) delete frontendRule.value;
@@ -119,10 +123,13 @@ export const campaignApi = {
      if (id === undefined) throw new Error("ID de campagne manquant pour la mise à jour");
      const backendData = {
       ...campaignData,
-      columns: campaignData.columns?.map(col => ({ // Optionnel car Partial<Campaign>
-        ...col,
-        rules: convertRulesForBackend(col.rules || [])
-      }))
+      // Convertir seulement si 'columns' est présent dans la mise à jour partielle
+      ...(campaignData.columns && {
+          columns: campaignData.columns.map(col => ({
+              ...col,
+              rules: convertRulesForBackend(col.rules || [])
+          }))
+      })
     };
     const response = await api.put<Campaign>(`/api/csvflow/campaigns/${id}/`, backendData); // Ajouter slash final
      // Convertir la réponse pour le frontend
@@ -139,41 +146,28 @@ export const campaignApi = {
 
 // --- API de Traitement de Fichier (inchangée) ---
 export const fileApi = {
-  processCSV: async (file: File | null, campaignId: string | number) => {
-        const formData = new FormData();
-        if (file) {
-          formData.append('file', file);
-        }
-        // Important: Ne pas définir 'Content-Type' manuellement ici, le navigateur le fera avec la bonne boundary
+ processCSV: async (file: File | null, campaignId: string | number) => {
+  const formData = new FormData();
+  if (file) {
+    formData.append('file', file);
+  }
 
-        try {
-      const response = await api.post(`/api/csvflow/process-file/${campaignId}/`, formData, {
-             headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        responseType: 'blob',
-      });
+  try {
+    const response = await api.post(`/api/csvflow/process-file/${campaignId}/`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
 
-      // Vérifier le type de contenu de la réponse
-      const contentType = response.headers['content-type'];
-      
-      if (contentType && contentType.includes('application/json')) {
-        // C'est une erreur JSON, convertir le blob en texte puis parser
-        const text = await response.data.text();
-        const errorData = JSON.parse(text);
-        return errorData
-      }
-      
-      // C'est bien un fichier blob
-      return response;
-      
-    } catch (error) {
-      if (error instanceof Error) {
-        throw error;
-      }
-      throw new Error('Erreur lors du traitement du fichier');
-        }
+    return response.data;
+    
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
     }
+    throw new Error('Erreur lors du traitement du fichier');
+  }
+}
 };
 
 

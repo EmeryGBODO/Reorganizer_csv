@@ -12,7 +12,6 @@ import { campaignApi, dataApi, fileApi } from '../services/api';
 import Papa from "papaparse";
 import localforage from "localforage";
 
-const PREVIEW_ROW_COUNT = 20;
 const LOCAL_STORAGE_KEY = 'csvReorganizerSession_EndUser'; // Clé de stockage modifiée
 
 type Step = 'select_campaign' | 'select_period' | 'view_data';
@@ -43,6 +42,7 @@ const EndUserPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
     const [dateError, setDateError] = useState<string | null>(null);
 
     const [currentStep, setCurrentStep] = useState<Step>('select_campaign');
@@ -130,6 +130,13 @@ const EndUserPage: React.FC = () => {
             return () => clearTimeout(timer);
         }
     }, [error]);
+    
+    useEffect(() => {
+        if (success) {
+            const timer = setTimeout(() => setSuccess(null), 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [success]);
 
     useEffect(() => {
         if (serverDateRange.start && serverDateRange.end) {
@@ -175,6 +182,7 @@ const EndUserPage: React.FC = () => {
                 setHeaders([]);
             }
             setCurrentStep('view_data');
+            setSuccess("Les données ont été récupérées avec succès.")
         } catch (err) {
             setError('Erreur lors de la récupération des données du serveur.');
         } finally {
@@ -182,7 +190,7 @@ const EndUserPage: React.FC = () => {
         }
     };
 
-    const handleProcessAndDownload = async () => {
+    const handleProcess = async () => {
         if (!selectedCampaign) {
             setError("Aucune campagne n'est sélectionnée. Veuillez recommencer le processus.");
             return;
@@ -208,22 +216,14 @@ const EndUserPage: React.FC = () => {
                 csvFile,
                 +selectedCampaign.id
             );
-            console.log("response reçu",response);
-            
+            console.log("response reçu", response);
+
             if (response && response?.error) {
                 setError(response?.error)
                 return;
             }
-            const returnedBlob = response.data;
-            const downloadUrl = window.URL.createObjectURL(returnedBlob);
-            const link = document.createElement("a");
-            link.href = downloadUrl;
-            link.setAttribute("download", filename);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            window.URL.revokeObjectURL(downloadUrl);
-
+            setFullData(response.data);
+            setSuccess("Le fichier a été traité avec succès.")
         } catch (err: any) {
             console.error("Erreur lors du traitement et téléchargement : ", err);
             setError(
@@ -235,6 +235,34 @@ const EndUserPage: React.FC = () => {
         }
     };
 
+
+    const handleDownload = async () => {
+        if (!selectedCampaign) {
+            return
+        }
+        try {
+            const csvString = Papa.unparse(fullData, {
+                delimiter: ';',
+            });
+            const filename = outputFileName.endsWith(".csv") ? outputFileName : `${outputFileName}.csv`;
+            console.log("full data dans handle download", fullData);
+
+            const returnedBlob = new Blob([csvString], { type: "text/csv;charset=utf-8;" })
+            const downloadUrl = window.URL.createObjectURL(returnedBlob);
+            const link = document.createElement("a");
+            link.href = downloadUrl;
+            link.setAttribute("download", filename);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(downloadUrl);
+            setSuccess("Le fichier a été téléchargé avec succès.")
+
+        } catch (error) {
+            setError("Une erreur s'est produite")
+        }
+
+    }
 
     const resetFlow = (step: Step = 'select_campaign') => {
         setFullData([]);
@@ -381,11 +409,18 @@ const EndUserPage: React.FC = () => {
                                         </div>
                                         <div className='flex items-end'>
                                             <button
-                                                onClick={handleProcessAndDownload}
+                                                onClick={handleProcess}
                                                 disabled={isProcessing || fullData.length === 0}
                                                 className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm sm:text-base font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
                                             >
-                                                <Download className="h-4 w-4 sm:h-5 sm:w-5 mr-2" /> Traiter et télécharger
+                                                <Download className="h-4 w-4 sm:h-5 sm:w-5 mr-2" /> Traiter
+                                            </button>
+                                            <button
+                                                onClick={handleDownload}
+                                                disabled={isProcessing || fullData.length === 0}
+                                                className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm sm:text-base font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                            >
+                                                <Download className="h-4 w-4 sm:h-5 sm:w-5 mr-2" /> Télécharger
                                             </button>
                                         </div>
                                     </div>
@@ -394,10 +429,10 @@ const EndUserPage: React.FC = () => {
                         </div>
 
                         <div className="flex-1 overflow-auto dark:border-gray-700 border-t">
-                            <DataTable 
-                                headers={headers} 
-                                data={fullData} 
-                                totalRowCount={fullData.length} 
+                            <DataTable
+                                headers={headers}
+                                data={fullData}
+                                totalRowCount={fullData.length}
                                 columns={selectedCampaign?.columns || []}
                             />
                         </div>
@@ -435,7 +470,12 @@ const EndUserPage: React.FC = () => {
                 </div>
             </div>
 
-            {error && <StatusMessage type="error" message={error} />}
+            {error && (
+                <StatusMessage type="error" message={error} className="mb-6" />
+            )}
+            {success && (
+                <StatusMessage type="success" message={success} className="mb-6" />
+            )}
 
             <div className="bg-white dark:bg-gray-800 bg-gradient-to-r from-white to-gray-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-gray-200 dark:border-blue-800 shadow-xl">
                 <div className="p-6 border-b flex dark:border-gray-700 justify-center">
