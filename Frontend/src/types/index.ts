@@ -15,19 +15,19 @@ export type RuleType =
   | 'ADD_SUFFIX'
   | 'MULTIPLY_BY'
   | 'REPLACE_TEXT'
-  | 'ADJUST_PERCENTAGE' // Ajouté
-  | 'SET_MAX_VALUE'     // Ajouté
-  | 'SET_MIN_VALUE';    // Ajouté
+  | 'ADJUST_PERCENTAGE'
+  | 'SET_MAX_VALUE'
+  | 'SET_MIN_VALUE';
 
 export interface Rule {
   id: string;
-  type: RuleType; // Type mis à jour
+  type: RuleType;
   value?: string | number;
   searchValue?: string;
   replaceValue?: string;
-  // Champs conditionnels ajoutés (optionnels)
   conditionType?: ConditionType;
   conditionValue?: string | number;
+  order: number; // Champ ajouté pour l'ordre
 }
 
 export interface ColumnConfig {

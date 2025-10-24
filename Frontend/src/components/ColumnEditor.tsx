@@ -1,44 +1,176 @@
 import React, { useState } from 'react';
-import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
-import { GripVertical, CreditCard as Edit2, Trash2, Plus, Save, X, Calculator } from 'lucide-react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { GripVertical, Edit2 as EditIcon, Trash2, Plus, Save, X, Calculator } from 'lucide-react'; // Renommé Edit2 en EditIcon
 import { ColumnConfig, Rule } from '../types';
-import RuleEditor from './RuleEditor'; // Importer le nouvel éditeur
+import RuleEditor from './RuleEditor';
 
-interface ColumnEditorProps {
-  columns: ColumnConfig[];
-  onColumnsChange: (columns: ColumnConfig[]) => void;
-  disabled?: boolean;
+interface SortableColumnItemProps {
+  column: ColumnConfig;
+  index: number;
+  editingId: string | null;
+  editValue: string;
+  editingRulesFor: string | null;
+  disabled: boolean;
+  onEdit: (column: ColumnConfig) => void;
+  onSave: () => void;
+  onCancel: () => void;
+  onDelete: (id: string) => void;
+  onToggleRules: (columnId: string) => void;
+  onEditValueChange: (value: string) => void;
+  onRulesChange: (columnId: string, newRules: Rule[]) => void;
 }
 
-const ColumnEditor: React.FC<ColumnEditorProps> = ({
+// Composant pour chaque élément de colonne triable
+const SortableColumnItem: React.FC<SortableColumnItemProps> = (props) => {
+  const {
+    column, index, editingId, editValue, editingRulesFor, disabled,
+    onEdit, onSave, onCancel, onDelete, onToggleRules, onEditValueChange, onRulesChange
+  } = props;
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: column.id, disabled: disabled });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : undefined, // Pour que l'élément glissé soit au-dessus
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-sm transition-shadow ${isDragging ? 'shadow-lg opacity-75' : ''
+        } ${disabled ? 'opacity-50' : ''}`}
+    >
+      <div className="p-4">
+        <div className="flex items-center space-x-4">
+          {/* Poignée de Drag */}
+          <button
+            {...attributes}
+            {...listeners}
+            className={`${disabled ? 'cursor-not-allowed text-gray-300 dark:text-gray-600' : 'cursor-grab text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 active:cursor-grabbing'} ${isDragging ? 'cursor-grabbing' : ''}`}
+            disabled={disabled}
+            aria-label="Déplacer la colonne"
+          >
+            <GripVertical className="h-5 w-5" />
+          </button>
+
+          <div className="flex-shrink-0 flex items-center justify-center h-6 w-6 text-xs font-bold text-gray-600 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-full">
+            {index + 1}
+          </div>
+
+          <div className="flex-1 min-w-0"> {/* Ajout de min-w-0 pour éviter le débordement */}
+            {editingId === column.id ? (
+              <div className="flex items-center space-x-2">
+                <input
+                  type="text"
+                  value={editValue}
+                  onChange={(e) => onEditValueChange(e.target.value)}
+                  className="flex-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500 text-sm" // Taille réduite
+                  placeholder="Nom de la colonne"
+                  autoFocus
+                  onKeyDown={(e) => { if (e.key === 'Enter') onSave(); if (e.key === 'Escape') onCancel(); }}
+                />
+                <button onClick={onSave} className="p-1.5 text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300" title="Sauvegarder"><Save className="h-4 w-4" /></button>
+                <button onClick={onCancel} className="p-1.5 text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" title="Annuler"><X className="h-4 w-4" /></button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between">
+                <div className="truncate"> {/* Empêche le texte long de pousser les boutons */}
+                  <h4 className="font-medium text-gray-900 dark:text-gray-100 truncate">{column.displayName}</h4>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 truncate">Nom technique: {column.name}</p>
+                </div>
+                {!disabled && (
+                  <div className="flex items-center space-x-1 flex-shrink-0 ml-2"> {/* Empêche les boutons de passer à la ligne */}
+                    <button onClick={() => onToggleRules(column.id)} className={`p-1.5 rounded-md ${editingRulesFor === column.id ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`} title="Gérer les règles">
+                      <Calculator className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => onEdit(column)} className="p-1.5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md" title="Modifier le nom"><EditIcon className="h-4 w-4" /></button>
+                    <button onClick={() => onDelete(column.id)} className="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-md" title="Supprimer la colonne"><Trash2 className="h-4 w-4" /></button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      {/* Section dépliable pour les règles */}
+      {editingRulesFor === column.id && (
+        <RuleEditor
+          rules={column.rules || []}
+          onRulesChange={(newRules) => onRulesChange(column.id, newRules)}
+        />
+      )}
+    </div>
+  );
+};
+
+
+// Composant principal ColumnEditor
+const ColumnEditor: React.FC<{ columns: ColumnConfig[]; onColumnsChange: (columns: ColumnConfig[]) => void; disabled?: boolean }> = ({
   columns,
   onColumnsChange,
   disabled = false,
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
-  const [editingRulesFor, setEditingRulesFor] = useState<string | null>(null); // Nouvel état
+  const [editingRulesFor, setEditingRulesFor] = useState<string | null>(null);
 
-  const handleDragEnd = (result: DropResult) => {
-    if (!result.destination || disabled) return;
+  // Configuration des capteurs pour @dnd-kit
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
-    if (result.source.index === result.destination.index) return;
+  // Gestion de la fin du glisser-déposer avec @dnd-kit
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
 
-    const items = Array.from(columns);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
+    if (active.id !== over?.id) {
+      const oldIndex = columns.findIndex((col) => col.id === active.id);
+      const newIndex = columns.findIndex((col) => col.id === over?.id);
 
-    const updatedColumns = items.map((item, index) => ({
-      ...item,
-      order: index,
-    }));
+      const updatedColumnsOrder = arrayMove(columns, oldIndex, newIndex);
 
-    onColumnsChange(updatedColumns);
+      // Mettre à jour le champ 'order' après le déplacement
+      const finalColumns = updatedColumnsOrder.map((col, index) => ({
+        ...col,
+        order: index,
+      }));
+
+      onColumnsChange(finalColumns);
+    }
   };
 
   const handleEdit = (column: ColumnConfig) => {
     setEditingId(column.id);
     setEditValue(column.displayName);
+    setEditingRulesFor(null); // Fermer l'éditeur de règles si ouvert
   };
 
   const handleSave = () => {
@@ -46,7 +178,7 @@ const ColumnEditor: React.FC<ColumnEditorProps> = ({
 
     const updatedColumns = columns.map(col =>
       col.id === editingId
-        ? { ...col, displayName: editValue.trim() }
+        ? { ...col, displayName: editValue.trim() || `Colonne ${col.order + 1}` } // Nom par défaut si vide
         : col
     );
 
@@ -61,11 +193,15 @@ const ColumnEditor: React.FC<ColumnEditorProps> = ({
   };
 
   const handleDelete = (id: string) => {
-    onColumnsChange(columns.filter(col => col.id !== id));
+    const updatedColumns = columns
+        .filter(col => col.id !== id)
+        .map((col, index) => ({ ...col, order: index })); // Réindexer après suppression
+    onColumnsChange(updatedColumns);
   };
 
   const handleToggleRules = (columnId: string) => {
     setEditingRulesFor(prev => (prev === columnId ? null : columnId));
+    setEditingId(null); // Fermer l'édition du nom si ouvert
   };
 
   const handleRulesChange = (columnId: string, newRules: Rule[]) => {
@@ -75,120 +211,70 @@ const ColumnEditor: React.FC<ColumnEditorProps> = ({
   };
 
   const handleAddColumn = () => {
+    const newIndex = columns.length;
     const newColumn: ColumnConfig = {
-      id: `col_${Date.now()}`,
-      name: `column_${columns.length + 1}`,
-      displayName: `Colonne ${columns.length + 1}`,
-      order: columns.length,
+      id: `col_${Date.now()}`, // ID unique basé sur le timestamp
+      name: `colonne_${newIndex + 1}`, // Nom technique simple
+      displayName: `Nouvelle Colonne ${newIndex + 1}`, // Nom affiché clair
+      order: newIndex,
       required: false,
-      rules: [], // Initialiser avec un tableau de règles vide
+      rules: [],
     };
 
-    onColumnsChange([newColumn, ...columns]);
+    // Mettre à jour l'ordre des colonnes existantes si nécessaire (ici on ajoute à la fin)
+    const updatedColumns = [...columns, newColumn];
+    onColumnsChange(updatedColumns);
   };
 
   return (
-    <div className="space-y-4 ">
-      <div className="flex items-center justify-between sticky -top-6 p-2 bg-white dark:bg-gray-800 z-10 border-b dark:border-gray-700">
+    <div className="space-y-4">
+      <div className="flex items-center justify-between sticky top-0 py-3 px-1 bg-white dark:bg-gray-900 z-10 border-b dark:border-gray-700 mb-4">
         <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Configuration des colonnes</h3>
         <button
           onClick={handleAddColumn}
           disabled={disabled}
-          className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-purple-600 hover:bg-red-500"
+          className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-red-500 hover:to-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Plus className="h-4 w-4 mr-2" />
-          Ajouter une colonne
+          <Plus className="h-4 w-4 mr-1" />
+          Ajouter
         </button>
       </div>
 
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <Droppable droppableId="columns">
-          {(provided) => (
-            <div
-              {...provided.droppableProps}
-              ref={provided.innerRef}
-              className="space-y-2"
-            >
-              {columns.map((column, index) => (
-                <Draggable
-                  key={column.id}
-                  draggableId={String(column.id)}
-                  index={index}
-                  isDragDisabled={disabled}
-                >
-                  {(provided, snapshot) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      className={`bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-sm transition-shadow ${snapshot.isDragging ? 'shadow-lg' : ''
-                        } ${disabled ? 'opacity-50' : ''}`}
-                    >
-                      <div className="p-4">
-                        <div className="flex items-center space-x-4">
-                          <div
-                            {...provided.dragHandleProps}
-                            className={`${disabled ? 'cursor-not-allowed text-gray-300 dark:text-gray-600' : 'cursor-grab text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400'} ${snapshot.isDragging ? 'cursor-grabbing' : ''}`}
-                          >
-                            <GripVertical className="h-5 w-5" />
-                          </div>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={columns.map(col => col.id)} // Utiliser les ID uniques pour @dnd-kit
+          strategy={verticalListSortingStrategy}
+        >
+          <div className="space-y-3">
+            {columns.map((column, index) => (
+              <SortableColumnItem
+                key={column.id}
+                column={column}
+                index={index}
+                editingId={editingId}
+                editValue={editValue}
+                editingRulesFor={editingRulesFor}
+                disabled={disabled}
+                onEdit={handleEdit}
+                onSave={handleSave}
+                onCancel={handleCancel}
+                onDelete={handleDelete}
+                onToggleRules={handleToggleRules}
+                onEditValueChange={setEditValue}
+                onRulesChange={handleRulesChange}
+              />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
 
-                          <div className="flex-shrink-0 flex items-center justify-center h-6 w-6 text-xs font-bold text-gray-600 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-full">
-                            {index + 1}
-                          </div>
-
-                          <div className="flex-1">
-                            {editingId === column.id ? (
-                              <div className="flex items-center space-x-2">
-                                <input
-                                  type="text"
-                                  value={editValue}
-                                  onChange={(e) => setEditValue(e.target.value)}
-                                  className="flex-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
-                                  placeholder="Nom de la colonne"
-                                />
-                                <button onClick={handleSave} className="p-2 text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300"><Save className="h-4 w-4" /></button>
-                                <button onClick={handleCancel} className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"><X className="h-4 w-4" /></button>
-                              </div>
-                            ) : (
-                              <div className="flex items-center  justify-between">
-                                <div>
-                                  <h4 className="font-medium text-gray-900 dark:text-gray-100">{column.displayName}</h4>
-                                  <p className="text-sm text-gray-500 dark:text-gray-400">Nom technique: {column.name}</p>
-                                </div>
-                                {!disabled && (
-                                  <div className="flex items-center space-x-1">
-                                    <button onClick={() => handleToggleRules(column.id)} className={`p-2 rounded-md ${editingRulesFor === column.id ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300'}`} title="Gérer les règles">
-                                      <Calculator className="h-4 w-4" />
-                                    </button>
-                                    <button onClick={() => handleEdit(column)} className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" title="Modifier le nom"><Edit2 className="h-4 w-4" /></button>
-                                    <button onClick={() => handleDelete(column.id)} className="p-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300" title="Supprimer la colonne"><Trash2 className="h-4 w-4" /></button>
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      {/* Section dépliable pour les règles */}
-                      {editingRulesFor === column.id && (
-                        <RuleEditor
-                          rules={column.rules || []}
-                          onRulesChange={(newRules) => handleRulesChange(column.id, newRules)}
-                        />
-                      )}
-                    </div>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
-
-      {columns.length === 0 && (
+      {columns.length === 0 && !disabled && (
         <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-          Aucune colonne configurée. Ajoutez votre première colonne.
+          Aucune colonne configurée. Cliquez sur "Ajouter" pour commencer.
         </div>
       )}
     </div>
