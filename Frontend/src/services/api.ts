@@ -38,13 +38,17 @@ const convertRulesForBackend = (rules: any[]) => {
       return {
         id: rule.id,
         type: rule.type,
-        value: `${rule.searchValue}|${rule.replaceValue}`
+        value: `${rule.searchValue}|${rule.replaceValue}`,
+        conditionType: rule.conditionType,
+        conditionValue: rule.conditionValue
       };
     }
     return {
       id: rule.id,
       type: rule.type,
-      value: rule.value
+      value: rule.value,
+      conditionType: rule.conditionType,
+      conditionValue: rule.conditionValue
     };
   });
 };
@@ -57,7 +61,9 @@ const convertRulesFromBackend = (rules: any[]) => {
         ...rule,
         searchValue,
         replaceValue,
-        value: undefined
+        value: undefined,
+        conditionType: rule.conditionType,
+        conditionValue: rule.conditionValue
       };
     }
     return rule;
