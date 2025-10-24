@@ -1,23 +1,22 @@
 import React, { useRef, useMemo } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { ColumnConfig } from '../types';
-import { processDataWithRules } from '../utils/ruleProcessor';
+// import { processDataWithRules } from '../utils/ruleProcessor'; // <-- Supprimé
 import '../style.css'
 
 interface DataTableProps {
   headers: string[];
   data: Record<string, any>[];
   totalRowCount: number;
-  columns?: ColumnConfig[];
+  columns?: ColumnConfig[]; // Gardé pour potentiellement d'autres usages (ex: validation)
   className?: string;
 }
 
 const DataTable: React.FC<DataTableProps> = ({ headers, data, totalRowCount, columns = [], className = '' }) => {
-  // Appliquer les règles aux données
-  const processedData = useMemo(() => {
-    if (columns.length === 0) return data;
-    return processDataWithRules(data, columns);
-  }, [data, columns]);
+ 
+  const processedData = data; // Utiliser directement les données brutes
+  
+
   const parentRef = useRef<HTMLDivElement>(null);
 
   const rowVirtualizer = useVirtualizer({
@@ -31,20 +30,22 @@ const DataTable: React.FC<DataTableProps> = ({ headers, data, totalRowCount, col
     return (
       <div className="text-center py-12 text-gray-500 dark:text-gray-400">
         <p>Aucune donnée à afficher.</p>
-        <p className="text-sm mt-1">Générez des données depuis le serveur pour commencer.</p>
+        {/* Message mis à jour pour refléter que le traitement est serveur */}
+        <p className="text-sm mt-1">Importez un fichier ou chargez des données depuis le serveur pour commencer.</p>
       </div>
     );
   }
 
   const virtualRows = rowVirtualizer.getVirtualItems();
-  
+
   // Calcule la largeur minimale totale pour le contenu interne
   const totalTableWidth = headers.length * 150; // 150px est le minWidth de chaque colonne
 
   return (
     <div>
+      {/* Message mis à jour pour refléter que le traitement est serveur */}
       <div className="px-6 py-3 bg-transparent dark:bg-transparent text-xs text-gray-600 dark:text-gray-400 dark:border-gray-600">
-        {totalRowCount.toLocaleString()} lignes au total. Le traitement s'appliquera à l'ensemble des données.
+        {totalRowCount.toLocaleString()} lignes au total. Le traitement serveur s'appliquera à l'ensemble des données lors du téléchargement.
       </div>
 
       <div className={`bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden ${className}`}>
@@ -80,6 +81,7 @@ const DataTable: React.FC<DataTableProps> = ({ headers, data, totalRowCount, col
               style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
             >
               {virtualRows.map((virtualRow) => {
+                // Utiliser processedData (qui est maintenant data brut)
                 const row = processedData[virtualRow.index];
                 if (!row) return null;
 
@@ -101,6 +103,7 @@ const DataTable: React.FC<DataTableProps> = ({ headers, data, totalRowCount, col
                         }}
                       >
                         <div className="overflow-x-auto max-w-full whitespace-nowrap scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
+                           {/* Afficher la valeur brute */}
                           {String(row[header] ?? '')}
                         </div>
                       </div>
