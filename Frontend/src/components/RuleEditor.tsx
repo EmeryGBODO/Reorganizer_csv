@@ -80,7 +80,7 @@ const RuleEditor: React.FC<RuleEditorProps> = ({ rules, onRulesChange }) => {
           ...editingRule,
           searchValue: editingRule.searchValue?.trim() || '',
           replaceValue: editingRule.replaceValue?.trim() || '',
-          value: undefined
+          // value: undefined
         }
       : {
           ...editingRule,

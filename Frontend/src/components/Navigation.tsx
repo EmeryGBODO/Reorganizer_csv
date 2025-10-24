@@ -21,13 +21,13 @@ const Navigation: React.FC = () => {
           </div>
 
           <div className="flex items-center space-x-2 sm:space-x-3">
-            <button
+            {/* <button
               onClick={toggleTheme}
               className="p-2 sm:p-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 hover:scale-105"
               title={isDark ? 'Mode clair' : 'Mode sombre'}
             >
               {isDark ? <Sun className="h-4 w-4 sm:h-5 sm:w-5" /> : <Moon className="h-4 w-4 sm:h-5 sm:w-5" />}
-            </button>
+            </button> */}
             
             {location.pathname !== "/admin" && (
               <NavLink
