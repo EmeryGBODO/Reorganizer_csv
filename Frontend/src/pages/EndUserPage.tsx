@@ -1,16 +1,17 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Download, Server, Filter, ChevronLeft, ChevronRight, CheckCircle, RotateCcw, Upload, FileSignature } from 'lucide-react';
+import { Download, Server, Filter, ChevronLeft, ChevronRight, CheckCircle, RotateCcw, Upload, FileSignature, PieChart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../components/LoadingSpinner';
 import StatusMessage from '../components/StatusMessage';
 import DataTable from '../components/DataTable';
-import Filters from '../components/Filters';
 import Stepper from '../components/Stepper';
 import ConfirmModal from '../components/ConfirmModal';
 import { Campaign, Agent, DataRow } from '../types';
 import { campaignApi, dataApi, fileApi } from '../services/api';
 import Papa from "papaparse";
 import localforage from "localforage";
+
+import DataFilterComponent, { CombinedFilters } from '../components/DataFilterComponent'; // <-- Nouvel import
 
 const LOCAL_STORAGE_KEY = 'csvReorganizerSession_EndUser'; // Clé de stockage modifiée
 
@@ -23,9 +24,8 @@ interface StoredState {
     headers: string[];
     serverDateRange: { start: string; end: string };
     filters: {
-        processingCampaignId: string;
-        agentId: string;
-        dateRange: { start: string; end: string };
+        filter1: { column: string, value: string }
+        filter2: { column: string, value: string }
     };
 }
 
@@ -57,6 +57,13 @@ const EndUserPage: React.FC = () => {
     });
     const [resetModal, setResetModal] = useState(false);
     const [outputFileName, setOutputFileName] = useState('');
+
+    // --- NOUVEL ÉTAT POUR LES FILTRES ---
+    const [activeFilters, setActiveFilters] = useState<CombinedFilters>({
+        filter1: { column: '', value: '' },
+        filter2: { column: '', value: '' },
+    });
+    // --- FIN NOUVEL ÉTAT ---
 
     useEffect(() => {
         const loadInitialData = async () => {
@@ -106,7 +113,7 @@ const EndUserPage: React.FC = () => {
                     fullData,
                     headers,
                     serverDateRange,
-                    filters,
+                    filters: activeFilters, // <-- Sauvegarder les filtres actifs
                 };
 
                 await localforage.setItem(LOCAL_STORAGE_KEY, stateToSave);
@@ -130,7 +137,7 @@ const EndUserPage: React.FC = () => {
             return () => clearTimeout(timer);
         }
     }, [error]);
-    
+
     useEffect(() => {
         if (success) {
             const timer = setTimeout(() => setSuccess(null), 2000);
@@ -151,6 +158,45 @@ const EndUserPage: React.FC = () => {
             setDateError(null);
         }
     }, [serverDateRange]);
+
+
+    // --- DONNÉES FILTRÉES ---
+    const filteredData = useMemo(() => {
+        // Si aucun filtre n'est actif, retourner toutes les données
+        const f1Active = activeFilters.filter1.column && activeFilters.filter1.value;
+        const f2Active = activeFilters.filter2.column && activeFilters.filter2.value;
+
+        if (!f1Active && !f2Active) {
+            return fullData;
+        }
+
+        const filter1Col = activeFilters.filter1.column;
+        const filter1Val = activeFilters.filter1.value.toLowerCase();
+        const filter2Col = activeFilters.filter2.column;
+        const filter2Val = activeFilters.filter2.value.toLowerCase();
+
+        return fullData.filter(row => {
+            let match1 = true;
+            let match2 = true;
+
+            // Vérifier le filtre 1
+            if (f1Active) {
+                const rowValue = String(row[filter1Col] ?? '').toLowerCase();
+                match1 = rowValue.includes(filter1Val);
+            }
+
+            // Vérifier le filtre 2
+            if (f2Active) {
+                const rowValue = String(row[filter2Col] ?? '').toLowerCase();
+                match2 = rowValue.includes(filter2Val);
+            }
+
+            // Retourner vrai seulement si les deux filtres correspondent (ou ne sont pas actifs)
+            return match1 && match2;
+        });
+    }, [fullData, activeFilters]);
+    // --- FIN DONNÉES FILTRÉES ---
+
 
     const handleCampaignSelection = (campaignId: string | number) => {
         const campaign = campaigns.find(c => c.id == campaignId);
@@ -223,6 +269,11 @@ const EndUserPage: React.FC = () => {
                 return;
             }
             setFullData(response.data);
+
+            if (response.data.length > 0) {
+                setHeaders(Object.keys(response.data[0]));
+            }
+
             setSuccess("Le fichier a été traité avec succès.")
         } catch (err: any) {
             console.error("Erreur lors du traitement et téléchargement : ", err);
@@ -284,10 +335,9 @@ const EndUserPage: React.FC = () => {
         setFullData([]);
         setHeaders([]);
         setServerDateRange({ start: '', end: '' });
-        setFilters({
-            processingCampaignId: '',
-            agentId: '',
-            dateRange: { start: '', end: '' },
+        setActiveFilters({
+            filter1: { column: '', value: '' },
+            filter2: { column: '', value: '' },
         });
         setError(null);
         setDateError(null);
@@ -407,13 +457,13 @@ const EndUserPage: React.FC = () => {
                                                 />
                                             </div>
                                         </div>
-                                        <div className='flex items-end'>
+                                        <div className='flex items-end gap-2'>
                                             <button
                                                 onClick={handleProcess}
                                                 disabled={isProcessing || fullData.length === 0}
                                                 className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm sm:text-base font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
                                             >
-                                                <Download className="h-4 w-4 sm:h-5 sm:w-5 mr-2" /> Traiter
+                                                <PieChart className="h-4 w-4 sm:h-5 sm:w-5 mr-2" /> Traiter
                                             </button>
                                             <button
                                                 onClick={handleDownload}
@@ -427,13 +477,21 @@ const EndUserPage: React.FC = () => {
                                 </div>
                             </div>
                         </div>
-
+                        {/* --- AJOUT DU COMPOSANT DE FILTRE --- */}
+                        {headers.length > 0 && (
+                            <DataFilterComponent
+                                headers={headers}
+                                onFilterChange={setActiveFilters}
+                                initialFilters={activeFilters} // Pour persistance
+                            />
+                        )}
+                        {/* --- FIN AJOUT --- */}
                         <div className="flex-1 overflow-auto dark:border-gray-700 border-t">
                             <DataTable
                                 headers={headers}
-                                data={fullData}
-                                totalRowCount={fullData.length}
-                                columns={selectedCampaign?.columns || []}
+                                data={filteredData} // Utiliser les données filtrées
+                                totalRowCount={filteredData.length} // Afficher le nombre de lignes filtrées
+                                columns={selectedCampaign?.columns || []} // Gardé si nécessaire ailleurs
                             />
                         </div>
                     </div>

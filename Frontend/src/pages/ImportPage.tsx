@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Download, UploadCloud, ChevronLeft, CheckCircle, ChevronRight, FileSignature, RotateCcw } from 'lucide-react';
+import { Download, ChevronLeft, CheckCircle, ChevronRight, FileSignature, RotateCcw, PieChart } from 'lucide-react';
 import DragDropZone from '../components/DragDropZone';
 import LoadingSpinner from '../components/LoadingSpinner';
 import StatusMessage from '../components/StatusMessage';
@@ -13,6 +13,8 @@ import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import { useNavigate } from 'react-router-dom';
 import localforage from 'localforage';
+
+import DataFilterComponent, { CombinedFilters } from '../components/DataFilterComponent'; // <-- Nouvel import
 
 const LOCAL_STORAGE_KEY = 'csvReorganizerSession_Import';
 
@@ -45,6 +47,7 @@ const ImportPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
 
     const [currentStep, setCurrentStep] = useState<Step>('select_campaign');
     const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
@@ -55,6 +58,13 @@ const ImportPage: React.FC = () => {
     const [outputFileName, setOutputFileName] = useState('');
     const [resetModal, setResetModal] = useState(false);
     const navigate = useNavigate();
+
+    // --- NOUVEL ÉTAT POUR LES FILTRES ---
+    const [activeFilters, setActiveFilters] = useState<CombinedFilters>({
+        filter1: { column: '', value: '' },
+        filter2: { column: '', value: '' },
+    });
+    // --- FIN NOUVEL ÉTAT ---
 
     // Chargement initial des données et de l'état sauvegardé
     useEffect(() => {
@@ -89,6 +99,46 @@ const ImportPage: React.FC = () => {
         };
         loadInitialData();
     }, []);
+
+
+
+    // --- DONNÉES FILTRÉES ---
+    const filteredData = useMemo(() => {
+        // Si aucun filtre n'est actif, retourner toutes les données
+        const f1Active = activeFilters.filter1.column && activeFilters.filter1.value;
+        const f2Active = activeFilters.filter2.column && activeFilters.filter2.value;
+
+        if (!f1Active && !f2Active) {
+            return fullData;
+        }
+
+        const filter1Col = activeFilters.filter1.column;
+        const filter1Val = activeFilters.filter1.value.toLowerCase();
+        const filter2Col = activeFilters.filter2.column;
+        const filter2Val = activeFilters.filter2.value.toLowerCase();
+
+        return fullData.filter(row => {
+            let match1 = true;
+            let match2 = true;
+
+            // Vérifier le filtre 1
+            if (f1Active) {
+                const rowValue = String(row[filter1Col] ?? '').toLowerCase();
+                match1 = rowValue.includes(filter1Val);
+            }
+
+            // Vérifier le filtre 2
+            if (f2Active) {
+                const rowValue = String(row[filter2Col] ?? '').toLowerCase();
+                match2 = rowValue.includes(filter2Val);
+            }
+
+            // Retourner vrai seulement si les deux filtres correspondent (ou ne sont pas actifs)
+            return match1 && match2;
+        });
+    }, [fullData, activeFilters]);
+    // --- FIN DONNÉES FILTRÉES ---
+
 
     // Configuration de LocalForage
     localforage.config({
@@ -194,6 +244,10 @@ const ImportPage: React.FC = () => {
         setFullData([]);
         setHeaders([]);
         setSelectedFile(null);
+        setActiveFilters({ // <-- Réinitialiser les filtres
+            filter1: { column: '', value: '' },
+            filter2: { column: '', value: '' },
+        });
         if (step === 'select_campaign') setSelectedCampaign(null);
         setCurrentStep(step);
         setError(null);
@@ -207,6 +261,12 @@ const ImportPage: React.FC = () => {
         localforage.removeItem(LOCAL_STORAGE_KEY).then(() => {
             setResetModal(false);
             resetFlow('select_campaign')
+            setSelectedFile(null);
+            setFullData([]);
+            setHeaders([]);
+            setOutputFileName('');
+            setError(null);
+            navigate('/');
         });
     };
 
@@ -263,6 +323,7 @@ const ImportPage: React.FC = () => {
                                     </button>
                                 </div>
                             </div>
+                            
                             <div className="w-full mb-6">
                                 <div className='flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6 w-full'>
                                     <div className="flex flex-col gap-y-3">
@@ -288,21 +349,43 @@ const ImportPage: React.FC = () => {
                                                 />
                                             </div>
                                         </div>
-                                        <div className='flex items-end'>
+                                        <div className='flex items-end gap-2'>
                                             <button
                                                 onClick={handleProcessAndDownload}
                                                 disabled={fullData.length === 0}
                                                 className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm sm:text-base font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
                                             >
-                                                <Download className="h-4 w-4 sm:h-5 sm:w-5 mr-2" /> Traiter et télécharger
+                                                <PieChart className="h-4 w-4 sm:h-5 sm:w-5 mr-2" /> Traiter
+                                            </button>
+                                            <button
+                                                onClick={handleDownload}
+                                                disabled={fullData.length === 0}
+                                                className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm sm:text-base font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                            >
+                                                <Download className="h-4 w-4 sm:h-5 sm:w-5 mr-2" /> Télécharger
                                             </button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        {/* --- AJOUT DU COMPOSANT DE FILTRE --- */}
+                            {headers.length > 0 && (
+                                <DataFilterComponent
+                                    headers={headers}
+                                    onFilterChange={setActiveFilters}
+                                    initialFilters={activeFilters} // Pour la persistance éventuelle
+                                />
+                            )}
+                            {/* --- FIN AJOUT --- */}
                         <div className="flex-1 overflow-auto dark:border-gray-700 border-t">
-                            <DataTable headers={headers} data={fullData} totalRowCount={fullData.length} />
+                            {/* --- UTILISER filteredData ICI --- */}
+                            <DataTable
+                                headers={headers}
+                                data={filteredData} // Utiliser les données filtrées
+                                totalRowCount={filteredData.length} // Afficher le nombre de lignes filtrées
+                            />
+                            {/* --- FIN UTILISATION --- */}
                         </div>
                     </div>
                 );
@@ -333,17 +416,13 @@ const ImportPage: React.FC = () => {
                 setError(response?.error)
                 return;
             }
-            // Ajouter le BOM UTF-8 pour la compatibilité Excel
-            const blob = response.data
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            const finalFileName = outputFileName.endsWith('.csv') ? outputFileName : `${outputFileName}.csv`;
-            link.download = finalFileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
+
+            if (response.data.length > 0) {
+                setHeaders(Object.keys(response.data[0]));
+            }
+            setFullData(response?.data);
+
+            setSuccess("Traitement effectué")
 
             setUploadState({ isUploading: false, success: true, error: null, progress: 100 });
             setTimeout(() => {
@@ -357,6 +436,35 @@ const ImportPage: React.FC = () => {
         }
     };
 
+
+    const handleDownload = async () => {
+        if (!selectedCampaign) {
+            return
+        }
+        try {
+            const csvString = Papa.unparse(fullData, {
+                delimiter: ',',
+            });
+            const filename = outputFileName.endsWith(".csv") ? outputFileName : `${outputFileName}.csv`;
+            console.log("full data dans handle download", fullData);
+
+            const returnedBlob = new Blob([csvString], { type: "text/csv;charset=utf-8;" })
+            const downloadUrl = window.URL.createObjectURL(returnedBlob);
+            const link = document.createElement("a");
+            link.href = downloadUrl;
+            link.setAttribute("download", filename);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(downloadUrl);
+            setSuccess("Le fichier a été téléchargé avec succès.")
+
+        } catch (error) {
+            setError("Une erreur s'est produite")
+        }
+
+    }
+
     return (
         <div className="max-w-7xl mx-auto py-20 sm:py-28 px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
             <div className="bg-white dark:bg-gray-800 bg-gradient-to-r from-white to-gray-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-gray-200 dark:border-blue-800 shadow-xl">
@@ -367,34 +475,23 @@ const ImportPage: React.FC = () => {
                     </div>
                     <div className="flex items-center space-x-2">
                         <button
-                            onClick={() => {
-                                localStorage.removeItem(LOCAL_STORAGE_KEY);
-                                setCurrentStep('select_campaign');
-                                setSelectedCampaign(null);
-                                setSelectedFile(null);
-                                setFullData([]);
-                                setHeaders([]);
-                                setOutputFileName('');
-                                setError(null);
-                                navigate('/');
-                            }}
+                            onClick={handleHardReset}
                             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 shadow-md transition-all duration-200 hover:shadow-lg"
                         >
                             <ChevronLeft className="h-4 w-4 mr-2" />
                             Retour à l'accueil
                         </button>
-                        {/* <button
-                            onClick={handleHardReset}
-                            className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 hover:text-red-700"
-                            title="Réinitialiser la session"
-                        >
-                            <RotateCcw className="h-4 w-4" />
-                        </button> */}
+
                     </div>
                 </div>
             </div>
 
-            {error && <StatusMessage type="error" message={error} />}
+            {error && (
+                <StatusMessage type="error" message={error} className="mb-6" />
+            )}
+            {success && (
+                <StatusMessage type="success" message={success} className="mb-6" />
+            )}
 
             <div className="bg-white dark:bg-gray-800 bg-gradient-to-r from-white to-gray-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-gray-200 dark:border-blue-800 shadow-xl">
                 <div className="p-6 border-b dark:border-gray-700 flex  justify-center">
@@ -410,7 +507,7 @@ const ImportPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* <ConfirmModal
+            <ConfirmModal
                 isOpen={resetModal}
                 onClose={() => setResetModal(false)}
                 onConfirm={confirmHardReset}
@@ -418,7 +515,7 @@ const ImportPage: React.FC = () => {
                 message="Voulez-vous vraiment réinitialiser et effacer les données de la session en cours ?"
                 confirmText="Réinitialiser"
                 type="warning"
-            /> */}
+            />
         </div>
     );
 }
