@@ -253,9 +253,9 @@ const ImportPage: React.FC = () => {
                     const missingColumns = requiredColumns.filter(col => !Object.keys(jsonData[0] || {}).includes(col));
                     
                     if (missingColumns.length === 0) {
-                        setColumnValidation({ isValid: true, message: "✅ Toutes les colonnes requises sont présentes" });
+                        setColumnValidation({ isValid: true, message: " Toutes les colonnes requises sont présentes" });
                     } else {
-                        setColumnValidation({ isValid: false, message: `⚠️ Colonnes manquantes : ${missingColumns.join(', ')}` });
+                        setColumnValidation({ isValid: false, message: ` Colonnes manquantes : ${missingColumns.join(', ')}` });
                     }
                 }
             } catch (err) {
