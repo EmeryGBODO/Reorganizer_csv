@@ -59,6 +59,7 @@ const ImportPage: React.FC = () => {
     const [resetModal, setResetModal] = useState(false);
     const [isDataProcessed, setIsDataProcessed] = useState(false);
     const [downloadConfirmModal, setDownloadConfirmModal] = useState(false);
+    const [columnValidation, setColumnValidation] = useState<{isValid: boolean, message: string} | null>(null);
     const navigate = useNavigate();
 
     // --- NOUVEL ÉTAT POUR LES FILTRES ---
@@ -165,6 +166,26 @@ const ImportPage: React.FC = () => {
         saveState();
     }, [currentStep, selectedCampaign, fullData, headers, selectedFile, isLoading]);
 
+    useEffect(() => {
+        if (error) {
+            const timer = setTimeout(() => setError(null), 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [error]);
+
+    useEffect(() => {
+        if (success) {
+            const timer = setTimeout(() => setSuccess(null), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [success]);
+
+    useEffect(() => {
+        if (columnValidation && columnValidation.isValid) {
+            const timer = setTimeout(() => setColumnValidation(null), 4000);
+            return () => clearTimeout(timer);
+        }
+    }, [columnValidation]);
 
     useEffect(() => {
         if (selectedCampaign) {
@@ -224,6 +245,19 @@ const ImportPage: React.FC = () => {
                     setError("Le fichier est vide ou son format est incorrect.");
                 }
                 setCurrentStep('view_data');
+                setSuccess('Fichier importé avec succès !');
+                
+                // Validation des colonnes
+                if (selectedCampaign) {
+                    const requiredColumns = selectedCampaign.columns?.map(col => col.displayName) || [];
+                    const missingColumns = requiredColumns.filter(col => !Object.keys(jsonData[0] || {}).includes(col));
+                    
+                    if (missingColumns.length === 0) {
+                        setColumnValidation({ isValid: true, message: "✅ Toutes les colonnes requises sont présentes" });
+                    } else {
+                        setColumnValidation({ isValid: false, message: `⚠️ Colonnes manquantes : ${missingColumns.join(', ')}` });
+                    }
+                }
             } catch (err) {
                 console.error("Erreur lors de la lecture du fichier:", err);
                 setError(`Erreur lors de la lecture du fichier.`);
@@ -247,6 +281,7 @@ const ImportPage: React.FC = () => {
         setHeaders([]);
         setSelectedFile(null);
         setIsDataProcessed(false);
+        setColumnValidation(null);
         setActiveFilters({ // <-- Réinitialiser les filtres
             filter1: { column: '', value: '' },
             filter2: { column: '', value: '' },
@@ -354,8 +389,8 @@ const ImportPage: React.FC = () => {
                                         </div>
                                         <div className='flex items-end gap-2'>
                                             <button
-                                                onClick={handleProcessAndDownload}
-                                                disabled={fullData.length === 0}
+                                                onClick={handleProcess}
+                                                disabled={isProcessing || fullData.length === 0}
                                                 className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm sm:text-base font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
                                             >
                                                 <PieChart className="h-4 w-4 sm:h-5 sm:w-5 mr-2" /> Traiter
@@ -397,46 +432,53 @@ const ImportPage: React.FC = () => {
         }
     };
 
-    const handleProcessAndDownload = async () => {
+    const handleProcess = async () => {
         if (!selectedCampaign) {
-            setError("Veuillez sélectionner une campagne pour le traitement.");
+            setError("Aucune campagne n'est sélectionnée. Veuillez recommencer le processus.");
             return;
         }
         if (!outputFileName.trim()) {
             setError("Le nom du fichier de sortie ne peut pas être vide.");
             return;
         }
-        if (!selectedFile) {
-            setError("Aucun fichier sélectionné. Veuillez retourner à l'étape précédente.");
+        if (fullData.length === 0) {
+            setError("Aucune donnée à traiter. Veuillez importer un fichier d'abord.");
             return;
         }
 
         try {
-            const response = await fileApi.processCSV(selectedFile, selectedCampaign.id);
-            console.log("response dans importpage", response);
+            setIsProcessing(true);
+            setError(null);
+
+            // Convertir les données en CSV pour l'envoi au backend
+            const csvString = Papa.unparse(fullData, { delimiter: ';' });
+            const filename = outputFileName.endsWith(".csv") ? outputFileName : `${outputFileName}.csv`;
+            const csvBlob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+            const csvFile = new File([csvBlob], filename, { type: "text/csv;charset=utf-8;" });
+            
+            const response = await fileApi.processCSV(csvFile, +selectedCampaign.id);
+            console.log("response reçu", response);
 
             if (response && response?.error) {
                 setError(response?.error)
                 return;
             }
+            setFullData(response.data);
+            setIsDataProcessed(true);
 
             if (response.data.length > 0) {
                 setHeaders(Object.keys(response.data[0]));
             }
-            setFullData(response?.data);
-            setIsDataProcessed(true);
 
-            setSuccess("Traitement effectué")
-
-            setUploadState({ isUploading: false, success: true, error: null, progress: 100 });
-            setTimeout(() => {
-                setUploadState({ isUploading: false, success: false, error: null, progress: 0 });
-            }, 3000);
-        } catch (error: any) {
+            setSuccess("Le fichier a été traité avec succès.")
+        } catch (err: any) {
+            console.error("Erreur lors du traitement : ", err);
             setError(
-                error?.response?.data?.detail ??
+                err?.response?.data?.detail ??
                 "Une erreur est survenue pendant le traitement du fichier."
             );
+        } finally {
+            setIsProcessing(false);
         }
     };
 
@@ -469,7 +511,7 @@ const ImportPage: React.FC = () => {
             link.click();
             link.remove();
             window.URL.revokeObjectURL(downloadUrl);
-            setSuccess("Le fichier a été téléchargé avec succès.")
+            setSuccess("Fichier téléchargé avec succès !")
 
         } catch (error) {
             setError("Une erreur s'est produite")
@@ -507,6 +549,13 @@ const ImportPage: React.FC = () => {
             )}
             {success && (
                 <StatusMessage type="success" message={success} className="mb-6" />
+            )}
+            {columnValidation && (
+                <StatusMessage 
+                    type={columnValidation.isValid ? "success" : "warning"} 
+                    message={columnValidation.message} 
+                    className="mb-6" 
+                />
             )}
 
             <div className="bg-white dark:bg-gray-800 bg-gradient-to-r from-white to-gray-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-gray-200 dark:border-blue-800 shadow-xl">
