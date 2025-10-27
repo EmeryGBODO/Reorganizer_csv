@@ -38,7 +38,6 @@ const ENDUSER_STEPS = [
 const EndUserPage: React.FC = () => {
     const navigate = useNavigate();
     const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-    const [agents, setAgents] = useState<Agent[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -220,7 +219,7 @@ const EndUserPage: React.FC = () => {
         try {
             const response = await dataApi.generateDataFromServer(
                 serverDateRange.start,
-                serverDateRange.end
+                serverDateRange.end,selectedCampaign?.name
             );
 
             setFullData(response.data.data);

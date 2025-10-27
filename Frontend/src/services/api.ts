@@ -175,12 +175,13 @@ export const fileApi = {
 export const dataApi = {
     generateDataFromServer: async (
       startDate: string,
-      endDate: string
+      endDate: string,
+      campaign: string
     ): Promise<{ data: { success: boolean, data: DataRow[] } }> => {
         await delay(500); // Réduit pour tests
         console.log(`Récupération des données entre le ${startDate} et le ${endDate}`);
         try {
-            const response = await api.get<{ success: boolean, data: DataRow[] }>(`/api/csvflow/remote-data/?beginDate=${startDate}&endDate=${endDate}`); // Ajouter slash final
+            const response = await api.get<{ success: boolean, data: DataRow[] }>(`/api/csvflow/remote-data/?beginDate=${startDate}&endDate=${endDate}&campaign=${campaign}`); // Ajouter slash final
             return { data: response.data }; // Retourner directement l'objet attendu
         } catch (error) {
             console.error("Erreur lors de la récupération des données serveur:", error);
