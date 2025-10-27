@@ -57,6 +57,8 @@ const EndUserPage: React.FC = () => {
     });
     const [resetModal, setResetModal] = useState(false);
     const [outputFileName, setOutputFileName] = useState('');
+    const [isDataProcessed, setIsDataProcessed] = useState(false);
+    const [downloadConfirmModal, setDownloadConfirmModal] = useState(false);
 
     // --- NOUVEL ÉTAT POUR LES FILTRES ---
     const [activeFilters, setActiveFilters] = useState<CombinedFilters>({
@@ -227,6 +229,7 @@ const EndUserPage: React.FC = () => {
             } else {
                 setHeaders([]);
             }
+            setIsDataProcessed(false);
             setCurrentStep('view_data');
             setSuccess("Les données ont été récupérées avec succès.")
         } catch (err) {
@@ -269,6 +272,7 @@ const EndUserPage: React.FC = () => {
                 return;
             }
             setFullData(response.data);
+            setIsDataProcessed(true);
 
             if (response.data.length > 0) {
                 setHeaders(Object.keys(response.data[0]));
@@ -287,7 +291,15 @@ const EndUserPage: React.FC = () => {
     };
 
 
-    const handleDownload = async () => {
+    const handleDownload = () => {
+        if (!isDataProcessed) {
+            setDownloadConfirmModal(true);
+            return;
+        }
+        handleDownloadDirect();
+    };
+
+    const handleDownloadDirect = async () => {
         if (!selectedCampaign) {
             return
         }
@@ -312,12 +324,17 @@ const EndUserPage: React.FC = () => {
         } catch (error) {
             setError("Une erreur s'est produite")
         }
+    };
 
-    }
+    const confirmDownloadWithoutProcessing = () => {
+        setDownloadConfirmModal(false);
+        handleDownloadDirect();
+    };
 
     const resetFlow = (step: Step = 'select_campaign') => {
         setFullData([]);
         setHeaders([]);
+        setIsDataProcessed(false);
         if (step === 'select_campaign') setSelectedCampaign(null);
         setCurrentStep(step);
         setError(null);
@@ -334,6 +351,7 @@ const EndUserPage: React.FC = () => {
         setSelectedCampaign(null);
         setFullData([]);
         setHeaders([]);
+        setIsDataProcessed(false);
         setServerDateRange({ start: '', end: '' });
         setActiveFilters({
             filter1: { column: '', value: '' },
@@ -556,6 +574,17 @@ const EndUserPage: React.FC = () => {
                 title="Recommencer"
                 message="Voulez-vous vraiment réinitialiser et effacer toutes les données en cours ?"
                 confirmText="Recommencer"
+                type="warning"
+            />
+
+            <ConfirmModal
+                isOpen={downloadConfirmModal}
+                onClose={() => setDownloadConfirmModal(false)}
+                onConfirm={confirmDownloadWithoutProcessing}
+                title="Télécharger sans traitement"
+                message="Vous n'avez pas encore traité les données. Voulez-vous télécharger les données brutes ?"
+                confirmText="Oui, télécharger"
+                cancelText="Non, traiter d'abord"
                 type="warning"
             />
         </div>

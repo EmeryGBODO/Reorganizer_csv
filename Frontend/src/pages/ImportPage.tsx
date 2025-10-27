@@ -57,6 +57,8 @@ const ImportPage: React.FC = () => {
     const [uploadState, setUploadState] = useState<UploadState>({ isUploading: false, success: false, error: null, progress: 0 });
     const [outputFileName, setOutputFileName] = useState('');
     const [resetModal, setResetModal] = useState(false);
+    const [isDataProcessed, setIsDataProcessed] = useState(false);
+    const [downloadConfirmModal, setDownloadConfirmModal] = useState(false);
     const navigate = useNavigate();
 
     // --- NOUVEL ÉTAT POUR LES FILTRES ---
@@ -244,6 +246,7 @@ const ImportPage: React.FC = () => {
         setFullData([]);
         setHeaders([]);
         setSelectedFile(null);
+        setIsDataProcessed(false);
         setActiveFilters({ // <-- Réinitialiser les filtres
             filter1: { column: '', value: '' },
             filter2: { column: '', value: '' },
@@ -421,6 +424,7 @@ const ImportPage: React.FC = () => {
                 setHeaders(Object.keys(response.data[0]));
             }
             setFullData(response?.data);
+            setIsDataProcessed(true);
 
             setSuccess("Traitement effectué")
 
@@ -437,7 +441,15 @@ const ImportPage: React.FC = () => {
     };
 
 
-    const handleDownload = async () => {
+    const handleDownload = () => {
+        if (!isDataProcessed) {
+            setDownloadConfirmModal(true);
+            return;
+        }
+        handleDownloadDirect();
+    };
+
+    const handleDownloadDirect = async () => {
         if (!selectedCampaign) {
             return
         }
@@ -462,8 +474,12 @@ const ImportPage: React.FC = () => {
         } catch (error) {
             setError("Une erreur s'est produite")
         }
+    };
 
-    }
+    const confirmDownloadWithoutProcessing = () => {
+        setDownloadConfirmModal(false);
+        handleDownloadDirect();
+    };
 
     return (
         <div className="max-w-7xl mx-auto py-20 sm:py-28 px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
@@ -514,6 +530,17 @@ const ImportPage: React.FC = () => {
                 title="Réinitialiser l'importation"
                 message="Voulez-vous vraiment réinitialiser et effacer les données de la session en cours ?"
                 confirmText="Réinitialiser"
+                type="warning"
+            />
+
+            <ConfirmModal
+                isOpen={downloadConfirmModal}
+                onClose={() => setDownloadConfirmModal(false)}
+                onConfirm={confirmDownloadWithoutProcessing}
+                title="Télécharger sans traitement"
+                message="Vous n'avez pas encore traité les données. Voulez-vous télécharger les données brutes ?"
+                confirmText="Oui, télécharger"
+                cancelText="Non, traiter d'abord"
                 type="warning"
             />
         </div>
