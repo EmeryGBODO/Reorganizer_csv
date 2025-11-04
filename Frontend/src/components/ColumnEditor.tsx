@@ -16,7 +16,7 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Edit2 as EditIcon, Trash2, Plus, Save, X, Calculator } from 'lucide-react'; // Renommé Edit2 en EditIcon
+import { GripVertical, Edit2 as EditIcon, Trash2, Plus, Save, X, Calculator, List } from 'lucide-react'; // Renommé Edit2 en EditIcon
 import { ColumnConfig, Rule } from '../types';
 import RuleEditor from './RuleEditor';
 
@@ -138,6 +138,8 @@ const ColumnEditor: React.FC<{ columns: ColumnConfig[]; onColumnsChange: (column
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const [editingRulesFor, setEditingRulesFor] = useState<string | null>(null);
+  const [showBulkCreate, setShowBulkCreate] = useState(false);
+  const [bulkHeaders, setBulkHeaders] = useState('');
 
   // Configuration des capteurs pour @dnd-kit
   const sensors = useSensors(
@@ -226,18 +228,48 @@ const ColumnEditor: React.FC<{ columns: ColumnConfig[]; onColumnsChange: (column
     onColumnsChange(updatedColumns);
   };
 
+  const handleBulkCreate = () => {
+    if (!bulkHeaders.trim()) return;
+    
+    const headers = bulkHeaders.split(',').map(h => h.trim()).filter(h => h);
+    const startIndex = columns.length;
+    
+    const newColumns = headers.map((header, index) => ({
+      id: `col_${Date.now()}_${index}`,
+      name: header.toLowerCase().replace(/\s+/g, '_'),
+      displayName: header,
+      order: startIndex + index,
+      required: false,
+      rules: [],
+    }));
+    
+    onColumnsChange([...columns, ...newColumns]);
+    setBulkHeaders('');
+    setShowBulkCreate(false);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between sticky top-0 py-3 px-1 bg-white dark:bg-gray-900 z-10 border-b dark:border-gray-700 mb-4">
         <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Configuration des colonnes</h3>
-        <button
-          onClick={handleAddColumn}
-          disabled={disabled}
-          className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-red-500 hover:to-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Plus className="h-4 w-4 mr-1" />
-          Ajouter
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleAddColumn}
+            disabled={disabled}
+            className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-red-500 hover:to-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Plus className="h-4 w-4 mr-1" />
+            Ajouter
+          </button>
+          <button
+            onClick={() => setShowBulkCreate(true)}
+            disabled={disabled}
+            className="inline-flex items-center px-3 py-1.5 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <List className="h-4 w-4 mr-1" />
+            Créer en bloc
+          </button>
+        </div>
       </div>
 
       <DndContext
@@ -275,6 +307,41 @@ const ColumnEditor: React.FC<{ columns: ColumnConfig[]; onColumnsChange: (column
       {columns.length === 0 && !disabled && (
         <div className="text-center py-8 text-gray-500 dark:text-gray-400">
           Aucune colonne configurée. Cliquez sur "Ajouter" pour commencer.
+        </div>
+      )}
+
+      {/* Modal de création en bloc */}
+      {showBulkCreate && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Créer des colonnes en bloc</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Entrez les noms des colonnes séparés par des virgules :
+            </p>
+            <textarea
+              value={bulkHeaders}
+              onChange={(e) => setBulkHeaders(e.target.value)}
+              placeholder="Nom, Prénom, Email, Téléphone"
+              className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+              rows={3}
+              autoFocus
+            />
+            <div className="flex justify-end gap-2 mt-4">
+              <button
+                onClick={() => { setShowBulkCreate(false); setBulkHeaders(''); }}
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleBulkCreate}
+                disabled={!bulkHeaders.trim()}
+                className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-red-500 hover:to-red-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-md"
+              >
+                Créer
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

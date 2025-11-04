@@ -152,10 +152,10 @@ const AdminPage: React.FC = () => {
               <ChevronLeft className="h-4 w-4 mr-1" /> Retour
             </button>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-              Administration des campagnes
+              Administration des modèles
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-400">
-              Gérez vos campagnes de réorganisation CSV et configurez les colonnes.
+              Gérez, réorganisez et configurez vos colonnes.
             </p>
           </div>
           <button
@@ -163,7 +163,7 @@ const AdminPage: React.FC = () => {
 
 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-red-500 hover:to-red-600"          >
             <Plus className="h-4 w-4 mr-2" />
-            Nouvelle campagne
+            Nouveau modèle
           </button>
         </div>
       </div>

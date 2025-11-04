@@ -62,21 +62,21 @@ def process_dataframe(df: pd.DataFrame, campaign_config: list[CampaignColumn]) -
             # S'assure que la colonne est de type string pour les manipulations de texte
             if not pd.api.types.is_numeric_dtype(df[col_name]):
                  df[col_name] = df[col_name].astype(str).fillna('')
-            print("application des règle de calcul", column_config.rules)
+            print("application des regles de calcul", column_config.rules)
             for rule in column_config.rules:
                 df[col_name] = apply_rule(df[col_name], rule)
-                print(f"📌 Application règle {rule.type} sur colonne {col_name}")
+                print(f"Application regle {rule.type} sur colonne {col_name}")
 
     # 3. Réorganisation et sélection des colonnes
-    print(f"📌 Réorganisation des colonnes : {campaign_config}")
+    print(f"Reorganisation des colonnes : {campaign_config}")
     final_column_order = [col.name for col in campaign_config]
-    print(f"📌 Réorganisation des colonnes : {final_column_order}")
-    # S'assure que toutes les colonnes de l'ordre final existent avant de réorganiser
-    print("📌 Colonnes attendues :", final_column_order)
-    print("📌 Colonnes présentes dans df :", list(df.columns))
+    print(f"Reorganisation des colonnes : {final_column_order}")
+    # S'assure que toutes les colonnes de l'ordre final existent avant de reorganiser
+    print("Colonnes attendues :", final_column_order)
+    print("Colonnes presentes dans df :", list(df.columns))
 
     final_columns_in_df = [col for col in final_column_order if col in df.columns]
-    print("📌 Colonnes retenues :", final_columns_in_df)
+    print("Colonnes retenues :", final_columns_in_df)
     processed_df = df[final_columns_in_df]
 
     return processed_df

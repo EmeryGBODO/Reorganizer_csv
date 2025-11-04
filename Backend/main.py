@@ -1,3 +1,14 @@
+import sys
+import os
+
+# Configuration de l'encodage UTF-8 pour eviter les erreurs charmap
+if sys.platform.startswith('win'):
+    os.environ['PYTHONIOENCODING'] = 'utf-8'
+    if hasattr(sys.stdout, 'reconfigure'):
+        sys.stdout.reconfigure(encoding='utf-8')
+    if hasattr(sys.stderr, 'reconfigure'):
+        sys.stderr.reconfigure(encoding='utf-8')
+
 from fastapi import FastAPI
 from app.routes import include_routers
 from fastapi.middleware.cors import CORSMiddleware

@@ -30,7 +30,7 @@ interface StoredState {
 }
 
 const ENDUSER_STEPS = [
-    { id: 'select_campaign', title: 'Choisir la Campagne' },
+    { id: 'select_campaign', title: 'Choisir le modèle' },
     { id: 'select_period', title: 'Définir la Période' },
     { id: 'view_data', title: 'Visualiser et Traiter' },
 ];
@@ -365,8 +365,8 @@ const EndUserPage: React.FC = () => {
             case 'select_campaign':
                 return (
                     <div className="p-8 flex flex-col items-center justify-center text-center">
-                        <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2">Choisissez une campagne</h3>
-                        <p className="text-gray-600 dark:text-gray-400 mb-6">Sélectionnez la campagne pour générer des données depuis le serveur.</p>
+                        <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2">Choisissez un modèle</h3>
+                        <p className="text-gray-600 dark:text-gray-400 mb-6">Sélectionnez le modèle pour générer des données depuis le serveur.</p>
                         <div className="w-full max-w-md space-y-4 ">
                             <select
                                 id="campaign-selection"
@@ -400,7 +400,7 @@ const EndUserPage: React.FC = () => {
                             <ChevronLeft className="h-4 w-4 mr-1" /> Retour
                         </button>
                         <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2 text-center">Générer depuis le Serveur</h3>
-                        <p className="text-gray-600 dark:text-gray-400 mb-6 text-center">Pour la campagne : <strong className="text-blue-600 dark:text-blue-400">{selectedCampaign?.name}</strong></p>
+                        <p className="text-gray-600 dark:text-gray-400 mb-6 text-center">Pour le modèle : <strong className="text-blue-600 dark:text-blue-400">{selectedCampaign?.name}</strong></p>
                         <div className="p-6 border border-gray-200 dark:border-gray-700 rounded-lg flex flex-col items-center justify-center text-center hover:shadow-lg transition-shadow space-y-4 max-w-lg mx-auto">
                             <div className="w-full space-y-3">
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 text-left">
@@ -453,7 +453,7 @@ const EndUserPage: React.FC = () => {
                                 <div className='flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6 w-full'>
                                     <div className="flex flex-col gap-y-3">
                                         <p className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Campagne appliquée
+                                            Modèle appliquée
                                         </p>
                                         <span className="font-medium text-orange-600 dark:text-orange-400">{selectedCampaign?.name}</span>
                                     </div>

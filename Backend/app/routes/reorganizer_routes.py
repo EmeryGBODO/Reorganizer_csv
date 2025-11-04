@@ -25,7 +25,7 @@ async def process_file_endpoint(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Type de fichier invalide. Seuls les fichiers .csv sont acceptés par le backend."
         )
-    print("Fichier reçu avec succès")
+    print("Fichier recu avec succes")
     try:
         processed_csv_str = await reorganizer_sevice.process_csv_file(
             db, 

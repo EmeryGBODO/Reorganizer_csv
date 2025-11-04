@@ -37,7 +37,7 @@ interface StoredState {
 }
 
 const IMPORT_STEPS = [
-    { id: 'select_campaign', title: 'Choisir la Campagne' },
+    { id: 'select_campaign', title: 'Choisir le modèle' },
     { id: 'upload_file', title: 'Importer le Fichier' },
     { id: 'view_data', title: 'Visualiser et Traiter' },
 ];
@@ -313,8 +313,8 @@ const ImportPage: React.FC = () => {
             case 'select_campaign':
                 return (
                     <div className="p-8 flex flex-col items-center justify-center text-center">
-                        <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2">Choisissez une campagne de traitement</h3>
-                        <p className="text-gray-600 dark:text-gray-400 mb-6">Sélectionnez la campagne qui définit comment votre fichier sera traité.</p>
+                        <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2">Choisissez un modèle de traitement</h3>
+                        <p className="text-gray-600 dark:text-gray-400 mb-6">Sélectionnez le modèle qui définit comment votre fichier sera traité.</p>
                         <div className="w-full max-w-md">
                             <select
                                 id="campaign-selection"
@@ -323,7 +323,7 @@ const ImportPage: React.FC = () => {
                                 disabled={isLoading}
                                 className="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-3 text-lg"
                             >
-                                <option value="">-- Sélectionnez une campagne --</option>
+                                <option value="">-- Sélectionnez un modèle --</option>
                                 {campaigns.map((campaign) => (
                                     <option key={campaign.id} value={campaign.id}>
                                         {campaign.name}
@@ -337,10 +337,10 @@ const ImportPage: React.FC = () => {
                 return (
                     <div className="p-8">
                         <button onClick={() => resetFlow('select_campaign')} className="mb-6 inline-flex items-center text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200">
-                            <ChevronLeft className="h-4 w-4 mr-1" /> Changer de campagne
+                            <ChevronLeft className="h-4 w-4 mr-1" /> Changer de modèle
                         </button>
                         <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2 text-center">Importez votre fichier</h3>
-                        <p className="text-gray-600 dark:text-gray-400 mb-6 text-center">Pour la campagne : <strong className="text-blue-600 dark:text-blue-400">{selectedCampaign?.name}</strong></p>
+                        <p className="text-gray-600 dark:text-gray-400 mb-6 text-center">Pour le modèle : <strong className="text-blue-600 dark:text-blue-400">{selectedCampaign?.name}</strong></p>
                         <div className="p-6 shadow-2xl dark:shadow-orange-500/20 rounded-lg flex flex-col items-center justify-center text-center hover:shadow-lg transition-shadow">
                             <h4 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Importer un Fichier CSV ou Excel</h4>
                             <DragDropZone onFileDrop={handleFileDrop} accept=".csv,.xlsx,.xls" />
@@ -434,7 +434,7 @@ const ImportPage: React.FC = () => {
 
     const handleProcess = async () => {
         if (!selectedCampaign) {
-            setError("Aucune campagne n'est sélectionnée. Veuillez recommencer le processus.");
+            setError("Aucune modèle n'est sélectionnée. Veuillez recommencer le processus.");
             return;
         }
         if (!outputFileName.trim()) {

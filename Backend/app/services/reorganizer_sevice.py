@@ -32,7 +32,7 @@ async def process_csv_file(db: AsyncSession, campaign_uuid: str, file: UploadFil
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Impossible de lire le fichier CSV : {e}"
         )
-    print("Extraction effectué avec succès")
+    print("Extraction effectuee avec succes")
     # 3. Préparer la configuration pour le processeur
     # Votre modèle stocke probablement le JSON, il faut le parser.
     # Ici, nous simulons la structure attendue par process_dataframe.
@@ -46,7 +46,7 @@ async def process_csv_file(db: AsyncSession, campaign_uuid: str, file: UploadFil
     try:
         # Trier les colonnes par leur ordre
         sorted_columns_config = sorted(campaign.fields, key=lambda col: col.get('order', 0))
-        print("Trie effectué avec succès", sorted_columns_config)
+        print("Trie effectue avec succes", sorted_columns_config)
         campaign_config = [
             CampaignColumn(
                 name=col.get('name'),
@@ -59,10 +59,10 @@ async def process_csv_file(db: AsyncSession, campaign_uuid: str, file: UploadFil
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="La configuration des colonnes pour cette campagne est invalide."
         )
-    print("Trie terminer avec succès🎈🎈🎈")
+    print("Trie terminer avec succes")
     # 4. Appeler le processeur de données
     processed_df = process_dataframe(df, campaign_config)
-    print("Traitement effectué avec succès")
+    print("Traitement effectue avec succes")
     # 5. Convertir le DataFrame final en une chaîne CSV
     output = StringIO()
     processed_df.to_csv(output, index=False)
