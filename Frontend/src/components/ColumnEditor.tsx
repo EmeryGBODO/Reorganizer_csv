@@ -16,7 +16,7 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Edit2 as EditIcon, Trash2, Plus, Save, X, Calculator, List } from 'lucide-react'; // Renommé Edit2 en EditIcon
+import { GripVertical, Edit2 as EditIcon, Trash2, Plus, Save, X, Calculator, List } from 'lucide-react'; // Renommé Edit2 en EditIcon pour l'ajout en block
 import { ColumnConfig, Rule } from '../types';
 import RuleEditor from './RuleEditor';
 
@@ -138,7 +138,7 @@ const ColumnEditor: React.FC<{ columns: ColumnConfig[]; onColumnsChange: (column
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const [editingRulesFor, setEditingRulesFor] = useState<string | null>(null);
-  const [showBulkCreate, setShowBulkCreate] = useState(false);
+  const [showBulkCreate, setShowBulkCreate] = useState(false); 
   const [bulkHeaders, setBulkHeaders] = useState('');
 
   // Configuration des capteurs pour @dnd-kit
