@@ -34,7 +34,30 @@ interface StoredState {
     fullData: DataRow[];
     headers: string[];
     fileName: string | null;
+    detectedDelimiter?: string;
 }
+
+// Fonction pour détecter le séparateur CSV
+const detectCSVDelimiter = (csvText: string): string => {
+    const delimiters = [',', ';', '\t', '|'];
+    const sample = csvText.split('\n').slice(0, 5).join('\n');
+    
+    let bestDelimiter = ',';
+    let maxColumns = 0;
+    
+    for (const delimiter of delimiters) {
+        const result = Papa.parse(sample, { delimiter, header: false });
+        if (result.data.length > 0) {
+            const columnCount = Math.max(...result.data.map((row: any) => Array.isArray(row) ? row.length : 0));
+            if (columnCount > maxColumns) {
+                maxColumns = columnCount;
+                bestDelimiter = delimiter;
+            }
+        }
+    }
+    
+    return bestDelimiter;
+};
 
 const IMPORT_STEPS = [
     { id: 'select_campaign', title: 'Choisir le modèle' },
@@ -60,6 +83,7 @@ const ImportPage: React.FC = () => {
     const [isDataProcessed, setIsDataProcessed] = useState(false);
     const [downloadConfirmModal, setDownloadConfirmModal] = useState(false);
     const [columnValidation, setColumnValidation] = useState<{isValid: boolean, message: string} | null>(null);
+    const [detectedDelimiter, setDetectedDelimiter] = useState<string>(',');
     const navigate = useNavigate();
 
     // --- NOUVEL ÉTAT POUR LES FILTRES ---
@@ -84,6 +108,7 @@ const ImportPage: React.FC = () => {
                     setCurrentStep(savedStateJSON.currentStep);
                     setFullData(savedStateJSON.fullData);
                     setHeaders(savedStateJSON.headers);
+                    setDetectedDelimiter(savedStateJSON.detectedDelimiter || ',');
                     if (savedStateJSON.fileName) {
                         // On ne peut pas recréer l'objet File, mais on peut garder son nom pour l'affichage
                         setSelectedFile(new File([], savedStateJSON.fileName));
@@ -159,12 +184,13 @@ const ImportPage: React.FC = () => {
                     fullData,
                     headers,
                     fileName: selectedFile?.name || null,
+                    detectedDelimiter,
                 };
                 await localforage.setItem(LOCAL_STORAGE_KEY, stateToSave);
             }
         };
         saveState();
-    }, [currentStep, selectedCampaign, fullData, headers, selectedFile, isLoading]);
+    }, [currentStep, selectedCampaign, fullData, headers, selectedFile, isLoading, detectedDelimiter]);
 
     useEffect(() => {
         if (error) {
@@ -220,9 +246,13 @@ const ImportPage: React.FC = () => {
                 let jsonData: DataRow[] = [];
 
                 if (extension === 'csv') {
+                    const delimiter = detectCSVDelimiter(fileContent as string);
+                    setDetectedDelimiter(delimiter);
+                    
                     const parsedData = Papa.parse(fileContent as string, {
                         header: true,
                         skipEmptyLines: true,
+                        delimiter: delimiter,
                         encoding: "UTF-8" // Spécifier l'encodage
                     });
                     jsonData = parsedData.data as DataRow[];
@@ -282,6 +312,7 @@ const ImportPage: React.FC = () => {
         setSelectedFile(null);
         setIsDataProcessed(false);
         setColumnValidation(null);
+        setDetectedDelimiter(',');
         setActiveFilters({ // <-- Réinitialiser les filtres
             filter1: { column: '', value: '' },
             filter2: { column: '', value: '' },
@@ -369,6 +400,11 @@ const ImportPage: React.FC = () => {
                                             Fichier original
                                         </p>
                                         <span className="font-medium text-orange-600 dark:text-orange-400 break-all">{selectedFile?.name}</span>
+                                        {selectedFile?.name.endsWith('.csv') && (
+                                            <span className="text-sm text-gray-500 dark:text-gray-400">
+                                                Séparateur détecté: "{detectedDelimiter === '\t' ? '\\t' : detectedDelimiter}"
+                                            </span>
+                                        )}
                                     </div>
                                     <div className='flex flex-col sm:flex-row gap-4 sm:gap-6'>
                                         <div className='flex flex-col flex-1'>
@@ -451,7 +487,7 @@ const ImportPage: React.FC = () => {
             setError(null);
 
             // Convertir les données en CSV pour l'envoi au backend
-            const csvString = Papa.unparse(fullData, { delimiter: ';' });
+            const csvString = Papa.unparse(fullData, { delimiter: detectedDelimiter });
             const filename = outputFileName.endsWith(".csv") ? outputFileName : `${outputFileName}.csv`;
             const csvBlob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
             const csvFile = new File([csvBlob], filename, { type: "text/csv;charset=utf-8;" });
@@ -497,7 +533,7 @@ const ImportPage: React.FC = () => {
         }
         try {
             const csvString = Papa.unparse(fullData, {
-                delimiter: ',',
+                delimiter: detectedDelimiter,
             });
             const filename = outputFileName.endsWith(".csv") ? outputFileName : `${outputFileName}.csv`;
             console.log("full data dans handle download", fullData);
