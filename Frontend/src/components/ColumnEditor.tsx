@@ -236,7 +236,7 @@ const ColumnEditor: React.FC<{ columns: ColumnConfig[]; onColumnsChange: (column
     
     const newColumns = headers.map((header, index) => ({
       id: `col_${Date.now()}_${index}`,
-      name: header.toLowerCase().replace(/\s+/g, '_'),
+      name: header,
       displayName: header,
       order: startIndex + index,
       required: false,
